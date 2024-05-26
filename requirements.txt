@@ -1,0 +1,45 @@
+# Bibliothèques de traitement des données
+numpy
+pandas
+
+# Bibliothèques pour l'audio
+librosa
+pyaudio
+
+# Bibliothèques de machine learning
+tensorflow
+torch
+torchvision
+
+# Bibliothèques pour le traitement d'images et la vision par ordinateur
+opencv-python
+opencv-python-headless
+
+# Bibliothèques pour la manipulation de fichiers YAML
+pyyaml
+
+# Bibliothèques pour le développement web et les API
+flask
+flask-restful
+
+# Bibliothèques pour le journalisation
+logging
+
+# Bibliothèques pour les calculs scientifiques et techniques
+scipy
+
+# Bibliothèques pour l'utilisation de la GPIO sur Raspberry Pi
+RPi.GPIO
+
+# Bibliothèques pour les notebooks Jupyter
+jupyter
+
+# Bibliothèques pour la communication IoT (LoRa, MQTT, etc.)
+paho-mqtt
+lora
+
+# Bibliothèques pour le contrôle du hardware
+pigpio
+
+# Autres utilitaires
+requests
