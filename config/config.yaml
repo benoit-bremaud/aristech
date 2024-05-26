@@ -1,0 +1,52 @@
+# Configuration générale de l'application
+app:
+  name: "Aristech"
+  version: "0.1.0"
+  log_level: "DEBUG"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# Configuration de la source vidéo
+video_source: 0  # Indice de la caméra, chemin vers un fichier vidéo ou URL du flux vidéo
+
+# Configuration de la détection sonore
+sound_detection:
+  enabled: true
+  threshold: 0.01  # Seuil de détection pour le bourdonnement du frelon asiatique
+  model_path: "models/hornet_sound_model.h5"
+
+# Configuration de la détection visuelle
+hornet_detection:
+  enabled: true
+  model: "yolov5s"  # Modèle de détection d'objets utilisé
+  model_path: "models/hornet_image_model.pth"
+  confidence_threshold: 0.5  # Seuil de confiance pour la détection
+
+# Configuration de la mesure de distance
+distance_measurement:
+  enabled: true
+  method: "stereo_toF"  # Méthode de mesure de distance : stereo, ToF, stereo_toF
+  stereo_params: "config/stereo_params.yaml"
+  tof_params: "config/tof_params.yaml"
+
+# Configuration du contrôle du lance-projectiles
+coil_gun_control:
+  enabled: true
+  laser_pin: 18  # Broche GPIO pour le laser de pointage
+  coil_gun_pin: 23  # Broche GPIO pour le contrôle du lance-projectiles
+  servo_pin: 24  # Broche GPIO pour le servo-moteur
+  servo_frequency: 50  # Fréquence du servo-moteur en Hz
+
+# Configuration des modules
+modules:
+  solar:
+    enabled: true
+    max_power_point_tracking: true  # Activation du suivi du point de puissance maximale
+  sonar:
+    enabled: true
+    range: 500  # Portée maximale du sonar en cm
+  target:
+    enabled: true
+    tracking_speed: 0.1  # Vitesse de suivi des cibles
+  connect:
+    enabled: true
+    protocol: "LoRaWAN"  # Protocole de communication : LoRaWAN, WiFi, Bluetooth
+    update_interval: 60  # Intervalle de mise à jour en secondes
