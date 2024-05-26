@@ -8,6 +8,7 @@ handlers:
     class: logging.StreamHandler
     formatter: simple
     level: DEBUG
+    stream: ext://sys.stdout
   file:
     class: logging.FileHandler
     formatter: simple

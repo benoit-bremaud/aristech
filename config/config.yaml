@@ -2,7 +2,7 @@
 app:
   name: "Aristech"
   version: "0.1.0"
-  log_level: "DEBUG"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 # Configuration de la source vidéo
 video_source: 0  # Indice de la caméra, chemin vers un fichier vidéo ou URL du flux vidéo

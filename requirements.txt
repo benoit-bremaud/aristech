@@ -200,6 +200,8 @@ python-dateutil==2.9.0.post0
     #   pandas
 pytz==2024.1
     # via pandas
+pyyaml==6.0.1
+    # via -r requirements.in
 requests==2.32.2
     # via
     #   pooch
