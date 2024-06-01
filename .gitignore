@@ -168,3 +168,11 @@ logs/
 
 # Do not ignore .env.example
 !.env.example
+
+# Ignorer les dossiers d'images
+data/images/
+!data/images/.gitkeep  # Optionnel: Pour conserver les dossiers vides dans Git
+
+# Ignorer les dossiers de vidéos
+data/videos/
+!data/videos/.gitkeep  # Optionnel: Pour conserver les dossiers vides dans Git
