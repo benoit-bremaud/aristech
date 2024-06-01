@@ -13,7 +13,7 @@ handlers:
     class: logging.FileHandler
     formatter: simple
     level: DEBUG
-    filename: logs/app.log
+    filename: logs/app.log  # Assurez-vous que ce chemin est correct
 loggers:
   app_logger:
     level: DEBUG
