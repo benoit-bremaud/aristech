@@ -1,3 +1,4 @@
+
 # Aristech
 
 Aristech est un outil de défense des apiculteurs contre le frelon asiatique. Il utilise une combinaison de technologies pour détecter, suivre et neutraliser les frelons asiatiques.
@@ -26,14 +27,36 @@ Aristech est un outil de défense des apiculteurs contre le frelon asiatique. Il
     cd aristech
     ```
 
-2. Installez les dépendances :
+2. Créez un environnement virtuel :
+    ```bash
+    python -m venv venv
+    ```
+
+3. Activez l'environnement virtuel :
+    - **Sous Windows** :
+        ```bash
+        .\venv\Scripts\activate
+        ```
+    - **Sous macOS et Linux** :
+        ```bash
+        source venv/bin/activate
+        ```
+
+4. Installez les dépendances :
     ```bash
     pip install -r requirements.txt
     ```
 
-3. Modifiez les fichiers de configuration pour adapter le système à votre environnement :
+5. Modifiez les fichiers de configuration pour adapter le système à votre environnement :
     - `config/config.yaml`
     - `config/logging.yaml`
+
+### Désactivation de l'Environnement Virtuel
+
+Pour désactiver l'environnement virtuel, utilisez la commande suivante :
+```bash
+deactivate
+```
 
 ## Utilisation
 
