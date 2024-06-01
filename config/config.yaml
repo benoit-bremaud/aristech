@@ -1,23 +1,24 @@
+# config.yaml
 # Configuration générale de l'application
 app:
   name: "Aristech"
   version: "0.1.0"
-  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_level: ${LOG_LEVEL}  # Utiliser la variable d'environnement pour le niveau de log
 
 # Configuration de la source vidéo
-video_source: 0  # Indice de la caméra, chemin vers un fichier vidéo ou URL du flux vidéo
+video_source: ${VIDEO_SOURCE}  # Utiliser la variable d'environnement pour la source vidéo
 
 # Configuration de la détection sonore
 sound_detection:
   enabled: true
   threshold: 0.01  # Seuil de détection pour le bourdonnement du frelon asiatique
-  model_path: "models/hornet_sound_model.h5"
+  model_path: ${SOUND_MODEL_PATH}  # Utiliser la variable d'environnement pour le chemin du modèle sonore
 
 # Configuration de la détection visuelle
 hornet_detection:
   enabled: true
   model: "yolov5s"  # Modèle de détection d'objets utilisé
-  model_path: "models/hornet_image_model.pth"
+  model_path: ${IMAGE_MODEL_PATH}  # Utiliser la variable d'environnement pour le chemin du modèle d'image
   confidence_threshold: 0.5  # Seuil de confiance pour la détection
 
 # Configuration de la mesure de distance
