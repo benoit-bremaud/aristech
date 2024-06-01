@@ -165,3 +165,6 @@ logs/
 
 # Environment variable files
 .env
+
+# Do not ignore .env.example
+!.env.example
