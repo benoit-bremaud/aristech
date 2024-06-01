@@ -29,7 +29,7 @@ Aristech est un outil de défense des apiculteurs contre le frelon asiatique. Il
 
 2. Créez un environnement virtuel :
     ```bash
-    python -m venv venv
+    python3 -m venv venv
     ```
 
 3. Activez l'environnement virtuel :
