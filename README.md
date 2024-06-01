@@ -23,37 +23,115 @@ Le projet Aristech utilise des techniques avancées de vision par ordinateur et 
 - Python 3.8 ou supérieur
 - pip
 
-### Étapes
+### Étapes d'Installation
 
-1. Clonez le dépôt GitHub :
+1. **Clonez le dépôt GitHub** :
+
     ```bash
     git clone https://github.com/votre-utilisateur/aristech.git
     cd aristech
     ```
 
-2. Créez un environnement virtuel :
-    ```bash
-    python -m venv venv
-    ```
+2. **Créer et Activer l'Environnement Virtuel** :
 
-3. Activez l'environnement virtuel :
     - **Sous Windows** :
+
         ```bash
+        python -m venv venv
         .\venv\Scripts\activate
         ```
+
     - **Sous macOS et Linux** :
+
         ```bash
+        python3 -m venv venv
         source venv/bin/activate
         ```
 
-4. Installez les dépendances :
+3. **Installer les Prérequis pour `pyaudio`** :
+
+    - **Sous Ubuntu** :
+
+        ```bash
+        sudo apt-get update
+        sudo apt-get install -y portaudio19-dev python3-pyaudio
+        ```
+
+4. **Utiliser le Script `update_requirements.py` pour Gérer les Dépendances** :
+
+    - Créez le fichier `update_requirements.py` avec le contenu suivant :
+
+    ```python
+    import os
+    import subprocess
+    import sys
+
+    def run_command(command):
+        """Exécute une commande shell et affiche la sortie."""
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            print(f"Erreur lors de l'exécution de la commande : {command}")
+            print(f"Sortie standard : {stdout.decode('utf-8')}")
+            print(f"Erreur standard : {stderr.decode('utf-8')}")
+            raise subprocess.CalledProcessError(process.returncode, command)
+        else:
+            print(stdout.decode('utf-8'))
+
+    def check_and_install(package):
+        """Vérifie si un package est installé, sinon l'installe."""
+        try:
+            __import__(package)
+        except ImportError:
+            print(f"Installation de {package}...")
+            run_command(f"{sys.executable} -m pip install {package}")
+
+    def generate_requirements_with_pipreqs():
+        """Génère requirements.txt avec pipreqs."""
+        print("Génération de requirements.txt avec pipreqs...")
+        run_command("pipreqs . --force")
+
+    def convert_requirements_txt_to_in():
+        """Convertit requirements.txt en requirements.in."""
+        print("Conversion de requirements.txt en requirements.in...")
+        if os.path.exists("requirements.txt"):
+            os.rename("requirements.txt", "requirements.in")
+        else:
+            print("Le fichier requirements.txt n'existe pas.")
+
+    def compile_requirements():
+        """Génère requirements.txt à partir de requirements.in."""
+        print("Génération de requirements.txt à partir de requirements.in...")
+        run_command("pip-compile --strip-extras requirements.in")
+
+    def sync_requirements():
+        """Synchronise les dépendances avec requirements.txt."""
+        print("Synchronisation des dépendances avec requirements.txt...")
+        run_command("pip-sync requirements.txt")
+
+    def main():
+        check_and_install("pipreqs")
+        check_and_install("piptools")
+        generate_requirements_with_pipreqs()
+        convert_requirements_txt_to_in()
+        compile_requirements()
+        sync_requirements()
+        print("Toutes les étapes sont terminées avec succès !")
+
+    if __name__ == "__main__":
+        main()
+    ```
+
+    - Exécutez le script `update_requirements.py` :
+
     ```bash
-    pip install -r requirements.txt
+    python3 update_requirements.py
     ```
 
 ### Désactivation de l'Environnement Virtuel
 
 Pour désactiver l'environnement virtuel, utilisez la commande suivante :
+
 ```bash
 deactivate
 ```
@@ -63,11 +141,13 @@ deactivate
 ### Variables d'Environnement
 
 1. Copiez le fichier `.env.example` en `.env` :
+
     ```bash
     cp .env.example .env
     ```
 
 2. Ouvrez le fichier `.env` et modifiez les valeurs selon vos besoins. Par exemple :
+
     ```plaintext
     # =============================
     # Example Fichier de Configuration Environnementale
@@ -128,6 +208,7 @@ deactivate
 ### Exécution du Projet
 
 Pour démarrer l'application, exécutez :
+
 ```bash
 python src/main.py
 ```
@@ -135,6 +216,7 @@ python src/main.py
 ## Utilisation
 
 Pour entraîner les modèles, exécutez les scripts dans `src/training/`. Par exemple, pour entraîner le modèle de reconnaissance sonore :
+
 ```bash
 python src/training/train_sound_model.py
 ```
@@ -145,23 +227,31 @@ Nous accueillons les contributions avec plaisir. Veuillez suivre les étapes ci-
 
 1. **Fork** le dépôt
 2. **Clonez** votre fork :
+
     ```bash
     git clone https://github.com/votre-utilisateur/aristech.git
     cd aristech
     ```
+
 3. **Créez** une branche pour votre fonctionnalité :
+
     ```bash
     git checkout -b nouvelle-fonctionnalite
     ```
+
 4. **Développez** et **committez** vos changements :
+
     ```bash
     git add .
     git commit -m "Ajout de la nouvelle fonctionnalité"
     ```
+
 5. **Poussez** votre branche vers GitHub :
+
     ```bash
     git push origin nouvelle-fonctionnalite
     ```
+
 6. **Créez** une pull request sur le dépôt original pour examiner vos modifications.
 
 Veuillez lire `CONTRIBUTING.md` pour plus de détails sur notre code de conduite et le processus de soumission de pull requests.
