@@ -26,7 +26,7 @@ def main():
     print(f"Test Accuracy: {test_acc}")
     
     # Sauvegarder le modèle
-    save_model(model)
+    save_model(model, filepath='model.keras')
 
 if __name__ == "__main__":
     main()

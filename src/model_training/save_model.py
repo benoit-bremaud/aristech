@@ -1,2 +1,2 @@
-def save_model(model, filepath='hornet_recognition_model.h5'):
+def save_model(model, filepath='model.keras'):
     model.save(filepath)
