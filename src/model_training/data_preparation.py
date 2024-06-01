@@ -1,5 +1,5 @@
 import os
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator # type: ignore
 from dotenv import load_dotenv
 
 def prepare_data():
@@ -43,5 +43,9 @@ def prepare_data():
         batch_size=32,
         class_mode='binary'
     )
+
+    print(f"Found {train_generator.samples} images in training directory.")
+    print(f"Found {validation_generator.samples} images in validation directory.")
+    print(f"Found {test_generator.samples} images in test directory.")
 
     return train_generator, validation_generator, test_generator
