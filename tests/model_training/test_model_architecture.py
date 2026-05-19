@@ -1,11 +1,14 @@
-import unittest
-from src.model_training.model_architecture import create_model
+"""Test unitaire : construction du modèle (pas d'entraînement)."""
 
-class TestModelArchitecture(unittest.TestCase):
-    def test_create_model(self):
-        model = create_model()
-        self.assertIsNotNone(model)
-        self.assertEqual(len(model.layers), 9)
+import pytest
 
-if __name__ == "__main__":
-    unittest.main()
+# Skip module entier si tensorflow indisponible (par ex. en CI lint-only).
+tf = pytest.importorskip("tensorflow")
+
+from aristech.training.model_architecture import create_model  # noqa: E402
+
+
+def test_create_model_has_nine_layers():
+    model = create_model()
+    assert model is not None
+    assert len(model.layers) == 9

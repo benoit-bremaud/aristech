@@ -1,17 +1,24 @@
+"""Test d'intégration : un .env doit exister et exposer les chemins data.
+
+Marqué `integration` car dépend du système de fichiers de la machine
+(présence d'un `.env` peuplé). Ne s'exécute pas en CI par défaut.
+"""
+
 import os
+
+import pytest
 from dotenv import load_dotenv
-import unittest
 
-class TestEnvVars(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        load_dotenv()
 
-    def test_env_vars_loaded(self):
-        self.assertIsNotNone(os.getenv('SOURCE_FOLDER'))
-        self.assertIsNotNone(os.getenv('TRAIN_FOLDER'))
-        self.assertIsNotNone(os.getenv('VALIDATION_FOLDER'))
-        self.assertIsNotNone(os.getenv('TEST_FOLDER'))
+@pytest.fixture(scope="module", autouse=True)
+def _load_env():
+    load_dotenv()
 
-if __name__ == '__main__':
-    unittest.main()
+
+_REQUIRED_VARS = ["SOURCE_FOLDER", "TRAIN_FOLDER", "VALIDATION_FOLDER", "TEST_FOLDER"]
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("var", _REQUIRED_VARS)
+def test_env_var_is_set(var: str):
+    assert os.getenv(var) is not None, f"Variable {var} absente du .env"

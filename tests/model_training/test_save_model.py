@@ -1,16 +1,14 @@
-import unittest
-import os
-from src.model_training.save_model import save_model
-from src.model_training.model_architecture import create_model
-from src.model_training.data_preparation import prepare_data
-from src.model_training.train import compile_model, train_model
+"""Test unitaire : la sérialisation Keras crée bien un fichier sur disque."""
 
-class TestSaveModel(unittest.TestCase):
-    def test_save_model(self):
-        model = create_model()
-        save_model(model, filepath='test_model.h5')
-        self.assertTrue(os.path.exists('test_model.h5'))
-        os.remove('test_model.h5')
+import pytest
 
-if __name__ == "__main__":
-    unittest.main()
+tf = pytest.importorskip("tensorflow")
+
+from aristech.training.model_architecture import create_model  # noqa: E402
+from aristech.training.save_model import save_model  # noqa: E402
+
+
+def test_save_model_creates_file(tmp_path):
+    target = tmp_path / "test_model.keras"
+    save_model(create_model(), filepath=str(target))
+    assert target.exists()

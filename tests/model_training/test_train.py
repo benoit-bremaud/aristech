@@ -1,20 +1,34 @@
-import unittest
-from src.model_training.train import compile_model, train_model
-from src.model_training.model_architecture import create_model
-from src.model_training.data_preparation import prepare_data
+"""Tests de la pipeline d'entraînement.
 
-class TestTrainModel(unittest.TestCase):
-    def test_compile_model(self):
-        model = create_model()
-        model = compile_model(model)
-        self.assertIsNotNone(model.optimizer)
+`compile_model` est testable sans données → test unitaire.
+`train_model` exige des images → test d'intégration.
+"""
 
-    def test_train_model(self):
-        train_generator, validation_generator, _ = prepare_data()
-        model = create_model()
-        model = compile_model(model)
-        history = train_model(model, train_generator, validation_generator, epochs=1, steps_per_epoch=1, validation_steps=1)
-        self.assertIn('accuracy', history.history)
+import pytest
 
-if __name__ == "__main__":
-    unittest.main()
+tf = pytest.importorskip("tensorflow")
+
+from aristech.training.model_architecture import create_model  # noqa: E402
+from aristech.training.train import compile_model, train_model  # noqa: E402
+
+
+def test_compile_model_attaches_optimizer():
+    model = compile_model(create_model())
+    assert model.optimizer is not None
+
+
+@pytest.mark.integration
+def test_train_model_runs_one_step():
+    from aristech.training.data_preparation import prepare_data
+
+    train_generator, validation_generator, _ = prepare_data()
+    model = compile_model(create_model())
+    history = train_model(
+        model,
+        train_generator,
+        validation_generator,
+        epochs=1,
+        steps_per_epoch=1,
+        validation_steps=1,
+    )
+    assert "accuracy" in history.history

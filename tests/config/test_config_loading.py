@@ -1,21 +1,20 @@
-import unittest
+from pathlib import Path
+
 import yaml
 
-class TestConfigLoading(unittest.TestCase):
-    def test_config_yaml(self):
-        with open('config/config.yaml', 'r') as file:
-            config = yaml.safe_load(file)
-        self.assertEqual(config['app']['name'], 'Aristech')
-        self.assertIn('video_source', config)
-        self.assertIn('sound_detection', config)
-        self.assertIn('hornet_detection', config)
+ROOT = Path(__file__).resolve().parents[2]
 
-    def test_logging_yaml(self):
-        with open('config/logging.yaml', 'r') as file:
-            logging_config = yaml.safe_load(file)
-        self.assertIn('formatters', logging_config)
-        self.assertIn('handlers', logging_config)
-        self.assertIn('loggers', logging_config)
 
-if __name__ == '__main__':
-    unittest.main()
+def test_config_yaml_has_expected_sections():
+    config = yaml.safe_load((ROOT / "config" / "config.yaml").read_text())
+    assert config["app"]["name"] == "Aristech"
+    assert "video_source" in config
+    assert "sound_detection" in config
+    assert "hornet_detection" in config
+
+
+def test_logging_yaml_has_expected_sections():
+    logging_config = yaml.safe_load((ROOT / "config" / "logging.yaml").read_text())
+    assert "formatters" in logging_config
+    assert "handlers" in logging_config
+    assert "loggers" in logging_config
