@@ -2,10 +2,11 @@
 
 ## Objectif
 
-Détecter et neutraliser le frelon asiatique (*Vespa velutina*) en temps
-réel à proximité d'un rucher, à partir de capteurs vidéo, audio, et de
-mesure de distance, puis piloter un actionneur (laser de visée, coil-gun,
-servo).
+Détecter et **éloigner** le frelon asiatique (*Vespa velutina*) en
+temps réel à proximité d'un rucher, à partir de capteurs vidéo, audio,
+et de mesure de distance, puis piloter un actionneur **non létal**
+(jet d'eau orienté, servo de visée pan/tilt). Cf.
+[Décisions ouvertes](#décisions-ouvertes).
 
 ## Principe : Clean Architecture
 
@@ -85,7 +86,8 @@ Implémentations concrètes des ports. Tout ce qui touche au matériel ou
 - `vision/` — OpenCV, YOLO (Torch/TensorFlow).
 - `audio/` — PyAudio, librosa.
 - `distance/` — caméras stéréo, capteurs ToF.
-- `hardware/` — RPi.GPIO pour coil-gun, servo, laser, panneau solaire.
+- `hardware/` — RPi.GPIO pour servos pan/tilt, pompe + solénoïde du jet
+  d'eau, capteurs et panneau solaire.
 - `connectivity/` — paho-mqtt, LoRaWAN.
 - `config/` — chargement YAML.
 
@@ -141,10 +143,10 @@ Les principes apparaissent naturellement dans le découpage :
 │ (Stéréo+ToF)   │        │ (use case)         └───────────┬──────────────┘
 └────────────────┘        └────────────────────┘           │
                                                            ▼
-                                                    ┌────────────┐
-                                                    │  Actuator  │
-                                                    │ (coil-gun) │
-                                                    └────────────┘
+                                                    ┌─────────────┐
+                                                    │  Actuator   │
+                                                    │ (jet d'eau) │
+                                                    └─────────────┘
 ```
 
 ## Tests
@@ -206,7 +208,7 @@ Conséquences sur l'architecture :
 - Une **zone d'exclusion géométrique** autour de la planche d'envol
   doit être appliquée indépendamment du classifier, par sécurité
   défense en profondeur. Si une bbox `APIS_MELLIFERA` chevauche le
-  cône de tir, abort immédiat.
+  cône de tir, arrêt immédiat de l'actionneur.
 - Toute activité de type « piège » doit être **sélective** (Art.
   L411-9-1 du Code env., introduit par la **Loi n° 2025-237 du
   14 mars 2025**) ; la valeur exacte du seuil de sélectivité sera
