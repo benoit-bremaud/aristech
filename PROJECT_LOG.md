@@ -44,9 +44,9 @@ First entry. Retroactive audit scope: repo inception through PR #1 merge.
 
 - **PR #2 merged** (`2a5f5a7`) — `docs: initialize PROJECT_LOG.md with retrospective entry for PR #1`. Branch `docs/project-log-init`, single file added (+43 lines), squash-merged at 13:37 UTC. Bootstraps this logbook with the retroactive audit entry above.
 
-  - **Review cycle** — single Copilot pass on the initial commit (`4988329`), two Should-Have findings, both addressed in `5679afb`:
+  - **Review cycle** — single Copilot pass on the original PR branch raised two Should-Have findings, both addressed in a follow-up commit before merge (intermediate PR-branch SHAs are not durable after squash-merge; see the PR conversation at <https://github.com/benoit-bremaud/aristech/pull/2> for the inline review threads):
     - English-only consistency: the reference to `docs/architecture.md` mentioned the French heading `Décisions ouvertes`; reframed in English while keeping the French anchor visible to preserve the link target (the heading itself stays in French until `docs/architecture.md` is translated).
     - Durability of phrasing: replaced the local-perspective wording "outside this machine" with "any other collaborator or clone of the repository" so the guidance reads correctly from any environment.
-  - Copilot's second pass on `5679afb` returned no further comments.
+  - Copilot's second pass on the corrected branch returned no further comments.
 
 - **Project tracking** — GitHub Project `aristech` #57 created (node `PVT_kwHOB8rwIc4BYKoi`). PR #2 attached. Future aristech PRs and issues should be routed here.
