@@ -34,6 +34,8 @@ def distribute_files(
     reproductible.
     """
 
+    if train_ratio < 0 or validation_ratio < 0:
+        raise ValueError("ratios must be non-negative")
     if train_ratio + validation_ratio > 1.0:
         raise ValueError("train_ratio + validation_ratio must be ≤ 1.0")
 
@@ -45,10 +47,11 @@ def distribute_files(
     for d in (train, validation, test):
         d.mkdir(parents=True, exist_ok=True)
 
+    normalized_ext = tuple(e.lower() for e in extensions) if extensions else None
     all_files = [
         p
         for p in source.iterdir()
-        if p.is_file() and (extensions is None or p.suffix.lower() in extensions)
+        if p.is_file() and (normalized_ext is None or p.suffix.lower() in normalized_ext)
     ]
 
     if not all_files:

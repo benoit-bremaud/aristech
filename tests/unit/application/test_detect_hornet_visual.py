@@ -1,6 +1,8 @@
 from collections.abc import Iterator, Sequence
 from datetime import datetime
 
+import pytest
+
 from aristech.application.use_cases import DetectHornetVisual, DetectHornetVisualConfig
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
 
@@ -66,9 +68,27 @@ def test_notifies_only_threats_above_threshold():
 
 
 def test_returns_empty_when_no_frames():
+    video = _FakeVideoSource([])
     use_case = DetectHornetVisual(
-        video=_FakeVideoSource([]),
+        video=video,
         detector=_ScriptedDetector([]),
         notifier=_RecordingNotifier(),
     )
     assert use_case.run() == []
+    assert video.closed, "VideoSource.close() doit être appelée même sans frame"
+
+
+def test_closes_video_source_on_detector_exception():
+    class _BoomDetector:
+        def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+            raise RuntimeError("boom")
+
+    video = _FakeVideoSource([_frame()])
+    use_case = DetectHornetVisual(
+        video=video,
+        detector=_BoomDetector(),
+        notifier=_RecordingNotifier(),
+    )
+    with pytest.raises(RuntimeError, match="boom"):
+        use_case.run()
+    assert video.closed, "VideoSource.close() doit être appelée même en cas d'erreur"

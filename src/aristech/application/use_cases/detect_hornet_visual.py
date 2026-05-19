@@ -36,12 +36,15 @@ class DetectHornetVisual:
 
     def run(self) -> list[Detection]:
         accepted: list[Detection] = []
-        for frame in self._video.frames():
-            for detection in self._detector.detect(frame):
-                if (
-                    detection.is_threat()
-                    and detection.confidence >= self._config.confidence_threshold
-                ):
-                    self._notifier.notify_detection(detection)
-                    accepted.append(detection)
+        try:
+            for frame in self._video.frames():
+                for detection in self._detector.detect(frame):
+                    if (
+                        detection.is_threat()
+                        and detection.confidence >= self._config.confidence_threshold
+                    ):
+                        self._notifier.notify_detection(detection)
+                        accepted.append(detection)
+        finally:
+            self._video.close()
         return accepted

@@ -31,24 +31,25 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 
-# Dépendances de haut niveau ; le lock complet est dans requirements.txt
-# (à régénérer via `pip-compile requirements.in`).
+# Dépendances de haut niveau, bornées par version majeure pour limiter
+# la dérive de résolution. Le lock complet est dans requirements.txt
+# (à régénérer via `make lock` / `pip-compile requirements.in`).
 dependencies = [
-    "numpy",
-    "scipy",
-    "pandas",
-    "matplotlib",
-    "seaborn",
-    "scikit-learn",
-    "tensorflow",
-    "torch",
-    "opencv-python",
-    "librosa",
-    "pyaudio",
-    "PyYAML",
-    "paho-mqtt",
-    "python-dotenv",
-    "Pillow",
+    "numpy>=1.26,<3",
+    "scipy>=1.13,<2",
+    "pandas>=2.2,<3",
+    "matplotlib>=3.8,<4",
+    "seaborn>=0.13,<1",
+    "scikit-learn>=1.4,<2",
+    "tensorflow>=2.16,<3",
+    "torch>=2.3,<3",
+    "opencv-python>=4.9,<5",
+    "librosa>=0.10,<1",
+    "pyaudio>=0.2,<1",
+    "PyYAML>=6,<7",
+    "paho-mqtt>=2,<3",
+    "python-dotenv>=1,<2",
+    "Pillow>=10,<12",
 ]
 
 [project.optional-dependencies]
@@ -62,10 +63,12 @@ dev = [
     "pip-tools",
 ]
 docs = ["sphinx>=7"]
-# GPU extras isolés : ne pas faire fuiter sur macOS / Windows.
+# GPU extras isolés : les wheels NVIDIA n'existent que pour Linux x86_64.
+# Les markers PEP 508 empêchent l'install de tenter de les résoudre sur
+# macOS / Windows / ARM, où elles échoueraient.
 gpu = [
-    "nvidia-cublas-cu12",
-    "nvidia-cudnn-cu12",
+    "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cudnn-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [project.scripts]
@@ -101,7 +104,26 @@ packages = ["aristech"]
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = ["yaml", "dotenv", "tensorflow.*", "keras.*", "cv2"]
+# Libs sans stubs (ou stubs incomplets) — tolérées pour ne pas bloquer
+# strict-mypy quand les adaptateurs infrastructure/ arriveront.
+module = [
+    "cv2",
+    "dotenv",
+    "keras.*",
+    "librosa.*",
+    "matplotlib.*",
+    "numpy.*",
+    "paho.*",
+    "pandas.*",
+    "PIL.*",
+    "pyaudio",
+    "scipy.*",
+    "seaborn.*",
+    "sklearn.*",
+    "tensorflow.*",
+    "torch.*",
+    "yaml",
+]
 ignore_missing_imports = true
 
 # Training : code Keras/TF historique, types impossibles à serrer sans

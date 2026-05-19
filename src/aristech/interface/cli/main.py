@@ -10,7 +10,12 @@ import yaml
 
 def _load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
-        return cast(dict[str, Any], yaml.safe_load(f))
+        data = yaml.safe_load(f)
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} doit contenir un mapping YAML, pas {type(data).__name__}")
+    return cast(dict[str, Any], data)
 
 
 def main(argv: list[str] | None = None) -> int:
