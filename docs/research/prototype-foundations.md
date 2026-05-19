@@ -529,16 +529,18 @@ events ~200/day × 2 s × 36 W = 4.2 Wh.
 - Idle: 3 W × 18 h = **54 Wh**
 - Pump + valve events: ~5 Wh
 - Servos (PWM hold): 1 W × 12 h ≈ **12 Wh**
-- Comms (4G modem, optional): 1.5 W × 24 h ≈ 36 Wh
-- **Total: ~180 Wh/day** (without 4G), **~215 Wh** with 4G
+- Comms (4G modem, optional): 1.5 W × 24 h ≈ **36 Wh**
+- **Total: 143 Wh/day** (without 4G), **179 Wh/day** with 4G
 
-**Battery** (12 V LiFePO4, DoD 80 %): 180 Wh / 12 V / 0.8 = **18.75 Ah
-day-1**. For 3-day autonomy (cloudy run): 56 Ah. **Pick 12 V / 100 Ah
-LiFePO4** → 5 days reserve, ~€230 ([WattCycle EU][c13]).
+**Battery** (12 V LiFePO4, DoD 80 %): 143 Wh / 12 V / 0.8 = **14.9 Ah
+day-1** (or 18.6 Ah/day with 4G). For 3-day cloudy autonomy: 45 Ah (or
+56 Ah with 4G). **Pick 12 V / 100 Ah LiFePO4** → ~6.7 days reserve
+without 4G / ~5.4 days with 4G, ~€230 ([WattCycle EU][c13]).
 
 **Panel** (South France, season avg 4.5 PSH, derating 0.75):
-W = 180 / (4.5 × 0.75) = **53 W min** → **100 W mono** (~€70-90) gives
-2× headroom for shoulder-season.
+W = 143 / (4.5 × 0.75) = **42 W min** (or 53 W with 4G) → **100 W mono**
+(~€70-90) gives ~2.4× headroom for shoulder-season operation without
+4G (~1.9× with 4G).
 
 **Controller**: **MPPT mandatory** for LiFePO4 + harvest gain (~20-30 %).
 [Victron SmartSolar MPPT 75/15][c14] (~€90 EU) or [VEVOR 20A MPPT][c15]
@@ -560,16 +562,40 @@ W = 180 / (4.5 × 0.75) = **53 W min** → **100 W mono** (~€70-90) gives
 
 ### Total BOM
 
-| Configuration                                                                                                                                                | Subtotal €      | Dominant cost              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- | -------------------------- |
-| **v1 minimal** — Pi 5 + AI HAT+, HQ cam + 6 mm, MG996R + PCA9685, VL53L5CX, SPH0645, pump+valve, 100 W panel + 100 Ah LiFePO4 + VEVOR MPPT, IP65 box      | **~720**        | Solar/battery (~50 %)      |
-| v1 **without** solar (mains / USB-C PD)                                                                                                                       | **~360**        | Compute (~45 %)            |
-| **v2 production** — same compute, GM3506 + SimpleBGC, RealSense, Victron MPPT 75/15, 200 Ah battery                                                          | **~1500-1800**  | Gimbal + RealSense + batt. |
+Rebuilt from explicit component subtotals; values are summed at the
+low end of each per-component range and at the mid-point.
 
-**The < €500 target** is reachable only by dropping solar (run from a
-wall socket during prototype) or running on a 30 Ah battery (~€80) +
-50 W panel (~€50) — fine for proof-of-concept, not for unattended
-deployment.
+| Component group                                              | Low €  | Mid €  | Notes                                                                 |
+| ------------------------------------------------------------ | ------ | ------ | --------------------------------------------------------------------- |
+| Compute (Pi 5 + AI HAT+)                                     | 160    | 160    | Fixed.                                                                |
+| Camera HQ + 6 mm M12 lens                                    | 75     | 85     | 50 cam + 25-35 lens.                                                  |
+| Pan/tilt v1 (2× MG996R + PCA9685 + bracket)                  | 33     | 39     | Per § Pan/tilt.                                                       |
+| Fluid path (pump + valve + reg + nozzle + tubing + MOSFET)   | 85     | 105    | Per § Fluid path.                                                     |
+| Audio (SPH0645 I²S)                                          | 7      | 9      | Per § Audio.                                                          |
+| Distance (VL53L5CX ToF)                                      | 22     | 22     | Fixed.                                                                |
+| Outdoor enclosure (IP65 + glands + window + sealant)         | 65     | 80     | Per § Outdoor enclosure.                                              |
+| **Subtotal — full perception + actuation, no solar**         | **447**| **500**| ≈ what's needed for field-ready hardware on mains power.              |
+| Bench-only (drop enclosure)                                  | 382    | 420    | Indoor proof-of-concept on USB-C PD.                                   |
+| Solar stack (100 Ah LiFePO4 + 100 W panel + VEVOR MPPT)      | 340    | 380    | 230 batt + 70-90 panel + 40-90 MPPT.                                  |
+| **Subtotal — v1 autonomous (full + solar)**                  | **787**| **880**| Outdoor unattended deployment.                                         |
+| v2 upgrade (GM3506 + SimpleBGC + RealSense + Victron + 200 Ah) | +700 | +900   | Replace pan/tilt + distance + MPPT + battery.                          |
+| **v2 production total**                                      | **1500** | **1800** | Includes v1 full perception, swapped mechanics + depth + power.       |
+
+**Per-phase procurement (matches the phased plan below)**:
+
+- Phase 1 bench (compute + perception + servos, ~€250-300): Pi 5 +
+  AI HAT+, HQ cam + 6 mm, MG996R ×2 + PCA9685, SPH0645, VL53L5CX.
+- Phase 2 wet side (~€85-105): pump, solenoid, regulator, nozzle,
+  tubing, MOSFET driver.
+- Phase 3 outdoor / autonomous (~€405-460): IP65 enclosure + solar
+  stack (battery + panel + MPPT).
+
+**The < €500 target** is reachable for the **full perception + actuation
+hardware without solar** (low end ≈ €447). Adding solar autonomy pushes
+the total to ~€790-880. A genuine sub-€500 _autonomous_ config requires
+a 30 Ah battery (~€80) + 50 W panel (~€50) and accepts shorter
+cloudy-day reserves — fine for proof-of-concept, not for unattended
+field deployment.
 
 ### Lead-time risks (May 2026)
 
