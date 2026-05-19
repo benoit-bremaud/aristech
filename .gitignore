@@ -163,6 +163,19 @@ cython_debug/       # Ignore Cython debug symbols
 logs/               # Ignore log files
 *.log               # Ignore log files
 
+# Modèles entraînés (gros binaires) — les modèles déjà committés restent tracés
+# via leur entrée dans l'index. Les nouvelles sorties d'entraînement
+# (`make train`, scripts/train_model.py) ne sont pas auto-ajoutées.
+models/*.h5
+models/*.keras
+models/*.pth
+models/*.pt
+!models/.gitkeep
+
+# Caches d'outils
+.ruff_cache/
+.mypy_cache/
+
 # Environment variable files
 .env                # Ignore environment variable file
 

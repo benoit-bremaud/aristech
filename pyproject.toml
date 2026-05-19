@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aristech"
+version = "0.1.0"
+description = "Aristech : détection et neutralisation temps réel du frelon asiatique (Vespa velutina) pour la protection des ruchers."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Benoit Bremaud", email = "benoit.bremaud@vev.com" }]
+keywords = [
+    "asian-hornet",
+    "vespa-velutina",
+    "detection",
+    "computer-vision",
+    "audio",
+    "iot",
+    "beekeeping",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: POSIX :: Linux",
+]
+
+# Dépendances de haut niveau ; le lock complet est dans requirements.txt
+# (à régénérer via `pip-compile requirements.in`).
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "seaborn",
+    "scikit-learn",
+    "tensorflow",
+    "torch",
+    "opencv-python",
+    "librosa",
+    "pyaudio",
+    "PyYAML",
+    "paho-mqtt",
+    "python-dotenv",
+    "Pillow",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "types-PyYAML",
+    "pre-commit",
+    "pip-tools",
+]
+docs = ["sphinx>=7"]
+# GPU extras isolés : ne pas faire fuiter sur macOS / Windows.
+gpu = [
+    "nvidia-cublas-cu12",
+    "nvidia-cudnn-cu12",
+]
+
+[project.scripts]
+aristech = "aristech.interface.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/benoit-bremaud/aristech"
+Issues = "https://github.com/benoit-bremaud/aristech/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: tests qui touchent du matériel, des données réelles ou le réseau",
+    "e2e: tests end-to-end (lents)",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+mypy_path = "src"
+packages = ["aristech"]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["yaml", "dotenv", "tensorflow.*", "keras.*", "cv2"]
+ignore_missing_imports = true
+
+# Training : code Keras/TF historique, types impossibles à serrer sans
+# wrappers. À retyper si on remplace par YOLO/PyTorch.
+[[tool.mypy.overrides]]
+module = ["aristech.training.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+warn_return_any = false
