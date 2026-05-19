@@ -1,32 +1,34 @@
-import sys
-import os
+"""Entraîne le modèle de détection visuelle et sauvegarde dans models/.
 
-# Ajouter le répertoire racine du projet au PYTHONPATH
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+Prérequis : `pip install -e ".[dev]"` (le package `aristech` doit être
+importable). Variables d'environnement requises (cf. `.env.example`) :
+TRAIN_FOLDER, VALIDATION_FOLDER, TEST_FOLDER.
+"""
 
-from src.model_training.data_preparation import prepare_data
-from src.model_training.model_architecture import create_model
-from src.model_training.train import compile_model, train_model
-from src.model_training.evaluate import evaluate_model
-from src.model_training.save_model import save_model
+from pathlib import Path
 
-def main():
-    # Préparer les données
+from aristech.training.data_preparation import prepare_data
+from aristech.training.evaluate import evaluate_model
+from aristech.training.model_architecture import create_model
+from aristech.training.save_model import save_model
+from aristech.training.train import compile_model, train_model
+
+
+def main() -> None:
     train_generator, validation_generator, test_generator = prepare_data()
-    
-    # Créer et compiler le modèle
+
     model = create_model()
     model = compile_model(model)
-    
-    # Entraîner le modèle
-    history = train_model(model, train_generator, validation_generator)
-    
-    # Évaluer le modèle
-    test_loss, test_acc = evaluate_model(model, test_generator)
+
+    train_model(model, train_generator, validation_generator)
+
+    _, test_acc = evaluate_model(model, test_generator)
     print(f"Test Accuracy: {test_acc}")
-    
-    # Sauvegarder le modèle
-    save_model(model, filepath='model.keras')
+
+    output = Path("models/hornet_image_model.keras")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    save_model(model, filepath=str(output))
+
 
 if __name__ == "__main__":
     main()

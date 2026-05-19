@@ -1,12 +1,13 @@
-import unittest
-from src.model_training.data_preparation import prepare_data
+"""Test d'intégration : nécessite TRAIN/VALIDATION/TEST_FOLDER peuplés."""
 
-class TestDataPreparation(unittest.TestCase):
-    def test_prepare_data(self):
-        train_generator, validation_generator, test_generator = prepare_data()
-        self.assertIsNotNone(train_generator)
-        self.assertIsNotNone(validation_generator)
-        self.assertIsNotNone(test_generator)
+import pytest
 
-if __name__ == "__main__":
-    unittest.main()
+from aristech.training.data_preparation import prepare_data
+
+
+@pytest.mark.integration
+def test_prepare_data():
+    train_generator, validation_generator, test_generator = prepare_data()
+    assert train_generator is not None
+    assert validation_generator is not None
+    assert test_generator is not None

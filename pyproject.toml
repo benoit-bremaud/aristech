@@ -1,0 +1,136 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aristech"
+version = "0.1.0"
+description = "Aristech : détection et neutralisation temps réel du frelon asiatique (Vespa velutina) pour la protection des ruchers."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Benoit Bremaud", email = "benoit.bremaud@vev.com" }]
+keywords = [
+    "asian-hornet",
+    "vespa-velutina",
+    "detection",
+    "computer-vision",
+    "audio",
+    "iot",
+    "beekeeping",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: POSIX :: Linux",
+]
+
+# Dépendances de haut niveau, bornées par version majeure pour limiter
+# la dérive de résolution. Le lock complet est dans requirements.txt
+# (à régénérer via `make lock` / `pip-compile requirements.in`).
+dependencies = [
+    "numpy>=1.26,<3",
+    "scipy>=1.13,<2",
+    "pandas>=2.2,<3",
+    "matplotlib>=3.8,<4",
+    "seaborn>=0.13,<1",
+    "scikit-learn>=1.4,<2",
+    "tensorflow>=2.16,<3",
+    "torch>=2.3,<3",
+    "opencv-python>=4.9,<5",
+    "librosa>=0.10,<1",
+    "pyaudio>=0.2,<1",
+    "PyYAML>=6,<7",
+    "paho-mqtt>=2,<3",
+    "python-dotenv>=1,<2",
+    "Pillow>=10,<12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "types-PyYAML",
+    "pre-commit",
+    "pip-tools",
+]
+docs = ["sphinx>=7"]
+# GPU extras isolés : les wheels NVIDIA n'existent que pour Linux x86_64.
+# Les markers PEP 508 empêchent l'install de tenter de les résoudre sur
+# macOS / Windows / ARM, où elles échoueraient.
+gpu = [
+    "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "nvidia-cudnn-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[project.scripts]
+aristech = "aristech.interface.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/benoit-bremaud/aristech"
+Issues = "https://github.com/benoit-bremaud/aristech/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: tests qui touchent du matériel, des données réelles ou le réseau",
+    "e2e: tests end-to-end (lents)",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+mypy_path = "src"
+packages = ["aristech"]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+# Libs sans stubs (ou stubs incomplets) — tolérées pour ne pas bloquer
+# strict-mypy quand les adaptateurs infrastructure/ arriveront.
+module = [
+    "cv2",
+    "dotenv",
+    "keras.*",
+    "librosa.*",
+    "matplotlib.*",
+    "numpy.*",
+    "paho.*",
+    "pandas.*",
+    "PIL.*",
+    "pyaudio",
+    "scipy.*",
+    "seaborn.*",
+    "sklearn.*",
+    "tensorflow.*",
+    "torch.*",
+    "yaml",
+]
+ignore_missing_imports = true
+
+# Training : code Keras/TF historique, types impossibles à serrer sans
+# wrappers. À retyper si on remplace par YOLO/PyTorch.
+[[tool.mypy.overrides]]
+module = ["aristech.training.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+warn_return_any = false
