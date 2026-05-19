@@ -2,16 +2,46 @@
 
 Centralised bibliography of every source cited during the
 state-of-the-art survey ([state-of-the-art.md](state-of-the-art.md)).
-Grouped by domain. Each entry has type, year, relevance for aristech,
-and direct URL. Add new sources here as the project progresses — this
-is the single index to come back to.
+Grouped by domain. Every entry has at least a title and a direct URL;
+the columns vary per section to match the nature of the source
+(datasets carry size and license, papers carry year and venue, laws
+carry promulgation date and status, etc.). Add new sources here as the
+project progresses — this is the single index to come back to.
 
 ## Conventions
 
-- **Relevance**: high / medium / low for aristech specifically (not the
-  field at large).
-- **Type**: paper, repo, dataset, model, product, law, organisation.
-- **Accessed**: dates from the survey ; re-verify before quoting.
+- **Survey date**: 2026-05-19. All URLs were reachable on that date
+  (a few via secondary mirrors when WebFetch refused the canonical
+  page). Re-verify links annually for rot.
+- **Relevance** (when shown): _high / medium / low_ for aristech
+  specifically, not for the field at large.
+- **License / status** (when shown): only the value strictly
+  observed on the source page is reported; "undeclared" means no
+  SPDX or visible licence file at the time of survey.
+- **Section columns are not uniform.** A reference to a law has
+  different fields than a reference to a GitHub repository. The
+  schema below documents what each section's columns mean.
+
+### Per-section column schemas
+
+| Section                            | Columns used                                              |
+| ---------------------------------- | --------------------------------------------------------- |
+| 1. Kaggle                          | Type, Source, Year, Relevance, Notes                       |
+| 2. Vespa velutina repos            | Type, Source, Year, License, Relevance, Notes              |
+| 3. Adjacent repos                  | Source, Notes                                              |
+| 4. FR / EU organisations           | Source, Notes                                              |
+| 5. Vision papers                   | Source, Year, Venue, Relevance                             |
+| 6. Acoustic / multimodal papers    | Source, Year, Venue, Relevance                             |
+| 7. HuggingFace models              | Source, Architecture, Notes                                |
+| 8. Pretrained backbones            | Source, License, Notes                                     |
+| 9.1 Civilian turrets               | Source, License, Notes                                     |
+| 9.2 Animal deterrent fluid path    | Source, Notes                                              |
+| 9.3 Insect-specific aim            | Source, Notes                                              |
+| 9.4 Tracking algorithms            | Source, License, Notes                                     |
+| 9.5 Ballistic / water-jet aiming   | Source, Notes                                              |
+| 10. Legal — France                 | Source, Date, Relevance                                    |
+| 11. Legal — EU                     | Source, Effect                                             |
+| 12. Government / institutional     | Source, Notes                                              |
 
 ---
 
@@ -163,6 +193,7 @@ is the single index to come back to.
 | [Arrêté du 14 février 2018 — Légifrance](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000036629851) | 14 Feb 2018  | high      |
 | [Arrêté du 2 mars 2023 — Légifrance](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047411674) | 2 Mar 2023   | medium    |
 | [Arrêté du 23 avril 2007 — insectes protégés](https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000465500) | 23 Apr 2007  | **critical** — basis for L415-3 penalty (3 years + 150 000 €). |
+| [Code rural et de la pêche maritime](https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006071367/) — Art. L211-1, L211-6/7 | consolidated | medium — honey bees as _cheptel_, mandatory declaration, préfectoral distance rules. |
 | **[LOI n° 2025-237 du 14 mars 2025 — Légifrance](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051329052)** | **14 Mar 2025** | **critical** — current law on V. velutina proliferation. The one the user remembered. |
 | **[Décret n° 2025-1377 du 29 décembre 2025 — Légifrance](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053201550)** | 29 Dec 2025  | high      |
 | [Article L411-9-1 — Légifrance](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051331438) | active       | high      |

@@ -1,9 +1,13 @@
 # State of the Art — Vespa velutina detection and deterrence
 
 **Last updated:** 2026-05-19
-**Status:** Draft (auto-aim turret section pending)
+**Status:** Draft — first complete pass; expected to be re-run before any
+major architectural commitment (the field moves fast).
 **Audience:** aristech maintainers, future contributors needing to justify
 the technical choices made in the project.
+**Companion file:** [references.md](references.md) — centralised
+bibliography indexed by domain. Every URL cited in the present document
+also lives there, classified, with relevance and notes.
 
 ## Purpose
 
@@ -363,7 +367,7 @@ quoting them in design documents.
 
 1. **Mis-aim sprays the colony**: bees cannot fly wet. A soaked frame at the hive entrance is a direct welfare hit. Require a hard **geometric exclusion zone** around the landing board, not just a classifier confidence threshold.
 2. **High-pressure jets injure insects unintentionally** — "non-lethal" is a function of **pressure × nozzle**: keep below ~3-4 bar with a diffuse jet. A 110 PSI (~7.5 bar) pump on a pinhole nozzle is a cutting jet at 50 cm.
-3. **EU/FR regulation** — no EU-wide regulation specifically governs automated apiary deterrents, but the Convention de Berne and French rules on _V. velutina_ (classified _espèce exotique envahissante_ / nuisible sanitaire) allow non-chemical control. Record-keeping of which species was sprayed is the defensible posture. Detailed legal analysis pending (Agent #5 — see § Legal framework below).
+3. **EU/FR regulation** — no EU-wide regulation specifically governs automated apiary deterrents, but the Convention de Berne and French rules on _V. velutina_ (classified _espèce exotique envahissante_ / nuisible sanitaire) allow non-chemical control. Record-keeping of which species was sprayed is the defensible posture. See the **Legal framework** section below for the detailed article-level analysis.
 4. **Failure-safe defaults**: pump must be **normally-closed solenoid**, dead-man timer, classifier confidence floor (≥0.9 for hornet, abort if any _Apis_ box overlaps the firing cone).
 
 ### Recommended starter stack — minimum viable prototype
@@ -387,13 +391,14 @@ quoting them in design documents.
 | [Arrêté du 14 février 2018][l3]                                  | 14 Feb 2018    | Annex II lists _V. velutina nigrithorax_. Forbids introduction, transit, release, detention, transport, sale, purchase of live specimens. **Note**: this is an _arrêté_, not a _décret_ — common confusion in popular references.                                                                              |
 | [Arrêté du 2 mars 2023][l4]                                      | 2 Mar 2023     | Updates EEE list; _V. velutina_ remains listed.                                                                                                                                                                                                                                                                |
 | [Arrêté du 23 avril 2007 — insectes protégés][l5]                | 23 Apr 2007    | Lists protected insects (some wild bees, _Bombus_ spp. via regional arrêtés, other pollinators). **Critical for aristech**: any trap killing a protected pollinator triggers **L415-3** (3 years prison + 150 000 €).                                                                                          |
-| Code rural et de la pêche maritime — Art. L211-1, L211-6/7      | consolidated   | Honey bees considered _cheptel_; mandatory annual hive declaration; préfectoral arrêtés set minimum distances.                                                                                                                                                                                                  |
+| [Code rural et de la pêche maritime — Art. L211-1, L211-6/7][l8] | consolidated   | Honey bees considered _cheptel_; mandatory annual hive declaration; préfectoral arrêtés set minimum distances.                                                                                                                                                                                                  |
 
 [l1]: https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026844543
 [l2]: https://www.legifrance.gouv.fr/loda/id/JORFTEXT000033016237
 [l3]: https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000036629851
 [l4]: https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047411674
 [l5]: https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000465500
+[l8]: https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006071367/
 
 ### Recent additions (2022-2026)
 
@@ -476,7 +481,7 @@ Four constraints become **hard legal safeguards**, not just ethics:
 
 **Honest gaps:**
 
-- The agent could not open Légifrance directly; article text was reconstructed from converging secondary sources. Re-verify L411-9-1 and L411-9-2 wording before publishing.
+- Légifrance pages could not be opened directly during the survey; article text was reconstructed from converging secondary sources (institutional summaries, official press releases, government portals). Re-verify L411-9-1 and L411-9-2 wording on Légifrance before publishing.
 - The **plan national** itself (selectivity thresholds, allowed device categories) is **not yet published** as of 2026-05-19; the décret 2025-1377 only sets adoption procedure. Aristech's compliance target is a **moving one over 2026**.
 - No text consulted establishes a general legal duty to kill queens; the question stays in the realm of scientific recommendation, now partially codified through the "piégeage sélectif" wording.
 
@@ -516,21 +521,24 @@ Each will be logged in `PROJECT_LOG.md` with rationale once decided.
 3. **Audio modality**: ship audio-first (cheaper, omnidirectional, but
    no localisation), vision-first (species + bbox), or both with audio
    as wake-up signal for the vision pipeline.
-4. **Deterrent decision** (was `neutralize-target-deferred`): the user
-   has indicated a non-lethal water-jet direction. Final lethality /
-   fail-safe / multimodal-confirm policy will be locked once the auto-
-   aim turret survey returns.
+4. **Deterrent decision** (was `neutralize-target-deferred`): non-lethal
+   water-jet direction validated. The auto-aim turret survey above
+   confirms feasibility (Photonic Fence prior art) but no public
+   project combines insect-class vision discrimination with a water
+   jet — that's the niche. Final lethality / fail-safe / multimodal-
+   confirm policy to be locked in a dedicated PR that amends
+   `docs/architecture.md` and `PROJECT_LOG.md`.
 
 ## Caveats on this survey
 
-- Both the GitHub and Papers/HF agents reported **WebFetch failures** on
-  several repo and paper pages — stars, last-commit dates, exact licence
-  text and reported metrics should be **re-verified manually** before
-  being used to justify a hard project decision.
+- During the survey, several GitHub repo pages and academic preprint
+  pages refused direct WebFetch — stars, last-commit dates, exact
+  licence text and reported metrics should be **re-verified manually**
+  before being used to justify a hard project decision.
 - The survey is **a snapshot dated 2026-05-19**; this area moves fast
   (multiple V. velutina YOLO papers landed in 2024-2025). Re-run before
   any major architectural commitment.
-- Anything in this document that says "no code surfaced" means _the
-  agents could not find code in this pass_ — not necessarily that the
-  authors never published one. Direct correspondence with authors may
-  unlock material.
+- Anything in this document that says "no code surfaced" means _no
+  publicly accessible code was found during this pass_ — not necessarily
+  that the authors never published one. Direct correspondence with
+  authors may unlock material.
