@@ -1,6 +1,8 @@
-"""CLI : répartit les vidéos entre TRAIN/VALIDATION/TEST_FOLDER.
+"""CLI : répartit les vidéos entre VIDEO_TRAIN/VIDEO_VALIDATION/VIDEO_TEST_FOLDER.
 
-Lit les chemins depuis le fichier `.env` (cf. `.env.example`).
+Lit les chemins depuis le fichier `.env` (cf. `.env.example`). Utilise des
+variables dédiées (`VIDEO_*`) pour qu'images et vidéos puissent coexister
+dans le même `.env` sans se piétiner.
 """
 
 from __future__ import annotations
@@ -18,13 +20,16 @@ VIDEO_EXTENSIONS = (".mp4", ".mov", ".avi", ".mkv", ".webm")
 def main() -> int:
     load_dotenv()
 
-    source = os.getenv("SOURCE_FOLDER")
-    train = os.getenv("TRAIN_FOLDER")
-    validation = os.getenv("VALIDATION_FOLDER")
-    test = os.getenv("TEST_FOLDER")
+    source = os.getenv("VIDEO_SOURCE_FOLDER")
+    train = os.getenv("VIDEO_TRAIN_FOLDER")
+    validation = os.getenv("VIDEO_VALIDATION_FOLDER")
+    test = os.getenv("VIDEO_TEST_FOLDER")
 
     if not all([source, train, validation, test]):
-        print("SOURCE_FOLDER / TRAIN_FOLDER / VALIDATION_FOLDER / TEST_FOLDER manquant(s) dans .env")
+        print(
+            "VIDEO_SOURCE_FOLDER / VIDEO_TRAIN_FOLDER / "
+            "VIDEO_VALIDATION_FOLDER / VIDEO_TEST_FOLDER manquant(s) dans .env"
+        )
         return 1
 
     counts = distribute_files(source, train, validation, test, extensions=VIDEO_EXTENSIONS)  # type: ignore[arg-type]

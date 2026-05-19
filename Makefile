@@ -8,8 +8,6 @@ install-dev:
 	pre-commit install
 
 # Régénère requirements.txt à partir de requirements.in (pip-tools).
-# Remplace `update_requirements.py` qui reste pour compat mais devrait
-# être retiré.
 lock:
 	pip-compile --strip-extras requirements.in
 

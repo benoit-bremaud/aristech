@@ -34,6 +34,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      # Installe le package pour que `aristech.*` soit importable comme
+      # en prod. Les deps lourdes (tensorflow/torch) ne sont pas requises
+      # par tests/unit (qui mocke les ports) — donc on installe seulement
+      # ce que les tests utilisent.
+      - run: pip install -e . --no-deps
       - run: pip install pytest pytest-cov pyyaml python-dotenv
       - name: Run unit tests (no hardware, no models)
-        run: PYTHONPATH=src pytest tests/unit -q --cov=aristech --cov-report=term-missing
+        run: pytest tests/unit -q --cov=aristech --cov-report=term-missing
