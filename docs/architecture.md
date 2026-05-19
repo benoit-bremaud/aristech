@@ -163,14 +163,54 @@ ou `pytest -m e2e` pour les niveaux plus lourds.
 ## Décisions ouvertes
 
 Le use case `NeutralizeTarget` n'est volontairement pas implémenté
-tant que les choix produit suivants ne sont pas tranchés :
+tant que les choix produit suivants ne sont pas tranchés. Cf.
+[docs/research/state-of-the-art.md](research/state-of-the-art.md)
+pour la veille technique et juridique qui informe ces décisions, et
+[PROJECT_LOG.md](../PROJECT_LOG.md) pour le verrouillage chronologique.
 
-1. **Létalité** — coil-gun (létal) vs laser de dispersion / jet d'eau
-   (non létal) vs alerte seulement.
+1. **Létalité** — ~~coil-gun (létal) vs laser de dispersion / jet d'eau
+   (non létal) vs alerte seulement.~~ **Tranché (PR #4, 2026-05-19) :
+   jet d'eau non létal.** Alternatives rejetées : coil-gun (incompatible
+   avec le plancher légal — risque pénal sur espèces protégées) ;
+   alerte seule (insuffisant pour protéger la colonie pendant les
+   attaques soutenues).
 2. **Fusion multi-modale** — la décision de tirer exige-t-elle vision
-   **ET** audio concordants, ou un seul des deux suffit ?
+   **ET** audio concordants, ou un seul des deux suffit ? **Ouvert.**
+   La veille a confirmé l'absence de baseline publiée multimodale
+   (vision + acoustique) pour *V. velutina* — niche scientifique
+   ouverte. Architecture cible privilégiée : acoustique en *wake-up
+   signal* toujours allumé, vision déclenchée en aval pour confirmer
+   l'espèce avant tir.
 3. **Fail-safe** — mode `dry-run` par défaut, tir activé seulement par
-   un flag explicite dans la config ?
+   un flag explicite dans la config ? **Ouvert** — sera tranché lors
+   de la première itération de prototype.
 4. **Espèces protégées** — `Detection.is_threat()` ne renvoie `True`
    que pour `VESPA_VELUTINA`. Cette règle métier doit rester
    centralisée et auditable.
+
+## Plancher légal — contrainte d'architecture (PR #4)
+
+La veille juridique (cf. [docs/research/state-of-the-art.md § Legal
+framework](research/state-of-the-art.md)) a établi que **blesser ou
+capturer un pollinisateur protégé est pénal** sous **Art. L411-1 +
+L415-3 du Code de l'environnement** (3 ans de prison + 150 000 €
+d'amende, 7 ans + 750 000 € en bande organisée). La règle « ne jamais
+arroser une abeille » n'est donc plus une contrainte éthique mais une
+contrainte criminelle.
+
+Conséquences sur l'architecture :
+
+- Le classifier d'espèces doit avoir un **default d'abstention** :
+  toute confiance sous le seuil (≥ 0.9 visé pour `VESPA_VELUTINA`)
+  bloque l'actionneur. *Mieux vaut un tir manqué qu'un tir illégal.*
+- Une **zone d'exclusion géométrique** autour de la planche d'envol
+  doit être appliquée indépendamment du classifier, par sécurité
+  défense en profondeur. Si une bbox `APIS_MELLIFERA` chevauche le
+  cône de tir, abort immédiat.
+- Toute activité de type « piège » doit être **sélective** (Art.
+  L411-9-1 du Code env., introduit par la **Loi n° 2025-237 du
+  14 mars 2025**) ; la valeur exacte du seuil de sélectivité sera
+  définie par le *plan national de lutte* (publication attendue
+  courant 2026 — cible mobile à surveiller).
+- Pas de **biocide ou phytosanitaire** dans le jet d'eau sans
+  homologation (Code rural L253-1+). Eau pure uniquement.
