@@ -216,9 +216,114 @@ project progresses — this is the single index to come back to.
 | [GDS France — analyse de la loi 2025-237](https://www.gdsfrance.org/la-nouvelle-loi-sur-le-frelon-asiatique-un-cadre-renforce-pour-une-lutte-efficace/) | Reading of the 14 Mar 2025 law by Groupements de Défense Sanitaire France.            |
 | [MNHN — piégeage de printemps](https://frelonasiatique.mnhn.fr/piegeage-de-printemps/)                                                    | MNHN scientific position on spring trapping (discouraged in general use).             |
 
+## 13. Behavioural biology — V. velutina at the hive entrance
+
+Sources surfaced in [prototype-foundations.md § A](prototype-foundations.md).
+
+| Source                                                                                                                                | Year      | Relevance | Notes                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------------------------------------------------ |
+| [Tan et al., Bee-hawking by V. velutina, _Naturwissenschaften_](https://link.springer.com/article/10.1007/s00114-006-0210-2)         | 2007      | high      | Hunting technique; > 25 min hover bouts; A. mellifera 3× more vulnerable than A. cerana.               |
+| [Monceau et al., Native Prey vs Invasive Predator, _PLOS ONE_](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0066492) | 2013   | high      | Field study at French apiaries.                                                                        |
+| [Monceau et al., Predation pressure dynamics, _Apidologie_](https://link.springer.com/article/10.1007/s13592-012-0172-7)              | 2013      | medium    | Wind/rain suppress hunting; seasonal peak Aug-Oct.                                                     |
+| [Monceau et al., _V. velutina_: a new invasive predator, _J. Pest Sci._](https://link.springer.com/article/10.1007/s10340-013-0537-3) | 2014      | medium    | Population-scale review.                                                                               |
+| [Poidatz et al., RFID activity rhythm, _Ecology & Evolution_](https://pmc.ncbi.nlm.nih.gov/articles/PMC6106190/)                       | 2018      | **high**  | Diel pattern 07:00-20:00, peak 14:00-15:00; foraging range ~1 km.                                       |
+| [Sauvard et al., Flight capacities, _PLOS ONE_](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0198597)            | 2018      | **high**  | Ground speed 6.66 ± 2.31 m/s unladen, 4.06 ± 1.34 m/s laden.                                            |
+| [Rojas-Nossa et al., Long-term predation pressure, _Apidologie_](https://link.springer.com/article/10.1007/s13592-025-01158-z)        | 2025      | high      | Temperature 15-26 °C, RH > 60 %; diel shift Jul-Aug vs Sep-Oct.                                         |
+| [Arca et al., Defensive behaviour of A. mellifera, _Behav. Processes_](https://www.sciencedirect.com/science/article/abs/pii/S0376635714001223) | 2014 | high      | A. m. mellifera lacks heat-balling; A. cerana defends.                                                  |
+| [Ken et al., Heat-balling, _Naturwissenschaften_](https://link.springer.com/article/10.1007/s00114-005-0026-5)                         | 2005      | medium    | A. cerana 46 °C in 3 min; lethal limit 45.7 °C for hornet.                                              |
+| [Requier et al., Foraging paralysis, _Ecol. Appl._](https://www.researchgate.net/publication/329111215)                                | 2019      | **high**  | A. mellifera clusters and stops flying under hornet pressure.                                            |
+| [Cheng et al., Sting venom as alarm pheromone, _J. Exp. Biol._](https://journals.biologists.com/jeb/article/220/4/645/18673/)         | 2017      | high      | A missed strike triggers cascading hornet recruitment.                                                  |
+| [Cheng et al., Defensive behaviour vs stimuli, _Insects_](https://pmc.ncbi.nlm.nih.gov/articles/PMC8034368/)                          | 2021      | low       | Auditory/colour/hair stimuli trigger aggression but no documented deterrent effect.                     |
+| [Rojas-Nossa et al., Electric harps, _Pest Manag. Sci._](https://pmc.ncbi.nlm.nih.gov/articles/PMC9825959/)                            | 2022      | **high**  | **−89 %** predation pressure at apiary scale — the deterrent benchmark to beat.                         |
+| [Rome et al., Predatory habits in France, MNHN/HAL](https://mnhn.hal.science/hal-03180854v1)                                          | 2021      | high      | Diet 38.1 % bees, 29.9 % flies, 19.7 % wasps.                                                          |
+| [Rome, Muller, Villemant — MNHN identification sheet](https://sitesv2.anses.fr/en/system/files/private/Vespa%20velutina%20Identification%20Sheet%20MNHN_2.pdf) | undated | medium | Body length, colour markings — visual ID reference.                                                     |
+
+## 14. Éric Darrouzet body of work (IRBI / Université de Tours)
+
+Detailed synthesis in [prototype-foundations.md § A.bis](prototype-foundations.md).
+
+| Source                                                                                                                                                                      | Year | Type            | Relevance |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | --------------- | --------- |
+| [IRBI lab — staff page](https://www.univ-tours.fr/annuaire/m-eric-darrouzet)                                                                                                | —    | profile          | reference |
+| [FRELON project site](http://frelonasiatique.univ-tours.fr/)                                                                                                                | —    | lab page         | reference |
+| [IRBI publications index](http://frelonasiatique.univ-tours.fr/publications.html)                                                                                           | —    | meta             | reference |
+| [Robinet/Suppo/Darrouzet — Rapid spread in France, _J. Appl. Ecol._](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/1365-2664.12724)                                | 2017 | paper           | high      |
+| [Kennedy/Darrouzet — Radio-telemetry nest finding, _Comms Biology_](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6123801/)                                                  | 2018 | paper           | high      |
+| [Ruiz-Cristi/Berville/Darrouzet — Thermal tolerance, _PLOS ONE_](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0239742)                                 | 2020 | paper           | medium    |
+| [Cheng/Wen/Tan/Darrouzet — Sex pheromone blend, _Entomologia Generalis_ (HAL)](https://hal.science/hal-03562571/)                                                            | 2022 | paper           | medium    |
+| **[Thiéry & Darrouzet et al. — Electric harps, _Entomologia Generalis_](https://www.schweizerbart.de/papers/entomologia/detail/43/103168/)**                                | 2023 | paper           | **critical** — > 90 % target, < 2 % bycatch published benchmark. |
+| **[Predation success at hives, _Sci. Reports_](https://pmc.ncbi.nlm.nih.gov/articles/PMC10049882/)**                                                                        | 2023 | paper           | **critical** — 2.4 % strike success, peak at ~8 simultaneous hornets. |
+| [Rojas-Nossa/Darrouzet et al. — Baited trap selectiveness, _Animals_](https://pmc.ncbi.nlm.nih.gov/articles/PMC10778013/)                                                   | 2024 | paper           | high      |
+| _Le frelon asiatique, un redoutable prédateur — 2nd ed._                                                                                                                    | 2023 | book (160 pp)  | high — apiarist-facing reference. Éditions SNApiculture. |
+| [The Conversation FR — "Le frelon asiatique, ce dérangeant prédateur"](https://theconversation.com/le-frelon-asiatique-ce-derangeant-predateur-147676)                       | 2020 | popular         | medium    |
+| [UNAF webinar — "Frelon asiatique : impacts et luttes"](https://www.youtube.com/watch?v=fDAD1jNnwfA)                                                                       | 2024 | conference talk | high      |
+| [CNRS INEE — Pheromones contre le frelon](https://www.inee.cnrs.fr/fr/cnrsinfo/les-pheromones-une-solution-de-lutte-contre-le-frelon-asiatique)                              | 2022 | press           | medium    |
+
+## 15. Hive geometry and apiary mounting
+
+Sources surfaced in [prototype-foundations.md § B](prototype-foundations.md).
+
+| Source                                                                                                              | Type      | Notes                                                          |
+| ------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
+| [Icko Apiculture — Ruche Dadant 10 cadres](https://www.icko-apiculture.com/ruche/ruches-completes/ruche-dadant-10-cadres.html) | supplier  | Standard FR Dadant 10 dimensions.                              |
+| [ApiaRobotics — Dimensions et comparaison](https://apiarobotics.com/fr/connaissances/dimensions-et-comparaison-des-ruches) | reference | Cross-table of Dadant / Langstroth / Warré / Voirnot / Layens. |
+| [Apiculture.net — Bien organiser votre rucher](https://www.apiculture.net/blog/bien-organiser-rucher-n12)           | reference | Stand height, orientation, spacing.                            |
+| [Label Abeille — Installer ses ruches](https://label-abeille.org/fr/blog/132-ou-installer-ses-ruches-comment-organiser-le-rucher-) | reference | French installation conventions.                               |
+| [Adafruit — Raspberry Pi HQ Camera lenses](https://learn.adafruit.com/raspberry-pi-hq-camera-lenses?view=all)        | tutorial  | Lens / focal-length matrix.                                    |
+| [Arducam — Pi Camera v3 closer look](https://blog.arducam.com/official-camera-module-3-a-closer-look/)              | reference | IMX708 specs.                                                  |
+| [Hackaday — Weatherproof Pi camera enclosure](https://hackaday.com/2023/01/18/weatherproof-raspberry-pi-camera-enclosure-in-a-pinch/) | tutorial | Outdoor mounting tips.                                         |
+| [Sixfab IP65 outdoor enclosure](https://sixfab.com/product/raspberry-pi-ip65-outdoor-iot-project-enclosure/)        | product   | Commercial enclosure benchmark.                                |
+
+## 16. Hardware BOM — compute, mechanics, fluid, power
+
+Sources surfaced in [prototype-foundations.md § C](prototype-foundations.md). EUR prices anchored at survey date (2026-05-19); re-quote at procurement time.
+
+### Compute and accelerators
+
+| Source                                                                                                                                 | Notes                                |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| [Raspberry Pi AI HAT+ (Hailo-8L)](https://www.raspberrypi.com/products/ai-hat/)                                                       | 13 TOPS NPU, official HAT+.          |
+| [NVIDIA Jetson Orin Nano Super Dev Kit](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/nano-super-developer-kit/) | Higher FPS but 2× the power draw.   |
+| [Antratek EU — Jetson Orin Nano Super](https://www.antratek.com/nvidia-jetson-orin-nano-super-developer-kit)                          | EU reseller.                         |
+| [Coral USB Accelerator](https://www.coral.ai/products/accelerator)                                                                    | Chronic allocation issues since 2023. |
+| [Pi Hut — MG996R servo](https://thepihut.com/products/servo-motor-mg996r-high-torque-metal-gear)                                       | v1 servo pick.                       |
+| [Gotronic — PCA9685 16-ch PWM](https://www.gotronic.fr/art-shield-i2c-pour-16-servos-ada1411-20672.htm)                               | PWM driver.                          |
+| [iFlight EU — GM3506 + AS5048A](https://iflight-rc.eu/en/products/ipower-gm3506-encoder-combo-set)                                    | v2 BLDC gimbal.                      |
+
+### Camera and optics
+
+| Source                                                                                                                  | Notes                              |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| [Raspberry Pi HQ Camera (IMX477)](https://www.raspberrypi.com/products/raspberry-pi-high-quality-camera/)                | 12.3 MP, C/CS-mount.                |
+| [Kubii — Pi Camera v3](https://www.kubii.com/en/cameras-sensors/3878-camera-module-v3-raspberry-pi-3272496313699.html)  | Budget alternative with autofocus.  |
+| [Arducam M12 lens docs](https://docs.arducam.com/Optics-and-Lenses/Lens-Products-from-Arducam/)                         | 6 mm wide-lens choice for aristech v1. |
+
+### Fluid path
+
+| Source                                                                                                                                                                                                 | Notes                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
+| [VEVOR EU — 12V diaphragm pump (BD-07W class)](https://eur.vevor.com/water-pumps-accessories-c_12381/vevor-12v-diaphragm-pump-1-8gpm-6-81-l-min-3-chamber-water-pump-pressure-switch-p_010923467134) | Reference 12V pump, 4.5 L/min @ 7 bar. |
+
+### Audio + distance
+
+| Source                                                                                                                                                                | Notes                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| [Adafruit SPH0645 I²S MEMS mic](https://www.adafruit.com/product/3421)                                                                                                | Audio sensor pick for v1.             |
+| [Botland — SPH0645 (EU)](https://botland.store/microphones-and-sound-detection/9715-sph0645lm4h-mems-i2s-microphone-adafruit-3421-5904422307103.html)                  | EU reseller.                          |
+| [Pimoroni — VL53L5CX 8×8 ToF](https://shop.pimoroni.com/en-us/products/vl53l5cx-time-of-flight-tof-sensor-breakout)                                                   | Distance sensor pick for v1.          |
+| [Techvers EU — Intel RealSense D435i](https://techvers.eu/en/product-2/intel-realsense-d435i-camera/?wmc-currency=EUR)                                                | v2 stereo depth option, defer.        |
+
+### Power and solar
+
+| Source                                                                                                                                                                                | Notes                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| [WattCycle EU — 12V/100Ah LiFePO4](https://eu.wattcycle.com/products/wattcycle-12v-100ah-group-24-lifepo4-battery)                                                                     | 5-day battery autonomy.                |
+| [Victron SmartSolar MPPT 75/15](https://www.victronenergy.com/solar-charge-controllers/smartsolar-mppt-75-10-75-15-100-15-100-20)                                                     | Quality MPPT.                          |
+| [VEVOR EU — MPPT solar charge controllers](https://eur.vevor.com/mppt-solar-charge-controller-c_10732)                                                                                | Budget MPPT.                           |
+
 ## Maintenance
 
-- This file is the **bibliography** ; [state-of-the-art.md](state-of-the-art.md) is the **narrative**.
+- This file is the **bibliography** ; [state-of-the-art.md](state-of-the-art.md) is the **SOTA narrative** ; [prototype-foundations.md](prototype-foundations.md) is the **applied engineering inputs**.
 - New sources discovered after the initial survey (2026-05-19) should be appended in the relevant section and marked with the discovery date.
 - Verify URLs annually (link rot, especially on academic preprint servers).
 - Re-verify legal entries when the Plan national de lutte is published (expected 2026) — Art. L411-9-1 cross-references will change.
