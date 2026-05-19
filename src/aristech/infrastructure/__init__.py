@@ -1,1 +1,1 @@
-"""Adaptateurs concrets (OpenCV, GPIO, MQTT, modeles ML)."""
+"""Adaptateurs concrets (OpenCV, GPIO, MQTT, modèles ML)."""

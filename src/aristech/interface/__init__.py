@@ -1,1 +1,1 @@
-"""Points d entree : CLI, futur API, composition root."""
+"""Points d'entrée : CLI, futur API, composition root."""

@@ -1,1 +1,1 @@
-"""Pipelines entrainement ML (Keras, evaluation, distribution)."""
+"""Pipelines d'entraînement ML (Keras, évaluation, distribution)."""
