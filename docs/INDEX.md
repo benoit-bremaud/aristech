@@ -22,7 +22,6 @@ opening five of them.
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [docs/README.md](README.md)                               | Documentation landing page — how to build and navigate the docs (Sphinx).                                                                              |
 | [docs/architecture.md](architecture.md)                   | Clean Architecture layers, ports, use cases, open decisions, hard constraints (legal floor). Authority on _how aristech models the world_.            |
-| [docs/usage.md](usage.md)                                 | High-level usage notes (placeholder — empty, pending content).                                                                                         |
 | [docs/source/](source/)                                   | Sphinx documentation source (HTML build under `_build/`).                                                                                              |
 | [docs/Makefile](Makefile) / [docs/make.bat](make.bat)     | Sphinx build entry points.                                                                                                                             |
 
@@ -54,13 +53,6 @@ the full authoring rules.
 | [docs/research/state-of-the-art.md](research/state-of-the-art.md)        | **Literature / prior-art survey** — Kaggle, GitHub, academic papers, HuggingFace, auto-aim turret prior art, EU/FR legal framework. Authority on _what's been done_. |
 | [docs/research/prototype-foundations.md](research/prototype-foundations.md) | **Applied engineering inputs** — behavioural biology at the hive entrance, Éric Darrouzet synthesis, hive geometry and sensor mounting, hardware BOM and energy autonomy. Authority on _what aristech will build with_. |
 | [docs/research/references.md](research/references.md)                    | **Centralised bibliography** — every URL cited in the survey + foundations docs, grouped by domain. Authority on _where the citations live_.              |
-
-## Reports (early planning artefacts)
-
-| Document                                                                  | Role                                                                |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [docs/reports/initial_analysis.pdf](reports/initial_analysis.pdf)         | Early project analysis (placeholder — empty file pending content).   |
-| [docs/reports/requirement_specification.pdf](reports/requirement_specification.pdf) | Requirement specification (placeholder — empty file pending content). |
 
 ## How to choose where to write new content
 

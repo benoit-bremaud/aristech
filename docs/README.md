@@ -26,7 +26,6 @@ docs/
 ├── CONTRIBUTING.md
 ├── LICENSE.md
 ├── architecture.md
-├── usage.md
 ├── DIY_INSTRUCTIONS.md
 ├── BOM.md
 ├── faq.md
@@ -43,7 +42,6 @@ docs/
 - **CONTRIBUTING.md** : Guide de contribution pour les développeurs.
 - **LICENSE.md** : Informations sur la licence du projet.
 - **architecture.md** : Détails sur l'architecture du projet.
-- **usage.md** : Instructions d'utilisation du projet.
 - **DIY_INSTRUCTIONS.md** : Instructions pour construire et paramétrer votre propre dispositif Aristech.
 - **BOM.md** : Bill of Materials pour le projet.
 - **faq.md** : Réponses aux questions fréquemment posées.
@@ -96,10 +94,6 @@ Contient les informations sur la licence du projet, qui est sous licence MIT. Il
 ### architecture.md
 
 Détails sur l'architecture du projet, y compris les composants principaux, les interactions entre les modules et les diagrammes d'architecture.
-
-### usage.md
-
-Instructions d'utilisation pour le projet, couvrant les différentes fonctionnalités et comment les utiliser. Ce fichier inclut également des exemples de commandes et des explications sur les paramètres de configuration.
 
 ### DIY_INSTRUCTIONS.md
 
