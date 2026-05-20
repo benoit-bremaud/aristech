@@ -16,7 +16,7 @@ pollinisateur protégé**.
 
 ## Positionnement
 
-- **Non létal**, **non contact** : aristech ne tue pas le frelon, il
+- **Non létal**, **non contact** : Aristech ne tue pas le frelon, il
   l'éloigne. Pas de cadavre à gérer, pas d'entretien quotidien.
 - **Complément de la harpe électrique** (benchmark publié par
   l'IRBI Tours : > 90 % *V. velutina* dans la capture, < 2 % non-cible),

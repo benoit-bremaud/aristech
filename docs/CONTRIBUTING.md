@@ -60,7 +60,7 @@ Toujours brancher depuis `main`. Jamais de commit direct sur `main`.
 
    ```bash
    git checkout main && git pull
-   git branch -d <branche>
+   git branch -d <branche>   # -D si besoin : un squash-merge laisse souvent la branche « non mergée » aux yeux de git
    git remote prune origin
    ```
 
