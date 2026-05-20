@@ -54,12 +54,12 @@ the full authoring rules.
 | [docs/research/prototype-foundations.md](research/prototype-foundations.md) | **Applied engineering inputs** — behavioural biology at the hive entrance, Éric Darrouzet synthesis, hive geometry and sensor mounting, hardware BOM and energy autonomy. Authority on _what aristech will build with_. |
 | [docs/research/references.md](research/references.md)                    | **Centralised bibliography** — every URL cited in the survey + foundations docs, grouped by domain. Authority on _where the citations live_.              |
 
-## Reports (build artefacts)
+## Reports (early planning artefacts)
 
-| Document                                                                            | Role                                              |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------- |
-| [docs/reports/coverage_report.txt](reports/coverage_report.txt)                      | Coverage report from the last test run.            |
-| [docs/reports/coverage.xml](reports/coverage.xml)                                    | Same in XML for tooling.                           |
+| Document                                                                  | Role                                                                |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [docs/reports/initial_analysis.pdf](reports/initial_analysis.pdf)         | Early project analysis (placeholder — empty file pending content).   |
+| [docs/reports/requirement_specification.pdf](reports/requirement_specification.pdf) | Requirement specification (placeholder — empty file pending content). |
 
 ## How to choose where to write new content
 
