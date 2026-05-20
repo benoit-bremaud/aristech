@@ -1,7 +1,7 @@
 # Documentation Index
 
-Entry point to every document in this repository. Each entry has its
-role in one line so a new reader can pick the right doc without
+Entry point to the key documents in this repository. Each entry has
+its role in one line so a new reader can pick the right doc without
 opening five of them.
 
 ## Project-level (root)
@@ -20,8 +20,9 @@ opening five of them.
 
 | Document                                                  | Role                                                                                                                                                  |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [docs/README.md](README.md)                               | Documentation landing page — how to build and navigate the docs (Sphinx).                                                                              |
 | [docs/architecture.md](architecture.md)                   | Clean Architecture layers, ports, use cases, open decisions, hard constraints (legal floor). Authority on _how aristech models the world_.            |
-| [docs/usage.md](usage.md)                                 | High-level usage notes.                                                                                                                                |
+| [docs/usage.md](usage.md)                                 | High-level usage notes (placeholder — empty, pending content).                                                                                         |
 | [docs/source/](source/)                                   | Sphinx documentation source (HTML build under `_build/`).                                                                                              |
 | [docs/Makefile](Makefile) / [docs/make.bat](make.bat)     | Sphinx build entry points.                                                                                                                             |
 
@@ -66,7 +67,7 @@ the full authoring rules.
 | Kind of new content                                                  | Goes in                                                                                          |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | A merged PR's chronological entry                                    | `PROJECT_LOG.md`                                                                                  |
-| A formal architectural decision (was deferred → tranché)              | `docs/architecture.md` + a `Decisions:` sub-bullet under the PR entry in `PROJECT_LOG.md`        |
+| A formal architectural decision (was deferred → decided)              | `docs/architecture.md` + a `Decisions:` sub-bullet under the PR entry in `PROJECT_LOG.md`        |
 | A new academic paper / dataset / repo discovered                     | `docs/research/state-of-the-art.md` (narrative) + `docs/research/references.md` (URL index)      |
 | A new vendor link or BOM line item                                   | `docs/research/prototype-foundations.md` § C + `docs/research/references.md` § 16                |
 | A measured biological constant                                        | `docs/research/prototype-foundations.md` § A (flag `peer-reviewed` / `unverified` / `aristech-measured`) |
@@ -75,6 +76,6 @@ the full authoring rules.
 
 ## Maintenance
 
-- This index is the **map**, not the content. Lines stay one-per-doc with a single-sentence role.
+- This index is the **map**, not the content. Each doc gets one row with a concise role — one sentence, optionally a short "Authority on …" qualifier.
 - Update this file every time a top-level doc is added, renamed, removed, or its role changes.
 - The companion skill `aristech-research-navigation` (`~/.claude/skills/aristech-research-navigation/SKILL.md`) carries the **authoring rules** (where to put new content, cross-link discipline, honesty markers). This index carries only the **map**.
