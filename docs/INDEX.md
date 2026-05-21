@@ -16,6 +16,13 @@ opening five of them.
 | [.pre-commit-config.yaml](../.pre-commit-config.yaml) | pre-commit hooks (ruff, mypy).                                                                                 |
 | [.markdownlint.json](../.markdownlint.json) | Markdown linting config — `MD013`, `MD033`, `MD041`, `MD060` disabled for stylistic reasons.                          |
 
+## Planning and requirements
+
+| Document                                    | Role                                                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [docs/requirements.md](requirements.md)     | Needs-first specification — vision, scope, functional / non-functional needs, hard constraints, detection decisions. Authority on _what the system must do_. |
+| [docs/ROADMAP.md](ROADMAP.md)               | Staged plan implementing the requirements — the detection staircase (M0–M6) with sub-tasks and gates. Authority on _what we build next and in what order_. |
+
 ## Architecture and design
 
 | Document                                                  | Role                                                                                                                                                  |
