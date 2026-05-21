@@ -296,7 +296,7 @@ quoting them in design documents.
 | [Ildaron/Laser_control][i2]                                             | Mosquitoes / pests  | Jetson Nano + YOLOv4-tiny: 24-35 FPS                              | Public, no SPDX                                  |
 | [mcoates12/autonomous-mosquito-turret][i3]                              | Mosquitoes          | Stereo + servo prototype                                          | Public, undeclared                               |
 | [Nassif101/Mosquito-Laser-Defence-Turret][i4]                           | Mosquitoes          | Embedded real-time, vision-guided laser                           | Public                                           |
-| VespAI (see Academic papers)                                            | _V. velutina_       | Pi 4, YOLOv5s + ResNet, **mAP ≥0.99**, discriminates _V. velutina_ / _V. crabro_ / _A. mellifera_ | Yes (CC BY-NC-SA) |
+| VespAI (see Academic papers)                                            | _V. velutina_       | Pi 4, YOLOv5s + ResNet, **mAP ≥0.99**. Output classes _V. velutina_ + _V. crabro_ only — no positive bee class; trained to reject visually similar insects incl. _A. mellifera_ (M0 finding) | Yes (CC BY-NC-SA) |
 | [vespCV/gv2-esp32][i5]                                                  | _V. velutina_       | ESP32-S3 + Grove Vision AI V2, detection + relay output (explicitly designed to drive a harp / deterrent) | Yes (GPL-3.0) |
 
 [i1]: https://www.nature.com/articles/s41598-020-71824-y
