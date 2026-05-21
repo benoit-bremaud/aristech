@@ -93,6 +93,10 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         log.error("--video requiert --weights et --yolov5-dir.")
         return 2
 
+    if not 0.0 <= args.confidence <= 1.0:
+        log.error("--confidence doit être dans [0, 1] (reçu %s).", args.confidence)
+        return 2
+
     from aristech.application.use_cases import (
         DetectHornetVisual,
         DetectHornetVisualConfig,
