@@ -80,7 +80,7 @@ reference datasets.
 | Repo                                                                       | License           | Framework             | Approach                                  | Weights | Integration-ready?                                                                  |
 | -------------------------------------------------------------------------- | ----------------- | --------------------- | ----------------------------------------- | ------- | ----------------------------------------------------------------------------------- |
 | [andrw3000/vespai][gvespai] (VespAI, Univ. Exeter — Nature Comms Bio 2024) | **CC BY-NC-SA 4.0** | PyTorch / YOLOv5s + ResNet | Detection at standardised bait station    | **Yes** | Research-only: NC licence blocks any commercial integration. PR ≥ 0.99 in paper.    |
-| [vespCV/vespcv][gvespcv]                                                   | **GPL-3.0**       | Ultralytics YOLOv11s  | Real-time detection on Raspberry Pi 4     | Implied | Closest production-grade Python+Pi stack but GPL is **viral** — would force aristech to GPL. |
+| [vespCV/vespcv][gvespcv]                                                   | **GPL-3.0**       | Ultralytics YOLOv11s  | Real-time detection on Raspberry Pi 4     | Implied | Closest production-grade Python+Pi stack, but **GPL-3.0 copyleft**: distributing a derivative that vendors it requires the combined work to be GPL-3.0 + source-available. |
 | [vespCV/hornet3000][gh3000]                                                | GPL-3.0           | YOLOv10n              | Detection, Pi 4 + Arducam, Colab-trained  | Yes     | More of a tutorial / how-to than a library.                                         |
 | [vespCV/gv2-esp32][gvgrove]                                                | not confirmed     | YOLO11n on Grove Vision AI V2 | On-device                              | Yes     | Hardware-specific to ESP32-S3 + Grove board.                                        |
 | [lbrejon/Localization-of-Asian-hornets…][gbrejon]                          | undeclared        | PyTorch (ResNet18 + CAM) | Classification + CAM localisation         | unclear | Student-style, no licence, not usable in production.                                |
@@ -139,7 +139,17 @@ but immature**:
 - Only one peer-reviewed system with published weights exists (**VespAI**),
   and its CC BY-NC-SA licence forbids commercial use.
 - The most active practical work is the **vespCV** organisation, all
-  GPL-3.0 — would force aristech itself to become GPL if vendored.
+  GPL-3.0 — copyleft: distributing a derivative or combined work that
+  vendors their code would require that work to be GPL-3.0 and
+  source-available (the obligation is on the distributed work, not on
+  aristech as an organisation). Its
+  training dataset is **not shared** (code + a pretrained YOLOv11s model
+  only; images were sourced from `waarnemingen.nl`). _M1 finding._
+- A Roboflow Universe set with an explicit three-class labelling
+  (**bee / _V. crabro_ / _V. velutina_**, ~118 images, `to-verify` exact
+  URL + licence) is the most direct seed for the deferred explicit-bee
+  class (the M5 fine-tune) — most other sets label only the two hornet
+  species. _M1 finding._
 - The richest _engineering_ prior art is actually adjacent: **BeeAlarmed**
   (TF, multi-class incl. wasps, mature) plus its TFDS dataset, and
   **Mjrovai/Bee-Counting** for the YOLOv8 → Raspberry Pi edge pattern.
