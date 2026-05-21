@@ -18,7 +18,7 @@ decisions** — they progress step by step along the staircase.
 
 This document is the source of truth. When the needs are clear enough, it
 will be mirrored as a GitHub **Epic + sub-issues** on Project #57: each
-marche becomes an issue, its sub-tasks become sub-issues / checklist items,
+step becomes an issue, its sub-tasks become sub-issues / checklist items,
 its gate becomes the issue's definition of done.
 
 ## The detection staircase
@@ -108,7 +108,7 @@ draw.
 
 ## Cross-cutting gate rules
 
-- **1 marche = 1 PR** (or a few), CI green, tests, decisions logged in
+- **1 step = 1 PR** (or a few), CI green, tests, decisions logged in
   `PROJECT_LOG.md`.
 - **Dependencies**: M3 needs annotations (from M1/M5); M4 needs M3; M2
   depends only on M0.

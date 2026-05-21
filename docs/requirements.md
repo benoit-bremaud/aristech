@@ -76,7 +76,8 @@ The system must, expressed as actor/system goals independent of technology:
   independently of the classifier; any trap-like activity must be
   **selective**; **pure water only**, no biocide. See
   [architecture.md](architecture.md) § Plancher légal.
-- **Non-lethal, non-contact** deterrence only (decided, PR #5).
+- **Non-lethal, non-contact** deterrence only (decided, PR #4 — see
+  [architecture.md](architecture.md) § Décisions ouvertes).
 
 ## Decisions — detection (v1), with rationale
 
@@ -88,7 +89,7 @@ The system must, expressed as actor/system goals independent of technology:
 | Detection output | **2D bbox + species + confidence** (the `Detection` entity) | Free with VespAI (it outputs bboxes); survives into v2 (tracking, exclusion zone, aiming). 3D distance deferred. |
 | Observation | **Fixed camera** over the flight volume | Stable background → better detection, no early mechanics. Pan/tilt belongs to v2 aiming. |
 | Operating point | **~100% precision on bee, relaxed hornet recall** | Never misclassify a bee as a target (legal). Missing some hornets is tolerable — this is deterrence, not extermination. High confidence threshold + abstention default. |
-| Evaluation | **Qualitative → quantified offline → representative → live** | A trajectory, not a single choice; chiffres before trust, field validation last. |
+| Evaluation | **Qualitative → quantified offline → representative → live** | A trajectory, not a single choice; numbers before trust, field validation last. |
 | Data | **Inventory public → small validation set → own footage + annotation** | Public datasets unblock the start; own apiary footage is the gold data (and a publishable contribution). |
 
 ## Alert (v1) — provisional, to refine later
