@@ -139,7 +139,14 @@ but immature**:
 - Only one peer-reviewed system with published weights exists (**VespAI**),
   and its CC BY-NC-SA licence forbids commercial use.
 - The most active practical work is the **vespCV** organisation, all
-  GPL-3.0 — would force aristech itself to become GPL if vendored.
+  GPL-3.0 — would force aristech itself to become GPL if vendored. Its
+  training dataset is **not shared** (code + a pretrained YOLOv11s model
+  only; images were sourced from `waarnemingen.nl`). _M1 finding._
+- A Roboflow Universe set with an explicit three-class labelling
+  (**bee / _V. crabro_ / _V. velutina_**, ~118 images, `to-verify` exact
+  URL + licence) is the most direct seed for the deferred explicit-bee
+  class (the M5 fine-tune) — most other sets label only the two hornet
+  species. _M1 finding._
 - The richest _engineering_ prior art is actually adjacent: **BeeAlarmed**
   (TF, multi-class incl. wasps, mature) plus its TFDS dataset, and
   **Mjrovai/Bee-Counting** for the YOLOv8 → Raspberry Pi edge pattern.
