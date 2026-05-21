@@ -45,3 +45,37 @@ def test_out_of_range_confidence_errors_cleanly(tmp_path):
 
 def test_missing_config_errors(tmp_path):
     assert main(["--config", str(tmp_path / "absent.yaml")]) == 2
+
+
+def test_nonexistent_weights_errors(tmp_path):
+    yolo = tmp_path / "yolo"
+    yolo.mkdir()
+    rc = main(
+        [
+            *_common(tmp_path),
+            "--video",
+            "0",
+            "--weights",
+            str(tmp_path / "missing.pt"),
+            "--yolov5-dir",
+            str(yolo),
+        ]
+    )
+    assert rc == 2
+
+
+def test_nonexistent_yolov5_dir_errors(tmp_path):
+    weights = tmp_path / "w.pt"
+    weights.write_text("x", encoding="utf-8")
+    rc = main(
+        [
+            *_common(tmp_path),
+            "--video",
+            "0",
+            "--weights",
+            str(weights),
+            "--yolov5-dir",
+            str(tmp_path / "nodir"),
+        ]
+    )
+    assert rc == 2

@@ -10,11 +10,20 @@ crabro`` (M0 finding — no bee class); anything else maps to ``UNKNOWN``.
 Bees are negatives (no detection), which still satisfies the legal floor.
 """
 
+import logging
+import threading
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
+
+_log = logging.getLogger("aristech.vision")
+
+# Loading the YOLOv5 checkpoint requires temporarily relaxing torch's
+# weights_only default. That mutates the global `torch.load`, so serialise
+# it behind a lock to keep concurrent detector loads safe.
+_LOAD_LOCK = threading.Lock()
 
 # VespAI YOLOv5 class name → domain Species.
 _SPECIES_BY_NAME: dict[str, Species] = {
@@ -67,24 +76,32 @@ class VespAIDetector:
             import torch
 
             # torch>=2.6 defaults weights_only=True, which rejects the YOLOv5
-            # checkpoint. The weights are an explicitly supplied, trusted file.
-            original_load = torch.load
+            # checkpoint. Relaxing it re-enables pickle deserialisation, which
+            # can execute arbitrary code from a malicious .pt — only trusted,
+            # operator-supplied weights must be used here.
+            _log.warning(
+                "Loading weights with weights_only=False (pickle): %s — only "
+                "use trusted .pt files.",
+                self._weights_path,
+            )
+            with _LOAD_LOCK:
+                original_load = torch.load
 
-            def _trusted_load(*args: Any, **kwargs: Any) -> Any:
-                kwargs.setdefault("weights_only", False)
-                return original_load(*args, **kwargs)
+                def _trusted_load(*args: Any, **kwargs: Any) -> Any:
+                    kwargs.setdefault("weights_only", False)
+                    return original_load(*args, **kwargs)
 
-            torch.load = _trusted_load
-            try:
-                model = torch.hub.load(
-                    self._yolov5_dir,
-                    "custom",
-                    path=self._weights_path,
-                    source="local",
-                    _verbose=False,
-                )
-            finally:
-                torch.load = original_load
+                torch.load = _trusted_load
+                try:
+                    model = torch.hub.load(
+                        self._yolov5_dir,
+                        "custom",
+                        path=self._weights_path,
+                        source="local",
+                        _verbose=False,
+                    )
+                finally:
+                    torch.load = original_load
             model.conf = self._confidence
             self._model = model
         return self._model

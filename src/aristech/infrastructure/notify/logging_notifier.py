@@ -14,9 +14,10 @@ class LoggingNotifier:
     def notify_detection(self, detection: Detection) -> None:
         c = detection.bbox.center
         _log.info(
-            "threat %s conf=%.2f at (%.0f,%.0f) %s",
+            "detection %s conf=%.2f threat=%s at (%.0f,%.0f) %s",
             detection.species.value,
             detection.confidence,
+            detection.is_threat(),
             c.x,
             c.y,
             detection.timestamp.isoformat(),

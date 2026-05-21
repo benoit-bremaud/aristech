@@ -59,9 +59,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.logging_config.exists():
+        # Logging setup must never crash the app: bad YAML (YAMLError) or a
+        # malformed dictConfig (Type/Key/Attribute/Import/Value/OSError) all
+        # fall back to a working basic configuration.
         try:
             logging.config.dictConfig(_load_yaml(args.logging_config))
-        except (ValueError, OSError) as exc:
+        except Exception as exc:  # noqa: BLE001 — intentional logging fallback
             logging.basicConfig(level=logging.INFO)
             logging.getLogger("aristech").warning(
                 "Config logging inutilisable (%s) — repli sur basicConfig.", exc
@@ -97,6 +100,24 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         log.error("--confidence doit être dans [0, 1] (reçu %s).", args.confidence)
         return 2
 
+    # A bare digit with no matching file is a camera index; otherwise it is a
+    # file path that must exist (a file literally named "0" stays a path).
+    video_path = Path(args.video)
+    if args.video.isdigit() and not video_path.exists():
+        source: str | int = int(args.video)
+    elif not video_path.exists():
+        log.error("Source vidéo introuvable : %s", args.video)
+        return 2
+    else:
+        source = args.video
+
+    if not Path(args.weights).is_file():
+        log.error("Poids introuvables : %s", args.weights)
+        return 2
+    if not Path(args.yolov5_dir).is_dir():
+        log.error("Répertoire YOLOv5 introuvable : %s", args.yolov5_dir)
+        return 2
+
     from aristech.application.use_cases import (
         DetectHornetVisual,
         DetectHornetVisualConfig,
@@ -105,7 +126,6 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     from aristech.infrastructure.vision.opencv_video_source import OpenCVVideoSource
     from aristech.infrastructure.vision.vespai_detector import VespAIDetector
 
-    source: str | int = int(args.video) if args.video.isdigit() else args.video
     use_case = DetectHornetVisual(
         video=OpenCVVideoSource(source),
         detector=VespAIDetector(

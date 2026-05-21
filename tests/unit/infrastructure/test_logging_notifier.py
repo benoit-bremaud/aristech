@@ -16,3 +16,4 @@ def test_logs_species_and_confidence(caplog):
         LoggingNotifier().notify_detection(det)
     assert "vespa_velutina" in caplog.text
     assert "0.90" in caplog.text
+    assert "threat=True" in caplog.text
