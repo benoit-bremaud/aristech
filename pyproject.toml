@@ -31,28 +31,49 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 
-# Dépendances de haut niveau, bornées par version majeure pour limiter
-# la dérive de résolution. Le lock complet est dans requirements.txt
-# (à régénérer via `make lock` / `pip-compile requirements.in`).
+# Le cœur reste volontairement léger : seules les libs dont dépendent le
+# domaine, les use cases et le composition root (CLI). Tout ce qui est
+# lourd ou propre à un adaptateur (vision, audio, training) vit dans un
+# extra optionnel — cohérent avec la Clean Architecture (l'infrastructure
+# est un détail interchangeable) et avec la décision DIP du projet.
+# Le lock complet est dans requirements.txt (à régénérer via `make lock`).
 dependencies = [
-    "numpy>=1.26,<3",
-    "scipy>=1.13,<2",
-    "pandas>=2.2,<3",
-    "matplotlib>=3.8,<4",
-    "seaborn>=0.13,<1",
-    "scikit-learn>=1.4,<2",
-    "tensorflow>=2.16,<3",
-    "torch>=2.3,<3",
-    "opencv-python>=4.9,<5",
-    "librosa>=0.10,<1",
-    "pyaudio>=0.2,<1",
     "PyYAML>=6,<7",
-    "paho-mqtt>=2,<3",
     "python-dotenv>=1,<2",
-    "Pillow>=10,<12",
 ]
 
 [project.optional-dependencies]
+# Adaptateurs vision (M2) : OpenCVVideoSource + VespAIDetector (YOLOv5).
+# Note : les poids VespAI sont CC BY-NC-SA et ne sont PAS embarqués — on
+# les charge via un chemin fourni. torch/yolov5 sont BSD/AGPL : wrappés à
+# l'exécution, jamais copiés dans aristech.
+vision = [
+    "torch>=2.3,<3",
+    "torchvision>=0.18,<1",
+    "opencv-python>=4.9,<5",
+    "pandas>=2.2,<3",
+    "numpy>=1.26,<3",
+    "Pillow>=10,<12",
+]
+# Adaptateurs audio (axe différé) : capture + features.
+audio = [
+    "librosa>=0.10,<1",
+    "pyaudio>=0.2,<1",
+    "numpy>=1.26,<3",
+    "scipy>=1.13,<2",
+]
+# Pipeline d'entraînement historique (Keras/TF) sous aristech.training.
+training = [
+    "tensorflow>=2.16,<3",
+    "scikit-learn>=1.4,<2",
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<3",
+    "matplotlib>=3.8,<4",
+    "seaborn>=0.13,<1",
+    "scipy>=1.13,<2",
+]
+# Notifications réseau (MQTT) — futur adaptateur Notifier.
+connectivity = ["paho-mqtt>=2,<3"]
 dev = [
     "pytest>=7",
     "pytest-cov",
@@ -133,4 +154,11 @@ module = ["aristech.training.*"]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 check_untyped_defs = false
+warn_return_any = false
+
+# Infrastructure : adaptateurs au-dessus de libs non typées (cv2, torch,
+# YOLOv5). Le domaine et l'application restent en strict ; on relâche
+# uniquement la couche qui touche le monde extérieur.
+[[tool.mypy.overrides]]
+module = ["aristech.infrastructure.*"]
 warn_return_any = false
