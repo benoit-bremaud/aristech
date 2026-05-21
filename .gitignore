@@ -145,48 +145,10 @@ models/*.pt
 # Keep .env.example tracked
 !.env.example
 
-# Raw / augmented / dataset media — ignore content, keep the .gitkeep markers
-data/raw_images/
-!data/raw_images/.gitkeep
-data/raw_images/inaturalist/
-!data/raw_images/inaturalist/.gitkeep
-data/raw_images/gbif/
-!data/raw_images/gbif/.gitkeep
-data/raw_images/flickr/
-!data/raw_images/flickr/.gitkeep
-data/raw_images/google/
-!data/raw_images/google/.gitkeep
-
-data/raw_videos/
-!data/raw_videos/.gitkeep
-data/raw_videos/inaturalist/
-!data/raw_videos/inaturalist/.gitkeep
-data/raw_videos/gbif/
-!data/raw_videos/gbif/.gitkeep
-data/raw_videos/flickr/
-!data/raw_videos/flickr/.gitkeep
-data/raw_videos/google/
-!data/raw_videos/google/.gitkeep
-
-data/augmented_images/
-!data/augmented_images/.gitkeep
-data/augmented_videos/
-!data/augmented_videos/.gitkeep
-
-data/dataset_images/
-!data/dataset_images/.gitkeep
-data/dataset_images/train/
-!data/dataset_images/train/.gitkeep
-data/dataset_images/validation/
-!data/dataset_images/validation/.gitkeep
-data/dataset_images/test/
-!data/dataset_images/test/.gitkeep
-
-data/dataset_videos/
-!data/dataset_videos/.gitkeep
-data/dataset_videos/train/
-!data/dataset_videos/train/.gitkeep
-data/dataset_videos/validation/
-!data/dataset_videos/validation/.gitkeep
-data/dataset_videos/test/
-!data/dataset_videos/test/.gitkeep
+# Raw / augmented / dataset media — ignore all content, keep the .gitkeep
+# markers. Ignoring `data/**` (content) rather than `data/foo/` (the
+# directory) lets Git still descend so the .gitkeep re-includes work; a
+# directory-level ignore would make `!.../.gitkeep` ineffective.
+data/**
+!data/**/
+!data/**/.gitkeep
