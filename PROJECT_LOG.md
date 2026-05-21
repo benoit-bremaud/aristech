@@ -97,3 +97,26 @@ State-of-the-art audit session (codename: audit-2026-05-20). Closed the two PRs 
   - **Review cycle** — the automated review flagged that `README.md` and `CONTRIBUTING.md` linked to `docs/INDEX.md` while that file did not yet exist on the branch; resolved by merging `main` into the branch once PR #7 had landed INDEX.md (dependency ordering, no content change). A second pass posted two comments, both addressed: capitalise "Aristech" as a proper noun in the positioning prose (lowercase `aristech` retained for package / CLI identifiers such as `python -m aristech`); add an inline caveat to the cleanup snippet that `git branch -d` may report a branch as unmerged after a squash-merge (use `-D` if needed).
 
 - **Audit findings (not yet actioned)** — the session's repo audit surfaced quick-win debt for a follow-up PR: empty placeholders (`docs/usage.md` is 0 lines; both `docs/reports/*.pdf` are 0 bytes) and missing domain unit tests (the `geometry`, `species`, `target`, `media` entities have no test module — only `detection` does). Larger items stay explicitly deferred: the empty `infrastructure/` layer (first vision adapter is a foundation-sized chunk), the `git filter-repo` history purge of the model blobs (still ~61 MB in `.git/`), and UML diagrams — held until the open product decisions (multi-modal fusion, fail-safe default) stabilise the scope enough for diagrams to be worth drawing.
+
+- **PR #9 merged** (`471b326`) — `docs: log PR #7 and #8 closure in PROJECT_LOG.md`. Branch `docs/log-pr-7-8`, squash-merged. Adds the two PR #7 / #8 entries above.
+
+  - **Review cycle** — automated review posted two comments, both addressed in `370312f`: the draft entry named the review tools, breaking the agent-agnostic log rule — redacted to generic wording ("automated review"); and an exact line-count claim was flagged as brittle — the figure was dropped, exact counts avoided in future entries.
+
+- **PR #10 merged** (`11cc61a`) — `chore: clear empty doc placeholders and add domain entity tests`. Branch `chore/quick-wins-cleanup`, squash-merged. Closes two of the quick-win audit findings above: removes three empty placeholders (`docs/usage.md` and the two 0-byte `docs/reports/*.pdf`) with their `docs/INDEX.md` rows and `docs/README.md` references; adds unit tests for the `geometry`, `species`, `target`, and `media` domain entities (previously only `detection` was covered). 33 unit tests pass; ruff clean. Verified locally in a venv before push.
+
+  - **Review cycle** — automated review posted no comments.
+
+---
+
+## 2026-05-21
+
+Audit session continued past midnight: closed the planning and hygiene work opened the day before.
+
+- **PR #11 merged** (`804b864`) — `docs: add v1 requirements and detection-first roadmap`. Branch `docs/v1-requirements-and-roadmap`, squash-merged. The project's first written plan, produced from a needs-first brainstorming session: `docs/requirements.md` (vision, scope, functional / non-functional needs, hard constraints, detection decisions with rationale) and `docs/ROADMAP.md` (the detection staircase M0–M6, each step with sub-tasks and an explicit gate), plus a Planning section in `docs/INDEX.md`. Method: Dependency Inversion applied at project level — needs are the stable high-level policy; the stack (board, sensors, model) is a downstream detail that conforms to them.
+
+  - **Decisions** (detection v1): wrap the VespAI baseline first, fine-tune on own data later; vision first, audio later; three classes (velutina / bee / other); detection output = 2D bbox + species + confidence (the `Detection` entity), 3D distance deferred; fixed camera over the flight volume; operating point = ~100% precision on bee (legal floor) with relaxed hornet recall + abstention by default. v1 scope = detection + alert (no actuator); alert kept provisional.
+  - **Review cycle** — automated review posted four comments, all addressed in `2eacbbf`: a wrong PR reference for the non-lethal decision (decided in PR #4, not #5) was corrected and pointed at `docs/architecture.md`; three English-consistency fixes (replaced French terms in the otherwise-English docs).
+
+- **PR #12 merged** (`1681c3f`) — `fix: repair .gitignore patterns neutralised by inline comments`. Branch `chore/fix-gitignore`, squash-merged. An audit finding turned out to be larger than expected: nearly every `.gitignore` pattern carried a trailing inline comment, which Git treats literally (it only honours `#` at line start), so the patterns were inert — `__pycache__/`, `*.egg-info/`, build artefacts, `data/**`, and **notably `.env`** were not ignored (a latent secret-leak risk, now closed). Moved every comment to its own line, fixed two stray negation (`!`) bugs, and removed a few duplicates.
+
+  - **Review cycle** — automated review posted one P2: the directory-level ignores (`data/foo/`) made the `!.../.gitkeep` re-includes ineffective, because Git will not re-include a file beneath an ignored parent directory. Fixed in `9bfe054` by ignoring content (`data/**` + `!data/**/` + `!data/**/.gitkeep`) so Git still descends and the markers survive at any depth, including for newly added files. Verified with `git check-ignore --no-index`.
