@@ -122,9 +122,10 @@ draw.
 
 ## Deferred tracks (out of the detection-first scope)
 
-- **Alert** — provisional defaults in [requirements.md](requirements.md);
-  to be detailed (own staircase: local log → evidence image → remote
-  notification → dashboard).
+- **Observability & health** — model decided in
+  [requirements.md](requirements.md) (detections → local log; heartbeat
+  liveness; fault-only alerts; server-side dead-man's-switch watchdog).
+  Implementation lands with the embedded deployment (M6).
 - **Acoustic axis** — feasibility (SNR at a hive), signature, role
   (wake-up trigger vs parallel confirmer).
 - **After-detection** — tracking, distance, decision policy, non-lethal
