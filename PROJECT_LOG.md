@@ -140,7 +140,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
 
 ## 2026-05-22
 
-- **PR #23 merged** (`71850ce`) — `docs: log PR #20-#22 ... in PROJECT_LOG.md`. Logbook catch-up entry for the M0/M1/M2 milestones plus the Epic #19 tracking note above. One review comment (mirror the `to-verify` qualifier on the Roboflow set) addressed before merge.
+- **PR #23 merged** (`71850ce`) — `docs: log PR #20-#22 (M0/M1/M2 milestones) in PROJECT_LOG.md`. Branch `docs/log-pr-20-to-22`, squash-merged. Logbook catch-up for the M0/M1/M2 milestones plus the Epic #19 tracking note above.
+
+  - **Review cycle** — automated review posted one comment, addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/23>): mirror the `to-verify` qualifier on the Roboflow set, so the log does not overstate dataset certainty.
 
 - **PR #24 merged** (`6bf9469`) — `feat(evaluation): detection metrics harness`. Branch `feat/m3-eval-harness`, squash-merged. Part of **#17 (M3)** — the **code half**. Adds `aristech.evaluation`: a pure metrics harness — IoU, greedy confidence-ordered location-based matching of predictions to ground truth, per-class precision / recall / F1, and a confusion matrix (with a `background` label for false positives and misses), plus threshold validation. No I/O, no torch → unit-tested in CI, including the legal-floor case (a bee location predicted as a hornet counts as a _V. velutina_ false positive). The **dataset half** of M3 (an annotated test set + a runner producing the per-class report on a frozen set — the gate) stays open on **#17**, pending a Roboflow download or own footage.
 
