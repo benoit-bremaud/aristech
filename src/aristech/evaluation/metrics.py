@@ -130,9 +130,7 @@ def evaluate(
     if not 0.0 < iou_threshold <= 1.0:
         raise ValueError(f"iou_threshold must be in (0, 1], got {iou_threshold}")
     if not 0.0 <= confidence_threshold <= 1.0:
-        raise ValueError(
-            f"confidence_threshold must be in [0, 1], got {confidence_threshold}"
-        )
+        raise ValueError(f"confidence_threshold must be in [0, 1], got {confidence_threshold}")
     confusion: dict[tuple[str, str], int] = {}
     for predictions, truths in samples:
         kept = [d for d in predictions if d.confidence >= confidence_threshold]
