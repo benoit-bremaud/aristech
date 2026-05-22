@@ -135,3 +135,13 @@ Audit session continued past midnight: closed the planning and hygiene work open
 
   - **Decisions** — `torch` moved to an optional `vision` extra rather than a base dependency, realising the project's DIP / Clean-Architecture decision (infrastructure is an interchangeable detail); the bee stays a negative in v1 (confirmed by the model's two output classes).
   - **Review cycle** — two automated review passes posted seven comments total, all addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/22>): a `--confidence` out-of-range crash, a too-narrow logging fallback, an ambiguous camera-index/path heuristic, missing `--weights` / `--yolov5-dir` path validation, a non-thread-safe `torch.load` monkeypatch (now lock-guarded), a security warning on `weights_only=False` pickle loading, and a misleading "threat" log label (now neutral with a `threat=<bool>` field).
+
+---
+
+## 2026-05-22
+
+- **PR #23 merged** (`71850ce`) — `docs: log PR #20-#22 ... in PROJECT_LOG.md`. Logbook catch-up entry for the M0/M1/M2 milestones plus the Epic #19 tracking note above. One review comment (mirror the `to-verify` qualifier on the Roboflow set) addressed before merge.
+
+- **PR #24 merged** (`6bf9469`) — `feat(evaluation): detection metrics harness`. Branch `feat/m3-eval-harness`, squash-merged. Part of **#17 (M3)** — the **code half**. Adds `aristech.evaluation`: a pure metrics harness — IoU, greedy confidence-ordered location-based matching of predictions to ground truth, per-class precision / recall / F1, and a confusion matrix (with a `background` label for false positives and misses), plus threshold validation. No I/O, no torch → unit-tested in CI, including the legal-floor case (a bee location predicted as a hornet counts as a _V. velutina_ false positive). The **dataset half** of M3 (an annotated test set + a runner producing the per-class report on a frozen set — the gate) stays open on **#17**, pending a Roboflow download or own footage.
+
+  - **Review cycle** — automated review posted four comments (one Codex + three from the second pass), all addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/24>): validate the IoU / confidence thresholds and fail fast (which also closed an IoU=0 matching loophole), add `slots=True` to `EvaluationReport`, and annotate the test helpers.
