@@ -12,6 +12,7 @@ from aristech.evaluation.metrics import (
     evaluate,
     iou,
 )
+from aristech.evaluation.runner import evaluate_on_dataset
 from aristech.evaluation.yolo import parse_yolo_labels
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "ClassMetrics",
     "EvaluationReport",
     "evaluate",
+    "evaluate_on_dataset",
     "iou",
     "parse_yolo_labels",
 ]
