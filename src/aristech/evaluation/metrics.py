@@ -89,7 +89,7 @@ def _match_image(
             yield (truth.species.value, BACKGROUND)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class EvaluationReport:
     confusion: dict[tuple[str, str], int]
     iou_threshold: float

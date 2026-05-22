@@ -8,15 +8,15 @@ from aristech.evaluation import Annotation, evaluate, iou
 TS = datetime(2026, 5, 22)
 
 
-def _box(x, y, w=10.0, h=10.0):
+def _box(x: float, y: float, w: float = 10.0, h: float = 10.0) -> BoundingBox:
     return BoundingBox(x=x, y=y, width=w, height=h)
 
 
-def _pred(species, conf, box):
+def _pred(species: Species, conf: float, box: BoundingBox) -> Detection:
     return Detection(species=species, bbox=box, confidence=conf, timestamp=TS)
 
 
-def _gt(species, box):
+def _gt(species: Species, box: BoundingBox) -> Annotation:
     return Annotation(species=species, bbox=box)
 
 
