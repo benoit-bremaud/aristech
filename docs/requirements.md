@@ -53,13 +53,12 @@ The system must, expressed as actor/system goals independent of technology:
 3. **Locate** the threat in the image (2D position; 3D distance deferred to
    v2 when aiming matters).
 4. **Track** a target over time (trajectory, count distinct hornets) — v2.
-5. **Decide** whether to act, under an auditable policy with a fail-safe
-   default — v2 (alert has no act/no-act risk).
+5. **Decide** whether to act and, if so, **deter** without contact or
+   lethality, under an auditable policy with a fail-safe default — v2.
 6. **Record** every detection to a structured local log (for statistics
    and later analysis) — **not** a push notification per detection.
 7. **Report its own health** — a periodic heartbeat (liveness) and a
-   notification only when something is wrong. v2: deter without contact or
-   lethality.
+   notification only when something is wrong.
 8. **Operate unattended**, outdoors, over time.
 9. **Be accountable** — log its decisions and keep evidence (what it saw,
    why it acted / abstained).
@@ -116,8 +115,11 @@ notification model is therefore **operational health, not detection events**
 - **Dead man's switch** — a dead system cannot announce that it is dead, so
   liveness is judged by the **absence** of a heartbeat: a server-side
   watchdog alerts when no ping arrives within a window. The device itself
-  pushes only the faults it *can* detect (camera down, inference error,
-  low disk / battery, connectivity loss, …).
+  pushes only the faults it *can* detect **and still deliver** (camera
+  down, inference error, low disk / battery, …). **Connectivity loss** is
+  the special case: the device cannot push when offline, so it logs it
+  locally and (optionally) notifies once back online — but it is primarily
+  surfaced by the watchdog seeing a missing heartbeat.
 - **No per-detection notification** — that would be hundreds of pushes a
   day and is pure noise. Detections are logged for analysis instead.
 - **Scope** — v1 already logs detections (the `LoggingNotifier`). The
