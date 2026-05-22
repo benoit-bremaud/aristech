@@ -28,8 +28,14 @@ def test_blank_lines_ignored():
 
 
 @pytest.mark.parametrize("bad", ["1 0.5 0.5 0.2", "1 0.5 0.5 0.2 0.4 0.9", "garbage"])
-def test_malformed_line_raises(bad):
+def test_wrong_field_count_raises(bad):
     with pytest.raises(ValueError, match="5 fields"):
+        parse_yolo_labels([bad], 100, 100, CLASS_MAP)
+
+
+@pytest.mark.parametrize("bad", ["x 0.5 0.5 0.2 0.4", "1 a b c d"])
+def test_non_numeric_fields_raise_with_line_context(bad):
+    with pytest.raises(ValueError, match="malformed YOLO label line"):
         parse_yolo_labels([bad], 100, 100, CLASS_MAP)
 
 
