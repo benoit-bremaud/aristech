@@ -106,6 +106,31 @@ service → NPU port (Hailo).
 **🚪 Gate** — stable real-time detection on the target + measured power
 draw.
 
+## Deterrence track (v2) — gated on a field test
+
+The deterrence axis is **decoupled** from detection (SOLID / Dependency
+Inversion): it consumes the detector's signal (`Detection` / `Target`) via
+the ports and adds nothing to the detection core. It is gated on **D0**,
+before any mechanics are built.
+
+### D0 — Field-validate the deterrence hypothesis *(before any actuator)*
+
+Cheap, manual, seasonal (hornets active ~Aug–Nov): manually spray a hornet
+hovering at the flight board → observe decohere / return / habituation, and
+log it.
+
+**🚪 Gate** — without a clear, lasting decohere, **reorient** (another
+deterrent modality, or stay monitoring-only) instead of building the aiming
+mechanics. Efficacy objective once validated: **~90%** drop in successful
+strikes (an *objective*, not a gate — see
+[requirements.md](requirements.md)).
+
+### v1 is deployable on its own
+
+Once M3 (detection figures) and M6 (embedded) are done, the v1 monitoring
+build can go to the apiary: it delivers hornet-pressure data, feeds M5
+(footage), and provides the hornets D0 needs to test against.
+
 ## Cross-cutting gate rules
 
 - **1 step = 1 PR** (or a few), CI green, tests, decisions logged in
@@ -129,6 +154,6 @@ draw.
 - **Acoustic axis** — feasibility (SNR at a hive), signature, role
   (wake-up trigger vs parallel confirmer).
 - **After-detection** — tracking, distance, decision policy, non-lethal
-  deterrence.
+  deterrence (the deterrence track above; gated on **D0**).
 - **Embedded** — see M6 and the hardware target in
   [requirements.md](requirements.md).

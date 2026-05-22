@@ -29,6 +29,9 @@ protected species, and without daily human labour.**
 - Detect and recognise *V. velutina* at the hive entrance (vision).
 - **Log** every detection locally for statistics (not a push per detection).
 - **No actuator.** No spraying. Deterrence is explicitly out of v1.
+- **Standalone value** — deployed alone, v1 is already useful: it quantifies
+  hornet pressure (when, how many, peaks) and gathers the gold footage for
+  the M5 fine-tune. It is a deliverable, not just a stepping stone.
 
 > System **health** (heartbeat + fault-only alerts) is *decided* — see
 > [Observability & health](#observability--health-decided) — but its
@@ -37,9 +40,15 @@ protected species, and without daily human labour.**
 
 ### v2 and beyond (out of v1)
 
-- Non-lethal, non-contact deterrence (water jet) — already decided as the
-  direction (see [architecture.md](architecture.md)), gated on the open
-  product decisions.
+- Non-lethal, non-contact deterrence (water jet) — direction decided (see
+  [architecture.md](architecture.md)), but its **core hypothesis is
+  unvalidated** (see [Deterrence](#deterrence--objective-and-unvalidated-hypothesis-v2)):
+  no actuator / aiming engineering starts until a field test (ROADMAP **D0**)
+  shows hornets are actually deterred. Detection and deterrence are
+  **decoupled, complementary modules** wired by the detection signal: the
+  detector emits `Detection` / `Target`, and deterrence is a separate
+  consumer that plugs into it later (ports), without touching the detection
+  core.
 - Acoustic recognition axis, multi-modal fusion.
 - Tracking, distance estimation, aiming.
 
@@ -128,6 +137,30 @@ notification model is therefore **operational health, not detection events**
 
 This **supersedes the earlier provisional "alert" defaults** (Telegram
 push of aggregated detections), which were the wrong model.
+
+## Deterrence — objective and unvalidated hypothesis (v2)
+
+- **Efficacy objective** — deterrence is measured as the **percentage drop
+  in successful strikes** (a hornet snatching a forager) on an equipped hive
+  versus the same hive without the system, against the published baseline
+  (`strike-rate-baseline`, ~2.4% predation success — see
+  [prototype-foundations.md](research/prototype-foundations.md) § A.bis).
+  Aspirational target: **~90% reduction**. This is an *objective*, **not an
+  acceptance gate** — even partial disruption is useful.
+- **The hypothesis is unvalidated (risk #1)** — that a non-lethal water jet
+  actually deters *V. velutina* (it decoheres / leaves and does not simply
+  habituate) has **never been observed** in this project. **No actuator or
+  aiming engineering starts until a cheap field test (ROADMAP D0) confirms
+  it.** If it fails, reorient (another deterrent modality, or stay
+  monitoring-only) rather than build the mechanics.
+- **Decoupled from detection (SOLID / Dependency Inversion)** — detection and
+  deterrence are **complementary, independent modules** wired only by the
+  detection signal. Deterrence depends on the **abstractions** the detector
+  emits (`Detection` / `Target`) and on the ports — never on the concrete
+  detector. So detection is validated and shipped on its own; deterrence
+  plugs into its output later as a separate consumer, with no change to the
+  detection core. (DIP in practice — cf. [architecture.md](architecture.md)
+  § SOLID.)
 
 ## Explicitly deferred (not in v1)
 
