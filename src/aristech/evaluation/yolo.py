@@ -40,18 +40,14 @@ def parse_yolo_labels(
             continue
         parts = line.split()
         if len(parts) != 5:
-            raise ValueError(
-                f"YOLO label line {index} needs 5 fields, got {len(parts)}: {raw!r}"
-            )
+            raise ValueError(f"YOLO label line {index} needs 5 fields, got {len(parts)}: {raw!r}")
         try:
             class_id = int(parts[0])
             cx, cy, w, h = (float(p) for p in parts[1:])
         except ValueError as exc:
             raise ValueError(f"malformed YOLO label line {index}: {raw!r}") from exc
         if not all(0.0 <= v <= 1.0 for v in (cx, cy, w, h)):
-            raise ValueError(
-                f"YOLO values must be normalised in [0, 1] (line {index}): {raw!r}"
-            )
+            raise ValueError(f"YOLO values must be normalised in [0, 1] (line {index}): {raw!r}")
         annotations.append(
             Annotation(
                 species=class_map.get(class_id, Species.UNKNOWN),
