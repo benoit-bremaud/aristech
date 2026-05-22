@@ -12,6 +12,7 @@ from aristech.evaluation.metrics import (
     evaluate,
     iou,
 )
+from aristech.evaluation.yolo import parse_yolo_labels
 
 __all__ = [
     "Annotation",
@@ -19,4 +20,5 @@ __all__ = [
     "EvaluationReport",
     "evaluate",
     "iou",
+    "parse_yolo_labels",
 ]
