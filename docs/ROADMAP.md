@@ -116,12 +116,12 @@ before any mechanics are built.
 ### D0 — Field-validate the deterrence hypothesis *(before any actuator)*
 
 Cheap, manual, seasonal (hornets active ~Aug–Nov): manually spray a hornet
-hovering at the flight board → observe decohere / return / habituation, and
-log it.
+hovering at the flight board → observe whether it **breaks off and leaves**,
+**returns**, or **habituates**, and log it.
 
-**🚪 Gate** — without a clear, lasting decohere, **reorient** (another
-deterrent modality, or stay monitoring-only) instead of building the aiming
-mechanics. Efficacy objective once validated: **~90%** drop in successful
+**🚪 Gate** — without a clear, lasting break-off (the hornet leaves and does
+not simply return or habituate), **reorient** (another deterrent modality,
+or stay monitoring-only) instead of building the aiming mechanics. Efficacy objective once validated: **~90%** drop in successful
 strikes (an *objective*, not a gate — see
 [requirements.md](requirements.md)).
 

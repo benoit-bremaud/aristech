@@ -142,9 +142,10 @@ push of aggregated detections), which were the wrong model.
 
 - **Efficacy objective** — deterrence is measured as the **percentage drop
   in successful strikes** (a hornet snatching a forager) on an equipped hive
-  versus the same hive without the system, against the published baseline
-  (`strike-rate-baseline`, ~2.4% predation success — see
-  [prototype-foundations.md](research/prototype-foundations.md) § A.bis).
+  versus the same hive without the system, against the published baseline of
+  **~2.4% predation success** (see
+  [prototype-foundations.md](research/prototype-foundations.md)
+  § A — Behavioural biology at the hive entrance).
   Aspirational target: **~90% reduction**. This is an *objective*, **not an
   acceptance gate** — even partial disruption is useful.
 - **The hypothesis is unvalidated (risk #1)** — that a non-lethal water jet
