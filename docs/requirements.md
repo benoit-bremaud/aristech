@@ -24,12 +24,16 @@ protected species, and without daily human labour.**
 
 ## Scope
 
-### v1 — Detection + observability
+### v1 — Detection + logging
 
 - Detect and recognise *V. velutina* at the hive entrance (vision).
 - **Log** every detection locally for statistics (not a push per detection).
-- Report system **health** — heartbeat (liveness) + fault-only alerts.
 - **No actuator.** No spraying. Deterrence is explicitly out of v1.
+
+> System **health** (heartbeat + fault-only alerts) is *decided* — see
+> [Observability & health](#observability--health-decided) — but its
+> implementation lands with the **embedded deployment (M6)**, not in v1.
+> v1's health surface is the local detection log only.
 
 ### v2 and beyond (out of v1)
 
