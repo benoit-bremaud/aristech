@@ -86,6 +86,18 @@ def test_bee_predicted_as_hornet_is_a_velutina_false_positive():
     assert report.class_metrics(Species.APIS_MELLIFERA).fn == 1
 
 
+@pytest.mark.parametrize("bad_iou", [0.0, -0.1, 1.5])
+def test_evaluate_rejects_invalid_iou_threshold(bad_iou):
+    with pytest.raises(ValueError, match="iou_threshold"):
+        evaluate([], iou_threshold=bad_iou)
+
+
+@pytest.mark.parametrize("bad_conf", [-0.1, 1.5])
+def test_evaluate_rejects_invalid_confidence_threshold(bad_conf):
+    with pytest.raises(ValueError, match="confidence_threshold"):
+        evaluate([], confidence_threshold=bad_conf)
+
+
 def test_format_text_lists_classes():
     pred = _pred(Species.VESPA_VELUTINA, 0.9, _box(0, 0))
     gt = _gt(Species.VESPA_VELUTINA, _box(0, 0))
