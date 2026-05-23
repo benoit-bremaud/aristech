@@ -1,6 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
 from aristech.evaluation import evaluate_on_dataset
 
@@ -69,3 +71,30 @@ def test_aggregates_multiple_splits(tmp_path):
         detector, tmp_path, CLASS_MAP, splits=("valid", "test"), image_reader=_fake_reader
     )
     assert report.class_metrics(Species.VESPA_VELUTINA).tp == 2
+
+
+def test_missing_label_file_treated_as_negative(tmp_path):
+    # Image with no matching .txt at all → negative image, a detection is a FP.
+    _make_split(tmp_path, "test", [])
+    (tmp_path / "test" / "images" / "img1.jpg").write_bytes(b"")
+    detector = _FixedDetector([_det(Species.VESPA_VELUTINA, 0.9, BoundingBox(40, 40, 20, 20))])
+    report = evaluate_on_dataset(detector, tmp_path, CLASS_MAP, image_reader=_fake_reader)
+    assert report.class_metrics(Species.VESPA_VELUTINA).fp == 1
+
+
+def test_non_image_files_are_skipped(tmp_path):
+    _make_split(tmp_path, "test", [("img1", ["1 0.5 0.5 0.2 0.2"])])
+    (tmp_path / "test" / "images" / "notes.txt").write_text("ignore me", encoding="utf-8")
+    detector = _FixedDetector([_det(Species.VESPA_VELUTINA, 0.9, BoundingBox(40, 40, 20, 20))])
+    report = evaluate_on_dataset(detector, tmp_path, CLASS_MAP, image_reader=_fake_reader)
+    # Only the one real image is scored; notes.txt never reaches the reader.
+    assert report.class_metrics(Species.VESPA_VELUTINA).tp == 1
+
+
+def test_missing_split_raises(tmp_path):
+    _make_split(tmp_path, "valid", [("a", ["1 0.5 0.5 0.2 0.2"])])
+    detector = _FixedDetector([])
+    with pytest.raises(FileNotFoundError):
+        evaluate_on_dataset(
+            detector, tmp_path, CLASS_MAP, splits=("test",), image_reader=_fake_reader
+        )

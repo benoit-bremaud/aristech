@@ -10,6 +10,7 @@ Expected layout (Roboflow YOLOv5 export): ``<dataset>/<split>/images/*.jpg``
 and ``<dataset>/<split>/labels/*.txt``.
 """
 
+import logging
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,6 +24,8 @@ from aristech.evaluation.yolo import parse_yolo_labels
 ImageReader = Callable[[Path], tuple[object, int, int]]
 
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".bmp")
+
+_logger = logging.getLogger(__name__)
 
 
 def _default_image_reader(path: Path) -> tuple[object, int, int]:
@@ -44,16 +47,26 @@ def _split_samples(
 ) -> Iterator[Sample]:
     images_dir = split_dir / "images"
     labels_dir = split_dir / "labels"
+    # Fail fast: a requested split that isn't on disk is a misconfiguration
+    # (e.g. default splits=("test",) on a dataset that only ships "valid").
+    # Silently scoring zero samples would corrupt the report, not signal it.
     if not images_dir.is_dir():
-        return
+        raise FileNotFoundError(f"split images directory not found: {images_dir}")
     for image_path in sorted(images_dir.iterdir()):
-        if image_path.suffix.lower() not in _IMAGE_SUFFIXES:
+        if not image_path.is_file() or image_path.suffix.lower() not in _IMAGE_SUFFIXES:
             continue
         pixels, width, height = reader(image_path)
         frame = VideoFrame(pixels=pixels, width=width, height=height, timestamp=timestamp)
         predictions = list(detector.detect(frame))
         label_file = labels_dir / f"{image_path.stem}.txt"
-        lines = label_file.read_text(encoding="utf-8").splitlines() if label_file.exists() else []
+        if label_file.exists():
+            lines = label_file.read_text(encoding="utf-8").splitlines()
+        else:
+            # No label file means a negative image (zero ground-truth boxes)
+            # in YOLO convention. Warn so a truncated export isn't mistaken
+            # for a legitimately empty image.
+            _logger.warning("no label file for %s; treating as negative", image_path.name)
+            lines = []
         yield predictions, parse_yolo_labels(lines, width, height, class_map)
 
 
@@ -73,6 +86,9 @@ def evaluate_on_dataset(
     `class_map` maps the dataset's integer class ids to `Species` (e.g.
     ``{0: VESPA_CRABRO, 1: VESPA_VELUTINA}``). Returns one aggregated
     `EvaluationReport` across all listed splits.
+
+    Raises `FileNotFoundError` if any requested split has no ``images/``
+    directory, rather than silently scoring it as empty.
     """
     base = Path(dataset_dir)
     reader = image_reader or _default_image_reader
