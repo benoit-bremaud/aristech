@@ -184,6 +184,23 @@ project progresses — this is the single index to come back to.
 | [Water Jet Trajectory Model of Fire Monitor (2018)](https://www.researchgate.net/publication/329571016)                 | Closed-form parabolic + drag equations.                                 |
 | [Self-Choreographed Musical Fountain System](https://www.researchgate.net/publication/312276164)                        | Pi + Arduino + PCA9685 valve drivers — fluid plumbing reference.        |
 
+### 9.6 Deterrent media beyond pure water (projectile / impact)
+
+| Source                                                                                                                              | Notes                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [Fabian et al., proportional-navigation interception (PMC 2018)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6228472/)             | Hitting an agile flying target needs closed-loop guidance — argues against single-shot projectiles. |
+| [Air vortex cannon (Wikipedia)](https://en.wikipedia.org/wiki/Air_vortex_cannon)                                                    | Zero-medium momentum "punch", ~12 m range. Candidate zero-trace impact arm.                     |
+| [Vortex ring gun (Wikipedia)](https://en.wikipedia.org/wiki/Vortex_ring_gun)                                                        | Crowd-control variant abandoned 1998: unpredictable vortices + limited range (short-range only). |
+| [Are paintballs biodegradable? (Punisher PB)](https://punisherspb.com/blogs/news/are-paintballs-biodegradable)                      | Gelatin shell + PEG fill, food-grade, degrades in weeks–months. Real biodegradable projectile.  |
+| [Paintballs are environmentally safe (Paintball USA)](https://www.paintballusa.org/blog/paintballs-are-environmentally-safe)        | Corroborates composition + water-soluble degradation.                                           |
+| [Environmental impact of Orbeez (greenmatch)](https://www.greenmatch.co.uk/blog/environmental-impact-of-orbeez)                     | Sodium-polyacrylate water beads = not biodegradable; microplastic concern.                      |
+| [Sodium polyacrylate is non-degradable (microplasticsolution)](https://www.microplasticsolution.com/post/ever-heard-of-sodium-polyacrylate-the-non-degradable-superabsorbent-synthetic-polymer) | Persistent superabsorbent acrylic.                                       |
+| [Sodium polyacrylate (Wikipedia)](https://en.wikipedia.org/wiki/Sodium_polyacrylate)                                                | Composition / non-biodegradability reference.                                                   |
+| [Biodegradability of bio-based vs synthetic hydrogels (Wiley, app.53655)](https://onlinelibrary.wiley.com/doi/10.1002/app.53655)    | Alginate hydrogels biodegrade in soil; review of soil-amendment hydrogels.                      |
+| [Swelling/degradation of Ca²⁺/Ba²⁺ alginate beads (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S1381514804000161) | Ca-alginate swells ~160 % then dissolves; only Ba²⁺ stabilises (toxic).            |
+| [Starch-derived superabsorbents in agriculture (Springer)](https://link.springer.com/article/10.1007/s00289-021-03842-3)           | Starch SAP biodegradable, non-toxic, ~400× water uptake.                                        |
+| [Starch-based superabsorbent for shrubs (MDPI Agriculture)](https://www.mdpi.com/2077-0472/13/10/1893)                              | Field-application evidence for starch SAP.                                                       |
+
 ## 10. Legal framework — France
 
 | Source                                                                                  | Date         | Relevance |

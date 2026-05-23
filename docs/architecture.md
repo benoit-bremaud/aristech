@@ -189,6 +189,22 @@ pour la veille technique et juridique qui informe ces décisions, et
 4. **Espèces protégées** — `Detection.is_threat()` ne renvoie `True`
    que pour `VESPA_VELUTINA`. Cette règle métier doit rester
    centralisée et auditable.
+5. **Média du dissuasif** (`deterrent-medium-pure-water-vs-projectile`)
+   — la **modalité** (jet non létal) est tranchée (cf. point 1), mais le
+   **média** ne l'est pas : eau pure (défaut) vs média à impact visible
+   (souffle/anneau d'air, bille hydrogel, pellet biodégradable).
+   **Ouvert — défaut = eau pure.** Tout projectile solide est **bloqué**
+   par trois gardes dures : (a) le plancher légal *eau pure uniquement,
+   no biocide* (Code rural L253-1, cf. ci-dessous) restreint ce qu'on
+   peut disperser ; (b) la contrainte *ne laisse aucune trace* (l'eau et
+   l'air ne laissent rien, un solide dispersé est irrécupérable au
+   rucher) ; (c) l'enveloppe non létale (un projectile à vitesse utile
+   devient létal pour un frelon de 30 mm). Sera tranché par un **D0
+   multi-bras** restreint aux candidats *eau-clean* — **eau pulsée vs
+   souffle d'air** ; tester un projectile solide (bille, pellet) exigerait
+   de **lever d'abord ce blocage**, il n'est donc pas un bras D0 par
+   défaut. Protocole dans
+   [docs/research/prototype-foundations.md § A](research/prototype-foundations.md).
 
 ## Plancher légal — contrainte d'architecture (PR #4)
 
