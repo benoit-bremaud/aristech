@@ -134,6 +134,7 @@ laterally-aimed jet pulses, never sprayed on the hive face.
 | Baited traps — best products                              | Catch only **3.65 %** target in spring, **1.35 %** in autumn — bycatch problem severe   | n/a                                | [Rojas-Nossa/Darrouzet et al. 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC10778013/)                                                         |
 | Auditory / colour / hair stimuli (lab)                    | Trigger defensive aggression in hornets but **no documented deterrent effect**           | Not measured                       | [Cheng et al. 2021, Insects](https://pmc.ncbi.nlm.nih.gov/articles/PMC8034368/)                                                                 |
 | Water mist, light strobes, predator decoys                | **No peer-reviewed efficacy data** found                                                 | _unverified_                       | _unverified_                                                                                                                                    |
+| Projectile / impact media (gel bead, bio-pellet, air pulse) | **No efficacy data** — break-off hypothesis identical to the water jet, untested        | _unverified_                       | _unverified_ — see [state-of-the-art § Deterrent media beyond pure water](state-of-the-art.md)                                                  |
 
 **Engineering takeaway — the harp is the published benchmark to beat
 (or match).** Aristech is non-lethal and non-contact, so it cannot
@@ -142,6 +143,34 @@ proposition is **complementary selectivity** (zero non-target kill, no
 carcass disposal) and **scalability** (no daily maintenance vs harp
 weekly cleaning). Side-by-side evaluation against a harp on the same
 rucher is the right validation protocol.
+
+### Deterrent-medium candidates — D0 multi-arm comparison
+
+The deterrent **medium** is not decided. Pure water is the default (eco gold-standard, recirculating,
+non-lethal at <3–4 bar), but the team wants to test whether a more **visibly impactful** medium makes
+the hornet break off more reliably. Since the break-off hypothesis is unvalidated for _every_ medium,
+the right move is to test several arms under one cheap manual protocol — the **D0 gate** in
+[ROADMAP](../ROADMAP.md) — rather than to pre-commit. The literature behind each candidate (material
+biodegradability, projectile-vs-flying-target difficulty, air-vortex physics) is in
+[state-of-the-art § Deterrent media beyond pure water](state-of-the-art.md).
+
+Candidate arms, scored on the project's hard constraints:
+
+| Candidate medium                    | Eco trace          | Hit prob. on agile target | Non-lethal margin       | Consumable      | Verdict for D0                       |
+| ----------------------------------- | ------------------ | ------------------------- | ----------------------- | --------------- | ------------------------------------ |
+| **Pure water — pulsed "slug"**      | none (water)       | good (continuous, sweeps) | good if <3–4 bar        | water, refilled | **baseline+ — test first**           |
+| **Air pulse / vortex ring**         | **none (no media)**| medium (broad; vortex imprecise >2 m) | **inherent (no mass)**  | none            | **strong zero-trace arm — test**     |
+| Starch-SAP gel bead                 | dispersed solid    | low (single shot)         | low (mass) — must brake | dispersed       | weak — fragile, littering            |
+| Gelatin/PEG bio-pellet (low-vel.)   | low (degrades wks) | low (single shot)         | poor at std velocity    | dispersed       | parked — needs velocity throttling   |
+| Calcium-alginate bead               | low                | low                       | low                     | dispersed       | excluded (dissolves; Ba²⁺ toxic)     |
+| Sodium-polyacrylate bead ("Orbeez") | **persistent µplastic** | low                  | low                     | dispersed       | **excluded (not biodegradable)**     |
+
+**D0 protocol notes** (extends the harp side-by-side above): run each retained arm (water slug, air
+pulse, and optionally one biodegradable pellet) on the same hive over matched windows; the response
+metric is **break-off rate** (hornet leaves vs habituates), not interception count. Hold pressure /
+velocity under the non-lethal envelope for every arm, and keep the geometric no-spray exclusion zone
+around the planche d'envol regardless of medium. Result feeds the deferred decision
+`deterrent-medium-pure-water-vs-projectile` in [architecture.md](../architecture.md).
 
 ## A.bis — Synthesis of Éric Darrouzet's contributions (IRBI / Université de Tours)
 

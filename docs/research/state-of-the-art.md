@@ -380,6 +380,66 @@ quoting them in design documents.
 3. **EU/FR regulation** — no EU-wide regulation specifically governs automated apiary deterrents, but the Convention de Berne and French rules on _V. velutina_ (classified _espèce exotique envahissante_ / nuisible sanitaire) allow non-chemical control. Record-keeping of which species was sprayed is the defensible posture. See the **Legal framework** section below for the detailed article-level analysis.
 4. **Failure-safe defaults**: pump must be **normally-closed solenoid**, dead-man timer, classifier confidence floor (≥0.9 for hornet, abort if any _Apis_ box overlaps the firing cone).
 
+### Deterrent media beyond pure water — projectiles vs zero-trace impact
+
+A recurring idea is to swap the water jet for a medium with a more **visible physical impact** —
+swelling gel beads, biodegradable pellets, etc. The constraint is that any replacement must be at
+least as **eco-clean** as pure water (the project's gold standard) and stay **non-lethal**. The
+literature reframes the question hard:
+
+- **Prior art**: there is **no published or open-source use of any projectile medium against
+  _V. velutina_** (`unverified` against a primary source; absent from the deterrence literature
+  surveyed above). The behavioural "break-off" hypothesis is therefore **exactly as unvalidated as
+  for the water jet** — same field gate (**D0**, [ROADMAP](../ROADMAP.md)).
+- **Hitting a flying hornet with a discrete projectile is intrinsically hard.** Agile flying prey
+  make sharp unpredictable turns; even predatory insects need closed-loop guidance (proportional
+  navigation) to intercept them ([Fabian et al. 2018, interception][hm8]). A discrete projectile is
+  a **single lead shot at an evading target**, whereas a continuous jet or a broad air pulse is far
+  more forgiving — an argument _against_ solid projectiles and _for_ continuous media.
+- **"Visible impact" trades against "non-lethal"** (a hard project guard). Impact is kinetic energy:
+  the calibrated water jet at <3–4 bar is the validated non-lethal envelope, whereas a pellet at
+  standard paintball velocity (~90 m/s, .68 cal) is **lethal-class** for a 30 mm hornet and would
+  injure a bee on mis-aim. The compromise lives in **momentum without hard mass**.
+- **Material reality** (superabsorbent-polymer + paintball literature):
+  - **Sodium polyacrylate** (cheap "Orbeez"-type bead) is **not biodegradable** — persistent
+    superabsorbent acrylic, a microplastic source ([greenmatch][hm1], [microplasticsolution][hm2],
+    [Wikipedia][hm3]). Excluded outright.
+  - **Calcium-alginate** beads are bio-sourced and soil-biodegradable ([Wiley review][hm4]) but
+    **mechanically poor**: they swell ~160 % then **dissolve** by Ca²⁺ ion-exchange, dry beads
+    rehydrate badly, and only toxic **Ba²⁺** cross-linking stabilises them ([ScienceDirect][hm5]).
+  - **Starch-based superabsorbents** are the only credible "swells + biodegradable + non-toxic"
+    bead (microbially degraded in soil, ~400× uptake — [Springer][hm6], [MDPI][hm7]), but remain a
+    **dispersed single-use consumable**.
+  - **Gelatin/PEG "biodegradable paintball"** is a real off-the-shelf product (cornstarch-/veg-based
+    shell, food-grade PEG fill, degrades in weeks–months given moisture — [Punisher PB][hm9],
+    [Paintball USA][hm10]). Genuinely biodegradable, but inherits the discrete-projectile hit
+    problem and the lethal-velocity tension above.
+- **Zero-medium impact — the air vortex.** An air-vortex cannon delivers a focused momentum "punch"
+  at metre-scale range with **nothing to biodegrade at all** ([Air vortex cannon][hm11]). A
+  crowd-control "vortex ring gun" was abandoned in 1998 over _unpredictable vortices and limited
+  effective range_ ([Vortex ring gun][hm12]) — but those failure modes shrink at the apiary's
+  0.5–2 m working distance. The impact _is_ the air: as eco-clean as water, with no consumable.
+
+**Synthesis**: for "visible impact + biodegradable", solid projectiles cumulate poor hit-probability
+on an agile target, a lethal-velocity tension, and dispersed waste. The forgiving, eco-clean options
+are a **pulsed water "slug"** (water, punchier than mist) and an **air-vortex pulse** (zero medium).
+Nothing is decided — these become candidate arms of a **D0 multi-arm comparison**; see the protocol
+and comparison grid in [prototype-foundations.md](prototype-foundations.md) § A and the deferred
+decision `deterrent-medium-pure-water-vs-projectile` in [architecture.md](../architecture.md).
+
+[hm1]: https://www.greenmatch.co.uk/blog/environmental-impact-of-orbeez
+[hm2]: https://www.microplasticsolution.com/post/ever-heard-of-sodium-polyacrylate-the-non-degradable-superabsorbent-synthetic-polymer
+[hm3]: https://en.wikipedia.org/wiki/Sodium_polyacrylate
+[hm4]: https://onlinelibrary.wiley.com/doi/10.1002/app.53655
+[hm5]: https://www.sciencedirect.com/science/article/abs/pii/S1381514804000161
+[hm6]: https://link.springer.com/article/10.1007/s00289-021-03842-3
+[hm7]: https://www.mdpi.com/2077-0472/13/10/1893
+[hm8]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6228472/
+[hm9]: https://punisherspb.com/blogs/news/are-paintballs-biodegradable
+[hm10]: https://www.paintballusa.org/blog/paintballs-are-environmentally-safe
+[hm11]: https://en.wikipedia.org/wiki/Air_vortex_cannon
+[hm12]: https://en.wikipedia.org/wiki/Vortex_ring_gun
+
 ### Recommended starter stack — minimum viable prototype
 
 - **Detection**: YOLOv8n or VespAI-style YOLOv5s fine-tuned on _V. velutina_ vs _A. mellifera_ (vespCV dataset = obvious starting corpus), on Raspberry Pi 5 + Hailo-8L or Jetson Orin Nano.
