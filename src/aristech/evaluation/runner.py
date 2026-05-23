@@ -13,6 +13,7 @@ and ``<dataset>/<split>/labels/*.txt``.
 import logging
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from datetime import datetime, timezone
+from itertools import chain
 from pathlib import Path
 
 from aristech.application.ports import HornetDetector
@@ -93,9 +94,11 @@ def evaluate_on_dataset(
     base = Path(dataset_dir)
     reader = image_reader or _default_image_reader
     ts = timestamp or datetime.now(timezone.utc)
-    samples: list[Sample] = []
-    for split in splits:
-        samples.extend(_split_samples(detector, base / split, class_map, reader, ts))
+    # Stream samples lazily across splits — `evaluate` consumes the iterable
+    # exactly once, so we never materialise the whole dataset in memory.
+    samples = chain.from_iterable(
+        _split_samples(detector, base / split, class_map, reader, ts) for split in splits
+    )
     return evaluate(
         samples,
         iou_threshold=iou_threshold,
