@@ -200,8 +200,11 @@ pour la veille technique et juridique qui informe ces décisions, et
    l'air ne laissent rien, un solide dispersé est irrécupérable au
    rucher) ; (c) l'enveloppe non létale (un projectile à vitesse utile
    devient létal pour un frelon de 30 mm). Sera tranché par un **D0
-   multi-bras** (eau pulsée vs souffle d'air vs pellet bridé) — protocole
-   dans [docs/research/prototype-foundations.md § A](research/prototype-foundations.md).
+   multi-bras** restreint aux candidats *eau-clean* — **eau pulsée vs
+   souffle d'air** ; tester un projectile solide (bille, pellet) exigerait
+   de **lever d'abord ce blocage**, il n'est donc pas un bras D0 par
+   défaut. Protocole dans
+   [docs/research/prototype-foundations.md § A](research/prototype-foundations.md).
 
 ## Plancher légal — contrainte d'architecture (PR #4)
 

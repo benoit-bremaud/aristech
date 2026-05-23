@@ -165,12 +165,15 @@ Candidate arms, scored on the project's hard constraints:
 | Calcium-alginate bead               | low                | low                       | low                     | dispersed       | excluded (dissolves; Ba²⁺ toxic)     |
 | Sodium-polyacrylate bead ("Orbeez") | **persistent µplastic** | low                  | low                     | dispersed       | **excluded (not biodegradable)**     |
 
-**D0 protocol notes** (extends the harp side-by-side above): run each retained arm (water slug, air
-pulse, and optionally one biodegradable pellet) on the same hive over matched windows; the response
-metric is **break-off rate** (hornet leaves vs habituates), not interception count. Hold pressure /
-velocity under the non-lethal envelope for every arm, and keep the geometric no-spray exclusion zone
-around the planche d'envol regardless of medium. Result feeds the deferred decision
-`deterrent-medium-pure-water-vs-projectile` in [architecture.md](../architecture.md).
+**D0 protocol notes** (extends the harp side-by-side above): the default D0 arms are the two
+_eco-clean_ candidates only — **pulsed water slug** and **air pulse** — run on the same hive over
+matched windows; the response metric is **break-off rate** (hornet leaves vs habituates), not
+interception count. Solid-projectile arms (gel bead, bio-pellet) are **out of D0 scope**: they are
+hard-blocked by the legal floor, leave-no-trace, and non-lethal guards (see
+`deterrent-medium-pure-water-vs-projectile` in [architecture.md](../architecture.md)), so testing one
+would first require lifting that block — keeping the protocol unambiguous for whoever executes it.
+Hold pressure / velocity under the non-lethal envelope for every arm, and keep the geometric no-spray
+exclusion zone around the planche d'envol regardless of medium. Result feeds the deferred decision.
 
 ## A.bis — Synthesis of Éric Darrouzet's contributions (IRBI / Université de Tours)
 
