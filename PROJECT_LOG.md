@@ -174,7 +174,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
     - `detection-deterrence-decoupling-dip` — detection and deterrence are **complementary, decoupled modules** wired only by the detection signal: deterrence depends on the abstractions the detector emits (`Detection` / `Target`) and on the ports, never on the concrete detector (Dependency Inversion). Detection is validated/shipped alone; deterrence plugs into its output later.
   - **Review cycle** — automated review posted two comments, both addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/30>): reword the D0 break-off / return / habituation criteria into plain grammatical English, and cite the strike-rate baseline to its actual section (§ A) rather than a non-existent anchor.
 
-- **PR #31 merged** (`84ee4a3`) — `docs: log PR #29-#30 (product strategy decisions) in PROJECT_LOG.md`. Branch `docs/log-pr-30`, squash-merged. Logbook catch-up for PR #29 and the product-strategy decisions (PR #30).
+- **PR #31 merged** (`84ee4a3`) — `docs: log PR #29-#30 (product strategy decisions) in PROJECT_LOG.md`. Branch `docs/log-pr-30`, squash-merged. Logbook catch-up for PR #29 and the product-strategy decisions (PR #30); merged without review comments (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/31>).
 
 ---
 
