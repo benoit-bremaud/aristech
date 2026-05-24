@@ -71,6 +71,44 @@ def _split_samples(
         yield predictions, parse_yolo_labels(lines, width, height, class_map)
 
 
+def collect_samples(
+    detector: HornetDetector,
+    dataset_dir: Path | str,
+    class_map: Mapping[int, Species],
+    *,
+    splits: Sequence[str] = ("test",),
+    image_reader: ImageReader | None = None,
+    timestamp: datetime | None = None,
+) -> Iterator[Sample]:
+    """Run `detector` over the YOLO dataset and yield per-image
+    ``(predictions, ground-truth)`` samples, lazily across splits.
+
+    **Precondition for threshold sweeps**: the injected `detector` must emit
+    *all* its predictions, i.e. be configured at confidence ≈ 0. The
+    `HornetDetector` port has no confidence knob, so this cannot be enforced
+    here — but a detector that pre-filters (e.g. `VespAIDetector(confidence=0.5)`
+    drops boxes below 0.5 inside YOLOv5) silently truncates the curve: every
+    threshold below that floor collapses to the same result, and
+    `select_operating_point` may then pick the wrong point or raise falsely.
+    For sweeps, construct the detector at confidence 0 (e.g.
+    ``VespAIDetector(..., confidence=0.0)``). For a single fixed-threshold
+    `evaluate_on_dataset` run the detector's own floor is harmless as long as
+    it is at or below the threshold you pass.
+
+    Materialise with `list(...)` before sweeping, since a one-shot iterator can
+    only be consumed once.
+
+    Raises `FileNotFoundError` if any requested split has no ``images/``
+    directory, rather than silently yielding nothing.
+    """
+    base = Path(dataset_dir)
+    reader = image_reader or _default_image_reader
+    ts = timestamp or datetime.now(timezone.utc)
+    return chain.from_iterable(
+        _split_samples(detector, base / split, class_map, reader, ts) for split in splits
+    )
+
+
 def evaluate_on_dataset(
     detector: HornetDetector,
     dataset_dir: Path | str,
@@ -91,13 +129,15 @@ def evaluate_on_dataset(
     Raises `FileNotFoundError` if any requested split has no ``images/``
     directory, rather than silently scoring it as empty.
     """
-    base = Path(dataset_dir)
-    reader = image_reader or _default_image_reader
-    ts = timestamp or datetime.now(timezone.utc)
-    # Stream samples lazily across splits — `evaluate` consumes the iterable
-    # exactly once, so we never materialise the whole dataset in memory.
-    samples = chain.from_iterable(
-        _split_samples(detector, base / split, class_map, reader, ts) for split in splits
+    # Stream samples lazily — `evaluate` consumes the iterable exactly once, so
+    # we never materialise the whole dataset in memory for a single-threshold run.
+    samples = collect_samples(
+        detector,
+        dataset_dir,
+        class_map,
+        splits=splits,
+        image_reader=image_reader,
+        timestamp=timestamp,
     )
     return evaluate(
         samples,

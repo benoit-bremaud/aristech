@@ -65,7 +65,11 @@ class VespAIDetector:
     ) -> None:
         """`weights_path`: VespAI `.pt` weights. `yolov5_dir`: local clone
         of the YOLOv5 repo (the VespAI submodule). `confidence`: detector
-        threshold passed to YOLOv5."""
+        threshold passed to YOLOv5 — boxes below it are dropped inside the
+        model. Keep the 0.5 default for live detection, but pass
+        ``confidence=0.0`` when feeding a threshold sweep / operating-point
+        selection, otherwise the curve is truncated below this floor (see
+        `aristech.evaluation.collect_samples`)."""
         self._weights_path = weights_path
         self._yolov5_dir = yolov5_dir
         self._confidence = confidence
