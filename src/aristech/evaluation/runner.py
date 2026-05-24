@@ -83,10 +83,20 @@ def collect_samples(
     """Run `detector` over the YOLO dataset and yield per-image
     ``(predictions, ground-truth)`` samples, lazily across splits.
 
-    Detection is run once here at no confidence cut-off; downstream callers
-    decide the threshold (`evaluate`) or sweep several of them
-    (`threshold_sweep`). Materialise with `list(...)` before sweeping, since a
-    one-shot iterator can only be consumed once.
+    **Precondition for threshold sweeps**: the injected `detector` must emit
+    *all* its predictions, i.e. be configured at confidence ≈ 0. The
+    `HornetDetector` port has no confidence knob, so this cannot be enforced
+    here — but a detector that pre-filters (e.g. `VespAIDetector(confidence=0.5)`
+    drops boxes below 0.5 inside YOLOv5) silently truncates the curve: every
+    threshold below that floor collapses to the same result, and
+    `select_operating_point` may then pick the wrong point or raise falsely.
+    For sweeps, construct the detector at confidence 0 (e.g.
+    ``VespAIDetector(..., confidence=0.0)``). For a single fixed-threshold
+    `evaluate_on_dataset` run the detector's own floor is harmless as long as
+    it is at or below the threshold you pass.
+
+    Materialise with `list(...)` before sweeping, since a one-shot iterator can
+    only be consumed once.
 
     Raises `FileNotFoundError` if any requested split has no ``images/``
     directory, rather than silently yielding nothing.
