@@ -51,9 +51,7 @@ def threshold_sweep(
     """
     points: list[ThresholdPoint] = []
     for threshold in thresholds:
-        report = evaluate(
-            samples, iou_threshold=iou_threshold, confidence_threshold=threshold
-        )
+        report = evaluate(samples, iou_threshold=iou_threshold, confidence_threshold=threshold)
         points.append(
             ThresholdPoint(
                 confidence_threshold=threshold,

@@ -50,9 +50,7 @@ def test_bees_as_target_count_reads_the_critical_cell() -> None:
 
 
 def test_threshold_sweep_tracks_bee_fp_and_recall() -> None:
-    points = threshold_sweep(
-        _samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.9]
-    )
+    points = threshold_sweep(_samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.9])
     assert [p.confidence_threshold for p in points] == [0.3, 0.5, 0.9]
     by_t = {p.confidence_threshold: p for p in points}
     assert by_t[0.3].bees_as_target == 1  # unsafe: bee predicted as target
@@ -62,9 +60,7 @@ def test_threshold_sweep_tracks_bee_fp_and_recall() -> None:
 
 
 def test_select_picks_lowest_safe_threshold_with_max_recall() -> None:
-    chosen = select_operating_point(
-        _samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.9]
-    )
+    chosen = select_operating_point(_samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.9])
     # 0.3 is unsafe (bee as target); 0.9 is safe but misses the hornet; 0.5 is
     # the safe threshold that still catches the hornet.
     assert chosen.confidence_threshold == 0.5
