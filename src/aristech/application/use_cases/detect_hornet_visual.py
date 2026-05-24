@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from aristech.application.decision import Decision, decide
 from aristech.application.ports import HornetDetector, Notifier, VideoSource
 from aristech.domain import Detection
 
@@ -37,12 +38,10 @@ class DetectHornetVisual:
     def run(self) -> list[Detection]:
         accepted: list[Detection] = []
         try:
+            threshold = self._config.confidence_threshold
             for frame in self._video.frames():
                 for detection in self._detector.detect(frame):
-                    if (
-                        detection.is_threat()
-                        and detection.confidence >= self._config.confidence_threshold
-                    ):
+                    if decide(detection, threshold) is Decision.ACT:
                         self._notifier.notify_detection(detection)
                         accepted.append(detection)
         finally:
