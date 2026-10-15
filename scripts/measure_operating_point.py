@@ -38,7 +38,12 @@ _log = logging.getLogger("aristech.measure")
 def _parse_class_map(spec: str) -> dict[int, Species]:
     """Parse ``"0:vespa_crabro,1:vespa_velutina"`` into ``{0: Species, ...}``.
 
-    Values must match `Species` enum values; ids must be integers.
+    Values must match `Species` enum values; ids must be integers. The map
+    must contain `vespa_velutina` (the target species).
+
+    Raises:
+        ValueError: malformed entry, non-integer id, unknown species, or no
+            `vespa_velutina` mapping.
     """
     mapping: dict[int, Species] = {}
     for pair in spec.split(","):
@@ -46,6 +51,8 @@ def _parse_class_map(spec: str) -> dict[int, Species]:
         if not raw_species:
             raise ValueError(f"bad class-map entry (expected 'id:species'): {pair!r}")
         mapping[int(raw_id)] = Species(raw_species.strip())
+    if Species.VESPA_VELUTINA not in mapping.values():
+        raise ValueError("class-map must map an id to 'vespa_velutina' (the target species)")
     return mapping
 
 
@@ -104,6 +111,11 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:
         _log.error("Argument invalide : %s", exc)
         return 2
+    if Species.APIS_MELLIFERA not in class_map.values():
+        _log.warning(
+            "⚠ class-map has no 'apis_mellifera' id: bees-as-target will be "
+            "vacuously 0 and the legal-floor gate is NOT exercised."
+        )
 
     dataset = Path(args.dataset)
     if not dataset.is_dir():
