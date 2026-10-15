@@ -194,3 +194,25 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Decisions**:
     - `deterrent-medium-pure-water-vs-projectile` — the deterrent **modality** (non-lethal jet) is settled (cf. decision #1), but the **medium** is **open, default = pure water**. Research finding: pure water and an **air pulse / vortex** are the only candidates as eco-clean as water; solid projectiles cumulate poor hit-probability on an agile flying target, a lethal-velocity tension with the non-lethal guard, and dispersed waste. The cheap "Orbeez"-type bead (sodium polyacrylate) is **excluded outright** as a non-biodegradable microplastic; calcium-alginate is too fragile (dissolves); starch-SAP and gelatin/PEG pellets are genuinely biodegradable but remain dispersed single-use consumables. Any solid projectile is **hard-blocked** by three guards (legal floor _pure water only_ / leave-no-trace / non-lethal envelope), so it is **not a D0 arm**; the **D0 multi-arm** field test compares only the eco-clean arms (pulsed water vs air pulse). Nothing is committed — the medium is decided later by D0.
   - **Review cycle** — Copilot posted a clean review (0 comments); Codex posted one comment, addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/34>): the "hard-blocked solid projectile" language contradicted listing a throttled-pellet D0 arm — resolved by putting solid-projectile arms explicitly out of D0 scope in both `architecture.md` and `prototype-foundations.md`, so the protocol is unambiguous.
+
+- **PR #35 merged** (`4713a20`) — `docs: log PR #33-#34 (deterrent media research) in PROJECT_LOG.md`. Branch `docs/log-pr-33-34`, squash-merged. Logbook catch-up for PR #33 and the deterrent-media research (PR #34); merged without review comments (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/35>).
+
+---
+
+## 2026-05-24
+
+- **PR #36 merged** (`e3ab5d9`) — `feat(evaluation): operating-point selection + explicit abstention policy (M4)`. Branch `feat/m4-operating-point`, squash-merged. Part of **#18 (M4)**. Adds `aristech.evaluation.operating_point` (`threshold_sweep`, `bees_as_target_count`, `select_operating_point`): the operating point is the lowest confidence threshold at which **zero honeybees are classified as the target** (_V. velutina_), maximising hornet recall under that legal-floor zero; it raises when no threshold reaches zero. `collect_samples()` is extracted from the runner so detection runs once at confidence 0 and thresholds are swept downstream. `application/decision.py` adds a `Decision` enum (ACT / ABSTAIN / IGNORE) and a pure `decide()`; a below-threshold target now explicitly abstains. `DetectHornetVisual` routes through `decide()` with unchanged behaviour.
+
+  - **Review cycle** — automated review raised one comment (the detector must run unfiltered during threshold sweeps), handled before merge through the confidence-0 contract of `collect_samples` (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/36>).
+
+---
+
+## 2026-10-15
+
+- **Project resumed after audit** — aristech was paused on 2026-05-24 and audited on 2026-10-15. The owner decided the project follows the full method (design dossier, ADRs, UML, review gates) given its size and complexity. Brick order: close PR #37, security CI baseline, method foundation, live-path double-threshold fix, tests, YAGNI cleanup, docs.
+
+- **Repository made public** — per the owner rule that personal repositories stay public until their first production deployment. Full-history secret scan clean; CI secret detection is still missing and lands with the security CI baseline brick.
+
+- **PR #37 merged** (`b131ad1`) — `chore(scripts): add measure_operating_point for the M4 on-set sweep`. Branch `feat/m4-measure-script`, squash-merged. Part of **#18 (M4)**. Adds `scripts/measure_operating_point.py`: runs VespAI once at confidence 0 over a YOLO dataset, prints the per-threshold curve and the selected legal-floor operating point. Runs locally only (needs the `vision` extra, operator-supplied weights and the annotated set). **#18 stays open**: the on-set measurement and the live-path double-threshold fix are still pending.
+
+  - **Review cycle** — automated review raised one comment, addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/37>): the class map is now validated after parsing — no `vespa_velutina` id fails fast with exit 2; no `apis_mellifera` id only warns, since bees-as-target is then vacuously 0 and the legal-floor gate is not exercised (the Roboflow set has no bee class). Unit tests added for the parser and both paths.
