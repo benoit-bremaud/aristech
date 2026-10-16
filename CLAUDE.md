@@ -6,9 +6,10 @@ on top; this file only adds what is specific to aristech.
 ## What the project is
 
 Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.10+,
-Clean Architecture (`domain` → `application` → `infrastructure` / `interface`), first adapter is
-the VespAI YOLOv5 detector. Scope, roadmap and milestones: `docs/INDEX.md`, `docs/ROADMAP.md`,
-`docs/requirements.md`.
+Clean Architecture (`domain` → `application` → `infrastructure` / `interface`), plus
+`evaluation/` (offline metrics, heavy imports lazy) and the legacy Keras `training/` package
+(slated for removal, audit S3). First adapter: the VespAI YOLOv5 detector.
+Scope, roadmap and milestones: `docs/INDEX.md`, `docs/ROADMAP.md`, `docs/requirements.md`.
 
 ## Working method (owner decision 2026-10-15)
 
@@ -19,9 +20,8 @@ skip a gate because a change looks small.
   feature in `docs/architecture/diagrams/<feature>/` and pass the conception gate
   (`docs/architecture/gates/`) before writing implementation code.
 - **ADRs** — every structuring decision gets `docs/decisions/ADR-NNNN-<slug>.md` with the scored
-  options (MCDA). Superseding, never editing, an accepted ADR.
-- **MCDA** on every choice between options, scored clickable answers.
-- **One chat per brick**, one branch per task from `main`, Conventional Commits.
+  options (MCDA). Supersede an accepted ADR, never edit it.
+- **One chat per brick**. Git workflow (branches, Conventional Commits): `docs/CONTRIBUTING.md`.
 - **Pre-push review report** per branch in `docs/architecture/reviews/<branch>.md`; ask the owner
   per PR which review counts (review-local, Copilot, Codex).
 - **Merge** only on CI green + every comment handled + explicit owner OK; then a
@@ -29,8 +29,9 @@ skip a gate because a change looks small.
 
 ## Non-negotiables
 
-- The dependency rule holds: `domain/` imports stdlib only, `application/` imports `domain/`
-  only, heavy libraries (torch, cv2, yolov5) live in `infrastructure/` or behind a lazy import.
+- The dependency rule holds: `domain/` imports stdlib and `domain/` only, `application/` imports
+  `domain/` only, heavy libraries (torch, cv2, yolov5) live in `infrastructure/` or behind a lazy
+  import (`evaluation/runner.py`). `training/` (tensorflow) is the known exception until removed.
 - A new port needs a present force (a second implementation, a test fake, an optional extra).
   No speculative ports.
 - Heavy dependencies go in an optional extra (`vision`, `audio`, …), never in the core

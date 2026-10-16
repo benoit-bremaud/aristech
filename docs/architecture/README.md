@@ -1,7 +1,8 @@
 # Design dossier
 
 Source of truth for how aristech is designed. `docs/architecture.md` is the legacy single-page
-overview; it is superseded by this dossier and will be refreshed or folded in during brick B6.
+overview; it is superseded by this dossier and will be refreshed or folded in by the
+documentation-freshness work (audit finding S2, `reviews/audit-2026-10-15.md`).
 
 | Folder | Content |
 |--------|---------|
