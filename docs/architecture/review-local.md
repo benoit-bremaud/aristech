@@ -1,29 +1,22 @@
-# Local review — aristech (PR #37, Codex P1 class-map fix)
+# Local review — aristech (branch diff main...ci/security-baseline)
 
-- Date: 2026-10-15
-- Commit: 0c3e4d5 (+ review fixes, amended)
-- Scope: branch diff origin/feat/m4-measure-script...HEAD
-- Checks run: design · docs · tests · security · correctness
-- Verdict: ship · Must 0 · Should 4 (3 applied) · Nice 5
+- Date: 2026-10-16
+- Commit: f533fd8
+- Scope: branch diff `main...HEAD` — 5 YAML files (`.github/workflows/{gitleaks,codeql,dependency-review,scorecard}.yml`, `.github/dependabot.yml`)
+- Checks run: security · correctness (design · docs · tests not applicable: no source code in the diff)
+- Verdict: ship as-is · Must 0 · Should 1 · Nice 1
 
 ## 🔴 Must Have
 _None._
 
 ## 🟡 Should Have
-- `scripts/measure_operating_point.py:39` `[docs]` · `_parse_class_map` docstring missed the new rule and `ValueError` contract · applied.
-- `tests/unit/scripts/test_measure_operating_point.py` `[tests|correctness|design]` · exit-2 assertions did not pin the cause; no negative bee case · applied (caplog asserts + no-warning test).
-- `scripts/measure_operating_point.py:48` `[correctness]` · duplicate class ids silently overwrite (pre-existing) · deferred to B3 tests/cleanup.
-- `scripts/measure_operating_point.py:109` `[design]` · class-map rules split between parser and `main` · deferred (KISS for a script).
+- repo settings `[security]` · Dependabot security updates, secret scanning and push protection were disabled although free on a public repo · enabled via the GitHub API (owner-approved 2026-10-16).
 
 ## 🔵 Nice to Have
-- Untested parser error paths (no `:`, unknown species, non-int id) `[tests]`.
-- Wrap `int()` error for a clearer message `[correctness]`.
-- `main` docstring with exit codes `[docs]`.
-- Mixed French/English log messages, emoji in warning `[design]` (pre-existing style).
-- `exec_module` without `sys.modules` registration in tests `[correctness]`.
+- `.github/workflows/gitleaks.yml:29` `[correctness]` · on pull requests from forks the token lacks `security-events: write`, so the SARIF upload step fails · guard with `github.event.pull_request.head.repo.full_name == github.repository`; tracked as a backlog issue.
 
 ## ⚪ Disagree / Intentional
-- Tests load the script via `importlib` and call a private helper · scripts are not a package; acceptable until the parser moves into `aristech/`.
+- `.github/workflows/dependency-review.yml:16` `[security]` · `fail-on-severity: high` (not `low`) · keeps PRs unblocked by low/moderate advisories; Dependabot surfaces those.
 
 ## Per-dimension summary
-- Design: proportionate, no over-engineering · Docs: one stale docstring, fixed · Tests: trustworthy, assertions tightened · Security: nothing found · Correctness: no bugs; duplicate-id overwrite pre-existing.
+- Design: n/a (CI config only) · Docs: n/a · Tests: n/a · Security: all actions SHA-pinned, least-privilege job permissions, `actionlint` clean, local gitleaks full-history clean · Correctness: CodeQL default setup not configured, so no conflict with the advanced workflow.
