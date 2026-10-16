@@ -246,3 +246,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
 - **PR #55 merged** (`8c66fe3`) — `chore(sonar): read the aristech project token file in make sonar`. Branch `chore/sonar-project-token`, squash-merged. `make sonar` reads the project analysis token `project-aristech-local-2026` from `~/.config/sonar-tokens/aristech` (mode 600, outside the repo) and falls back to `SONAR_TOKEN`. The auto-created SonarQube project was private with no grants (invisible in the UI); it is now public on the local instance. Control scan with the project token: analysis successful.
   - **Decisions** — dedicated project token rather than the global analysis token (owner choice).
   - **Review cycle** — local report: no Must/Should; one Nice (reading results needs a user token, out of scope). Automated reviewer unavailable (usage limit).
+
+- **PR #46 merged** (`92ae322`) — `chore(ci): bump the github-actions group with 2 updates`. Dependabot, squash-merged. `actions/checkout` v4 → v7 and `actions/setup-python` v5 → v7 in `ci.yml`; all checks green on the Python 3.10–3.12 matrix.
+- **Branch cleanup** — local `docs/audit-2026-10-15` and its detached worktree branch deleted: the audit commit landed on `main` by cherry-pick in #49.
+  - **Decisions** — closure plan "merge #46 + delete the audit branches, defer the shell-profile change" (weighted matrix 455 vs everything 395 vs #46 only 385 vs defer all 255).
