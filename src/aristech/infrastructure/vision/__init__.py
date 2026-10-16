@@ -1,6 +1,6 @@
-"""Adaptateurs vision (port `VideoSource`, `HornetDetector`).
+"""Vision adapters (`VideoSource`, `HornetDetector` ports).
 
-Les dépendances lourdes (`cv2`, `torch`, YOLOv5) sont importées en lazy à
-l'intérieur des classes : importer ce package ne requiert pas l'extra
-`vision`. Installer avec `pip install aristech[vision]` pour les utiliser.
+Heavy dependencies (`cv2`, `torch`, YOLOv5) are imported lazily inside the classes:
+importing this package does not need the `vision` extra. Install it with
+`pip install aristech[vision]` to use them.
 """

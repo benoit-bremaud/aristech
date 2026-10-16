@@ -1,1 +1,1 @@
-"""Points d'entrée : CLI, futur API, composition root."""
+"""Entry points: the CLI and its composition root."""

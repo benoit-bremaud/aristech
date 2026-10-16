@@ -82,25 +82,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--yolov5-dir", required=True, help="Clone local YOLOv5 (sous-module VespAI)."
     )
-    parser.add_argument("--dataset", required=True, help="Racine du dataset YOLO.")
+    parser.add_argument("--dataset", required=True, help="YOLO dataset root.")
     parser.add_argument(
         "--splits",
         nargs="+",
         default=["test"],
-        help="Splits à évaluer (ex: test valid). Défaut: test.",
+        help="Splits to evaluate (e.g. test valid). Default: test.",
     )
     parser.add_argument(
         "--class-map",
         required=True,
-        help="Map id→espèce, ex: '0:vespa_crabro,1:vespa_velutina,2:apis_mellifera'.",
+        help="Class id to species map, e.g. '0:vespa_crabro,1:vespa_velutina,2:apis_mellifera'.",
     )
     parser.add_argument(
-        "--iou", type=float, default=0.5, help="Seuil IoU d'appariement (défaut 0.5)."
+        "--iou", type=float, default=0.5, help="IoU matching threshold (default 0.5)."
     )
     parser.add_argument(
         "--thresholds",
         default=None,
-        help="Liste de seuils à balayer (ex: '0.3,0.5,0.7'). Défaut: 0.05→0.95.",
+        help="Thresholds to sweep (e.g. '0.3,0.5,0.7'). Default: 0.05→0.95.",
     )
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -125,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
         _log.error("Poids introuvables : %s", args.weights)
         return 2
     if not Path(args.yolov5_dir).is_dir():
-        _log.error("Répertoire YOLOv5 introuvable : %s", args.yolov5_dir)
+        _log.error("YOLOv5 directory not found: %s", args.yolov5_dir)
         return 2
 
     # Imported here so --help works without the `vision` extra installed.
@@ -174,8 +174,7 @@ def main(argv: list[str] | None = None) -> int:
         chosen.bees_as_target,
     )
     _log.info(
-        "Wire this into config/config.yaml (hornet_detection.confidence_threshold) "
-        "and DetectHornetVisualConfig.confidence_threshold."
+        "Pass it to the CLI as --confidence (DetectHornetVisualConfig.confidence_threshold)."
     )
     return 0
 

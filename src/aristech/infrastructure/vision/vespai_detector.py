@@ -57,6 +57,8 @@ def detection_from_box(
 
 
 class VespAIDetector:
+    """`HornetDetector` running the VespAI YOLOv5 model, loaded on first use."""
+
     def __init__(
         self,
         weights_path: str,
@@ -111,6 +113,7 @@ class VespAIDetector:
         return self._model
 
     def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+        """Convert the BGR frame to RGB, run the model, map each box to a `Detection`."""
         import cv2
 
         model = self._load()

@@ -11,7 +11,10 @@ _log = logging.getLogger("aristech.detection")
 
 
 class LoggingNotifier:
+    """Logs to the `aristech.detection` logger at INFO."""
+
     def notify_detection(self, detection: Detection) -> None:
+        """Log species, confidence, centre and timestamp of a threat."""
         c = detection.bbox.center
         _log.info(
             "detection %s conf=%.2f threat=%s at (%.0f,%.0f) %s",
@@ -24,6 +27,7 @@ class LoggingNotifier:
         )
 
     def notify_abstention(self, detection: Detection) -> None:
+        """Log a target seen below the operating threshold."""
         c = detection.bbox.center
         _log.info(
             "abstain %s conf=%.2f below operating threshold at (%.0f,%.0f) %s",

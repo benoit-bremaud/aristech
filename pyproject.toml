@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aristech"
 version = "0.1.0"
-description = "Aristech : détection et neutralisation temps réel du frelon asiatique (Vespa velutina) pour la protection des ruchers."
+description = "aristech: real-time detection of the Asian hornet (Vespa velutina) in front of beehives."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -30,22 +30,18 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 
-# Le cœur reste volontairement léger : seules les libs dont dépendent le
-# domaine, les use cases et le composition root (CLI). Tout ce qui est
-# lourd ou propre à un adaptateur (vision) vit dans un
-# extra optionnel — cohérent avec la Clean Architecture (l'infrastructure
-# est un détail interchangeable) et avec la décision DIP du projet.
-# Le lock complet est dans requirements.txt (à régénérer via `make lock`).
+# The core stays light on purpose: only what the domain, the use cases and the
+# composition root (CLI) need. Anything heavy or adapter-specific (vision) lives in
+# an optional extra (ADR-0001). The full lock is requirements.txt (`make lock`).
 dependencies = [
     "PyYAML>=6,<7",
     "python-dotenv>=1,<2",
 ]
 
 [project.optional-dependencies]
-# Adaptateurs vision (M2) : OpenCVVideoSource + VespAIDetector (YOLOv5).
-# Note : les poids VespAI sont CC BY-NC-SA et ne sont PAS embarqués — on
-# les charge via un chemin fourni. torch/yolov5 sont BSD/AGPL : wrappés à
-# l'exécution, jamais copiés dans aristech.
+# Vision adapters (M2): OpenCVVideoSource + VespAIDetector (YOLOv5).
+# VespAI weights are CC BY-NC-SA and NOT bundled: they are loaded from a given path.
+# torch/yolov5 are BSD/AGPL: wrapped at runtime, never copied into aristech.
 vision = [
     "torch>=2.3,<3",
     "torchvision>=0.18,<1",
@@ -63,9 +59,8 @@ dev = [
     "pre-commit",
     "pip-tools",
 ]
-# GPU extras isolés : les wheels NVIDIA n'existent que pour Linux x86_64.
-# Les markers PEP 508 empêchent l'install de tenter de les résoudre sur
-# macOS / Windows / ARM, où elles échoueraient.
+# GPU extra isolated: NVIDIA wheels exist for Linux x86_64 only. The PEP 508
+# markers stop the install from resolving them on macOS / Windows / ARM.
 gpu = [
     "nvidia-cublas-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
     "nvidia-cudnn-cu12; sys_platform == 'linux' and platform_machine == 'x86_64'",
@@ -85,8 +80,8 @@ where = ["src"]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers -m \"not integration and not e2e\""
 markers = [
-    "integration: tests qui touchent du matériel, des données réelles ou le réseau",
-    "e2e: tests end-to-end (lents)",
+    "integration: tests that touch hardware, real data or the network",
+    "e2e: end-to-end tests (slow)",
 ]
 
 [tool.ruff]
@@ -104,8 +99,7 @@ packages = ["aristech"]
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-# Libs sans stubs (ou stubs incomplets) — tolérées pour ne pas bloquer
-# strict-mypy quand les adaptateurs infrastructure/ arriveront.
+# Libraries without (complete) stubs, tolerated so strict mypy stays usable.
 module = [
     "cv2",
     "dotenv",
@@ -117,9 +111,8 @@ module = [
 ]
 ignore_missing_imports = true
 
-# Infrastructure : adaptateurs au-dessus de libs non typées (cv2, torch,
-# YOLOv5). Le domaine et l'application restent en strict ; on relâche
-# uniquement la couche qui touche le monde extérieur.
+# Infrastructure: adapters over untyped libraries (cv2, torch, YOLOv5). Domain and
+# application stay strict; only the layer touching the outside world is relaxed.
 [[tool.mypy.overrides]]
 module = ["aristech.infrastructure.*"]
 warn_return_any = false

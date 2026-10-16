@@ -1,6 +1,6 @@
-"""CLI : répartit les images entre TRAIN/VALIDATION/TEST_FOLDER.
+"""CLI: split the images into TRAIN/VALIDATION/TEST_FOLDER.
 
-Lit les chemins depuis le fichier `.env` (cf. `.env.example`).
+Reads the paths from `.env` (see `.env.example`).
 """
 
 from __future__ import annotations
@@ -24,11 +24,11 @@ def main() -> int:
     test = os.getenv("TEST_FOLDER")
 
     if not all([source, train, validation, test]):
-        print("SOURCE_FOLDER / TRAIN_FOLDER / VALIDATION_FOLDER / TEST_FOLDER manquant(s) dans .env")
+        print("SOURCE_FOLDER / TRAIN_FOLDER / VALIDATION_FOLDER / TEST_FOLDER missing from .env")
         return 1
 
     counts = distribute_files(source, train, validation, test, extensions=IMAGE_EXTENSIONS)  # type: ignore[arg-type]
-    print(f"Images réparties : {counts[0]} train, {counts[1]} validation, {counts[2]} test.")
+    print(f"Images split: {counts[0]} train, {counts[1]} validation, {counts[2]} test.")
     return 0
 
 

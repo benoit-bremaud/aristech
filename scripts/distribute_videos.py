@@ -1,8 +1,7 @@
-"""CLI : répartit les vidéos entre VIDEO_TRAIN/VIDEO_VALIDATION/VIDEO_TEST_FOLDER.
+"""CLI: split the videos into VIDEO_TRAIN/VIDEO_VALIDATION/VIDEO_TEST_FOLDER.
 
-Lit les chemins depuis le fichier `.env` (cf. `.env.example`). Utilise des
-variables dédiées (`VIDEO_*`) pour qu'images et vidéos puissent coexister
-dans le même `.env` sans se piétiner.
+Reads the paths from `.env` (see `.env.example`). Dedicated `VIDEO_*` variables let
+images and videos share one `.env` without clashing.
 """
 
 from __future__ import annotations
@@ -28,12 +27,12 @@ def main() -> int:
     if not all([source, train, validation, test]):
         print(
             "VIDEO_SOURCE_FOLDER / VIDEO_TRAIN_FOLDER / "
-            "VIDEO_VALIDATION_FOLDER / VIDEO_TEST_FOLDER manquant(s) dans .env"
+            "VIDEO_VALIDATION_FOLDER / VIDEO_TEST_FOLDER missing from .env"
         )
         return 1
 
     counts = distribute_files(source, train, validation, test, extensions=VIDEO_EXTENSIONS)  # type: ignore[arg-type]
-    print(f"Vidéos réparties : {counts[0]} train, {counts[1]} validation, {counts[2]} test.")
+    print(f"Videos split: {counts[0]} train, {counts[1]} validation, {counts[2]} test.")
     return 0
 
 

@@ -7,7 +7,7 @@ install-dev:
 	pip install -e ".[dev]"
 	pre-commit install
 
-# Régénère requirements.txt à partir de requirements.in (pip-tools).
+# Regenerate requirements.txt from requirements.in (pip-tools).
 lock:
 	pip-compile --strip-extras requirements.in
 

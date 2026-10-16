@@ -79,7 +79,7 @@ def test_detector_runs_at_the_floor(argv, caplog):
 
 def test_run_summary_counts_threats_and_abstentions(argv, caplog):
     _run(argv, caplog)
-    assert "1 menace(s), 1 abstention(s)" in caplog.text
+    assert "1 threat(s), 1 abstention(s)" in caplog.text
 
 
 def test_uncertain_target_is_logged_as_abstain(argv, caplog):

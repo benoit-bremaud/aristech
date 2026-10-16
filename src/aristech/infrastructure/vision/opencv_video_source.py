@@ -15,6 +15,8 @@ from aristech.domain import VideoFrame
 
 
 class OpenCVVideoSource:
+    """`VideoSource` over `cv2.VideoCapture`, opened on the first `frames()` call."""
+
     def __init__(self, source: str | int) -> None:
         """`source` is a video file path or an integer camera index."""
         self._source = source
@@ -31,6 +33,7 @@ class OpenCVVideoSource:
         return self._cap
 
     def frames(self) -> Iterator[VideoFrame]:
+        """Yield BGR frames stamped in UTC; raise `RuntimeError` if the source won't open."""
         cap = self._capture()
         while True:
             ok, frame = cap.read()
@@ -45,6 +48,7 @@ class OpenCVVideoSource:
             )
 
     def close(self) -> None:
+        """Release the capture; idempotent."""
         if self._cap is not None:
             self._cap.release()
             self._cap = None

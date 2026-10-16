@@ -1,1 +1,1 @@
-"""Cas d'usage et ports (interfaces) de l'application."""
+"""Use cases, the decision rule and the ports they depend on."""

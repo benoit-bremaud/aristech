@@ -1,8 +1,7 @@
-"""Répartition aléatoire des fichiers source entre train/validation/test.
+"""Random split of source files into train/validation/test folders.
 
-Pure fonction sans dotenv ni I/O parasite : les variables d'environnement
-sont résolues côté `scripts/`, pas ici. Cela permet de tester la fonction
-sans dépendre du shell.
+No environment access: the scripts in `scripts/` resolve the environment variables
+and pass plain paths, so the function is testable without a shell or `.env`.
 """
 
 from __future__ import annotations
@@ -24,14 +23,13 @@ def distribute_files(
     extensions: Sequence[str] | None = None,
     seed: int | None = None,
 ) -> tuple[int, int, int]:
-    """Déplace les fichiers de `source_folder` vers train/val/test.
+    """Move the files of `source_folder` into the train/validation/test folders.
 
-    Retourne `(train_count, validation_count, test_count)`.
+    Returns `(train_count, validation_count, test_count)`.
 
-    `train_ratio + validation_ratio` ≤ 1.0 ; le reste va dans test.
-    Si `extensions` est fourni (ex. `(".jpg", ".png")`), filtre les
-    fichiers correspondants. `seed` permet de rendre le tirage
-    reproductible.
+    `train_ratio + validation_ratio` must be ≤ 1.0; the rest goes to test. When
+    `extensions` is given (e.g. `(".jpg", ".png")`), only matching files move. `seed`
+    makes the shuffle reproducible.
     """
 
     if train_ratio < 0 or validation_ratio < 0:

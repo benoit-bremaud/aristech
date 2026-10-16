@@ -1,1 +1,1 @@
-"""Adaptateurs de notification (port `Notifier`)."""
+"""Notification adapters (`Notifier` port)."""
