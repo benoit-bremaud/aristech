@@ -40,6 +40,9 @@ Toujours brancher depuis `main`. Jamais de commit direct sur `main`.
    make lint type-check test
    ```
 
+   `make lint` runs `ruff check` and `ruff format --check`, like CI; `make format` fixes the
+   formatting.
+
 3. Commit au format [Conventional Commits](https://www.conventionalcommits.org/) :
 
    ```text

@@ -63,7 +63,6 @@ dev = [
     "pre-commit",
     "pip-tools",
 ]
-docs = ["sphinx>=7"]
 # GPU extras isolés : les wheels NVIDIA n'existent que pour Linux x86_64.
 # Les markers PEP 508 empêchent l'install de tenter de les résoudre sur
 # macOS / Windows / ARM, où elles échoueraient.

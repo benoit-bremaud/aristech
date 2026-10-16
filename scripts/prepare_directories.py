@@ -14,10 +14,10 @@ def move_images_to_class_directory(base_dir, class_name):
 if __name__ == "__main__":
     base_dir = "data/images"
     class_name = "vespa-velutina"
-    
+
     for split in ["train", "validation", "test"]:
         split_dir = os.path.join(base_dir, split)
         create_directories(split_dir, class_name)
         move_images_to_class_directory(split_dir, class_name)
-    
+
     print("Images have been moved to the appropriate directories.")
