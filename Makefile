@@ -30,10 +30,13 @@ format:
 type-check:
 	mypy
 
-# Coverage + analysis on the local SonarQube; needs SONAR_TOKEN in the environment.
+# Coverage + analysis on the local SonarQube. Token: the project token file
+# (~/.config/sonar-tokens/aristech) when present, else SONAR_TOKEN from the environment.
+SONAR_TOKEN_FILE ?= $(HOME)/.config/sonar-tokens/aristech
+
 sonar:
 	pytest tests/unit -q --cov=aristech --cov-report=xml
-	sonar-scanner
+	SONAR_TOKEN="$$(cat $(SONAR_TOKEN_FILE) 2>/dev/null || printf '%s' "$$SONAR_TOKEN")" sonar-scanner
 
 run:
 	python -m aristech --config config/config.yaml

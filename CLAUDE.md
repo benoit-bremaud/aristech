@@ -53,5 +53,7 @@ make type-check
 CI also runs `ruff format --check`, which `make lint` does not: run `make format` before every
 push. Check workflow edits with `actionlint`.
 
-Quality: `make sonar` (unit-test coverage + scan of the local SonarQube, key `aristech`) needs
-`SONAR_TOKEN` in the environment; Community Build analyses `main` only.
+Quality: `make sonar` (unit-test coverage + scan of the local SonarQube, key `aristech`) reads the
+project token `project-aristech-local-2026` from `~/.config/sonar-tokens/aristech`, falling back
+to `SONAR_TOKEN`; Community Build analyses `main` only. The project must grant Browse to
+`sonar-users` for its results to be visible.
