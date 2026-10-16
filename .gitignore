@@ -152,3 +152,7 @@ models/*.pt
 data/**
 !data/**/
 !data/**/.gitkeep
+
+# SonarQube scan artefacts
+coverage.xml
+.scannerwork/
