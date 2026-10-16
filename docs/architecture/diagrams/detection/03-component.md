@@ -34,6 +34,7 @@ flowchart TB
     subgraph evaluation["evaluation (offline, lazy cv2)"]
         RUN["runner.evaluate_on_dataset"]
         OP["operating_point.select_operating_point"]
+        MET["metrics (IoU, matching, per-class report)"]
     end
     EXT[("VespAI weights + YOLOv5 repo — operator-supplied, CC BY-NC-SA")]
 
@@ -51,8 +52,10 @@ flowchart TB
     LOG -. implements .-> P_N
     VESP --> EXT
     RUN --> P_DET
-    OP --> RUN
+    RUN --> MET
+    OP --> MET
     application --> domain
+    evaluation --> domain
 ```
 
 ## Notes

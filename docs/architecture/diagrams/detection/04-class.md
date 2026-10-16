@@ -26,8 +26,8 @@ classDiagram
         +float y
         +float width
         +float height
-        +center() Point2D
-        +area() float
+        +center: Point2D readOnly
+        +area: float readOnly
     }
     class Point2D {
         +float x
@@ -46,6 +46,10 @@ classDiagram
         +datetime timestamp
         +is_hornet() bool
         +is_threat() bool
+    }
+    class decision {
+        <<utility>>
+        +decide(detection Detection, threshold float) Decision
     }
     class Decision {
         <<enumeration>>
@@ -74,7 +78,8 @@ classDiagram
     HornetDetector ..> Detection
     VideoSource ..> VideoFrame
     Notifier ..> Detection
-    Decision <.. Detection : "decide(detection, threshold)"
+    decision ..> Detection
+    decision ..> Decision
 ```
 
 ## Notes

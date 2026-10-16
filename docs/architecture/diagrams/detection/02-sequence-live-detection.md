@@ -24,11 +24,12 @@ sequenceDiagram
 
     Operator->>CLI: run with --video, --weights, --yolov5-dir, --confidence c
     CLI->>CLI: validate arguments (exit 2 on error)
+    CLI->>VS: create(source — camera index or file path)
     CLI->>DET: create with confidence = c
     CLI->>UC: create with confidence_threshold = c
     CLI->>UC: run()
-    loop each frame
-        UC->>VS: frames()
+    UC->>VS: frames()
+    loop each VideoFrame yielded
         VS-->>UC: VideoFrame
         UC->>DET: detect(frame)
         Note over DET: drops every box below c (first filter)
@@ -39,6 +40,8 @@ sequenceDiagram
             alt V. velutina and confidence >= c
                 DEC-->>UC: ACT
                 UC->>N: notify_detection(detection)
+            else V. velutina and confidence < c (unreachable today)
+                DEC-->>UC: ABSTAIN
             else other species
                 DEC-->>UC: IGNORE
             end
