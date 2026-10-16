@@ -67,14 +67,35 @@ def argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> list[str]:
     ]
 
 
-def test_detector_runs_at_floor_and_abstentions_are_reported(argv, caplog):
+def _run(argv: list[str], caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level(logging.INFO, logger="aristech"):
-        rc = main([*argv, "--confidence", "0.5", "--detector-floor", "0.2"])
-    assert rc == 0
+        assert main([*argv, "--confidence", "0.5", "--detector-floor", "0.2"]) == 0
+
+
+def test_detector_runs_at_the_floor(argv, caplog):
+    _run(argv, caplog)
     assert _FakeDetector.created[0]["confidence"] == 0.2
+
+
+def test_run_summary_counts_threats_and_abstentions(argv, caplog):
+    _run(argv, caplog)
     assert "1 menace(s), 1 abstention(s)" in caplog.text
+
+
+def test_uncertain_target_is_logged_as_abstain(argv, caplog):
+    _run(argv, caplog)
     assert "abstain vespa_velutina" in caplog.text
+
+
+def test_non_target_species_is_not_reported(argv, caplog):
+    _run(argv, caplog)
     assert "apis_mellifera" not in caplog.text
+
+
+@pytest.mark.parametrize("floor", ["0.5", "0"])
+def test_floor_at_the_bounds_is_accepted(argv, floor):
+    assert main([*argv, "--confidence", "0.5", "--detector-floor", floor]) == 0
+    assert _FakeDetector.created[0]["confidence"] == float(floor)
 
 
 def test_default_floor_is_point_one(argv):

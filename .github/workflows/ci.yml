@@ -40,5 +40,5 @@ jobs:
       # ce que les tests utilisent.
       - run: pip install -e . --no-deps
       - run: pip install pytest pytest-cov pyyaml python-dotenv
-      - name: Run unit tests (no hardware, no models)
-        run: pytest tests/unit -q --cov=aristech --cov-report=term-missing
+      - name: Run tests (default selection, no hardware, no models)
+        run: pytest -q --cov=aristech --cov-report=term-missing

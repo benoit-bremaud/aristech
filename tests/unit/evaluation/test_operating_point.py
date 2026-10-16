@@ -76,3 +76,33 @@ def test_select_raises_when_no_threshold_is_safe() -> None:
     ]
     with pytest.raises(ValueError, match="legal floor"):
         select_operating_point(samples, thresholds=[0.3, 0.5, 0.9])
+
+
+_HORNET_IMAGE: Sample = (
+    [_pred(Species.VESPA_VELUTINA, 0.8)],
+    [_truth(Species.VESPA_VELUTINA)],
+)
+_BEE_MISREAD_IMAGE: Sample = (
+    [_pred(Species.VESPA_VELUTINA, 0.4)],
+    [_truth(Species.APIS_MELLIFERA)],
+)
+
+
+@pytest.mark.parametrize(
+    ("samples", "expected_threshold"),
+    [
+        ([_HORNET_IMAGE], 0.1),
+        ([_BEE_MISREAD_IMAGE, _HORNET_IMAGE], 0.5),
+        ([_BEE_MISREAD_IMAGE], 0.5),
+        ([], 0.1),
+    ],
+    ids=["hornet-only", "bee-misread-and-hornet", "bee-misread-only", "empty"],
+)
+def test_selected_operating_point_never_flags_a_bee(
+    samples: list[Sample], expected_threshold: float
+) -> None:
+    point = select_operating_point(samples, thresholds=[0.1, 0.3, 0.5, 0.9])
+    assert point.bees_as_target == 0
+    # Independent of the selector's own filter: the bee read at 0.4 must be cut.
+    assert point.confidence_threshold == expected_threshold
+    assert bees_as_target_count(evaluate(samples, confidence_threshold=expected_threshold)) == 0

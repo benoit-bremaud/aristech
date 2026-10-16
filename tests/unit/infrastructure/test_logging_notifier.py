@@ -17,6 +17,7 @@ def test_logs_species_and_confidence(caplog):
     assert "vespa_velutina" in caplog.text
     assert "0.90" in caplog.text
     assert "threat=True" in caplog.text
+    assert "abstain" not in caplog.text
 
 
 def test_logs_abstention_distinctly(caplog):

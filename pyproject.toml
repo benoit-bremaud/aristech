@@ -104,7 +104,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m \"not integration and not e2e\""
 markers = [
     "integration: tests qui touchent du matériel, des données réelles ou le réseau",
     "e2e: tests end-to-end (lents)",
