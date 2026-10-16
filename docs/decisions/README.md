@@ -19,3 +19,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0009](ADR-0009-detector-floor-and-abstention-reporting.md) | Separate detector floor from operating threshold; report abstentions | Accepted |
 | [ADR-0010](ADR-0010-remove-speculative-ports-and-legacy-training.md) | Remove speculative ports, unused extras and the legacy Keras training package | Accepted |
 | [ADR-0011](ADR-0011-drop-sphinx-stub-and-lint-parity.md) | Drop the Sphinx stub and align `make lint` with CI | Accepted |
+| [ADR-0012](ADR-0012-vision-extra-security-floors.md) | Security floors for the `vision` extra (Dependabot relock) | Accepted |
