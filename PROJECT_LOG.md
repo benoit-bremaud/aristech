@@ -216,3 +216,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
 - **PR #37 merged** (`b131ad1`) — `chore(scripts): add measure_operating_point for the M4 on-set sweep`. Branch `feat/m4-measure-script`, squash-merged. Part of **#18 (M4)**. Adds `scripts/measure_operating_point.py`: runs VespAI once at confidence 0 over a YOLO dataset, prints the per-threshold curve and the selected legal-floor operating point. Runs locally only (needs the `vision` extra, operator-supplied weights and the annotated set). **#18 stays open**: the on-set measurement and the live-path double-threshold fix are still pending.
 
   - **Review cycle** — automated review raised one comment, addressed before merge (see PR conversation at <https://github.com/benoit-bremaud/aristech/pull/37>): the class map is now validated after parsing — no `vespa_velutina` id fails fast with exit 2; no `apis_mellifera` id only warns, since bees-as-target is then vacuously 0 and the legal-floor gate is not exercised (the Roboflow set has no bee class). Unit tests added for the parser and both paths.
+
+---
+
+## 2026-10-16
+
+- **PR #39 merged** (`d5ede54`) — `ci(security): add Gitleaks, CodeQL, dependency review, Scorecard and Dependabot`. Branch `ci/security-baseline`, squash-merged. Security CI baseline brick of the post-audit plan, closing the last open item of the public-release checklist (CI secret detection). Adds one workflow per tool: Gitleaks (full history, blocking, SARIF), CodeQL Python (`security-extended`), dependency review on PRs (fails on high/critical), OSSF Scorecard (main + weekly), plus Dependabot weekly grouped updates for `pip` and `github-actions`. All actions pinned by SHA, least-privilege job permissions; `ci.yml` unchanged. Repository settings enabled alongside: secret scanning, push protection, Dependabot security updates.
+  - **Decisions** — Gitleaks via its official action rather than a pinned CLI (weighted matrix 430 vs 420); Scorecard included now rather than deferred (340 vs 310).
+  - **Review cycle** — automated reviewers unavailable (out of credit); the owner accepted the local pre-push review report as the review (Must 0, Should 1 handled through the repository settings, Nice 1 filed as #40 — SARIF upload fails on fork PRs). See PR conversation at <https://github.com/benoit-bremaud/aristech/pull/39>.
