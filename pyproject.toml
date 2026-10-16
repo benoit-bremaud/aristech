@@ -45,9 +45,9 @@ dependencies = [
 vision = [
     "torch>=2.13,<3",
     "torchvision>=0.28,<1",
-    "opencv-python>=4.9,<5",
+    "opencv-python>=4.9,<6",
     "pandas>=2.2,<3",
-    "numpy>=1.26,<2",
+    "numpy>=1.26,<3",
     "Pillow>=12.3,<13",
 ]
 dev = [

@@ -1,9 +1,9 @@
 # Lock source for the `vision` extra; floors per ADR-0012 (Dependabot alerts, 2026-10-16).
-numpy<2
+numpy<3
 pandas
 torch>=2.13
 torchvision>=0.28
-opencv-python<5
+opencv-python<6
 PyYAML
 python-dotenv>=1.2.2
 Pillow>=12.3
