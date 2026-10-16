@@ -5,9 +5,9 @@
 ## Need
 
 The operator must see, in the live path (UC1), every *V. velutina* detection the system chose not
-to act on because it was not confident enough. Today the detector drops every box below the
-operating threshold before the decision policy runs, so the ABSTAIN outcome is unreachable and
-uncertain targets vanish silently. Without that signal the operating point (issue #18) cannot be
+to act on because it was not confident enough. Before B4 the detector dropped every box below the
+operating threshold before the decision policy runs, so the ABSTAIN outcome was unreachable and
+uncertain targets vanished silently. Without that signal the operating point (issue #18) cannot be
 validated in the field.
 
 ## Actors

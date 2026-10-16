@@ -1,8 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from aristech.application.decision import Decision, decide
 from aristech.application.ports import HornetDetector, Notifier, VideoSource
-from aristech.domain import Detection
 
 
 @dataclass(frozen=True, slots=True)
@@ -16,10 +15,12 @@ class DetectHornetVisualConfig:
 
 @dataclass(frozen=True, slots=True)
 class DetectionRun:
-    """Outcome of a run: targets acted on and targets abstained on (ADR-0009)."""
+    """Outcome of a run: how many targets were acted on and abstained on
+    (ADR-0009). Counts, not lists: a camera stream never ends, so keeping
+    every detection would grow memory without bound."""
 
-    threats: list[Detection] = field(default_factory=list)
-    abstentions: list[Detection] = field(default_factory=list)
+    threats: int = 0
+    abstentions: int = 0
 
 
 class DetectHornetVisual:
@@ -45,7 +46,7 @@ class DetectHornetVisual:
         self._config = config or DetectHornetVisualConfig()
 
     def run(self) -> DetectionRun:
-        result = DetectionRun()
+        threats = abstentions = 0
         try:
             threshold = self._config.confidence_threshold
             for frame in self._video.frames():
@@ -53,10 +54,10 @@ class DetectHornetVisual:
                     decision = decide(detection, threshold)
                     if decision is Decision.ACT:
                         self._notifier.notify_detection(detection)
-                        result.threats.append(detection)
+                        threats += 1
                     elif decision is Decision.ABSTAIN:
                         self._notifier.notify_abstention(detection)
-                        result.abstentions.append(detection)
+                        abstentions += 1
         finally:
             self._video.close()
-        return result
+        return DetectionRun(threats=threats, abstentions=abstentions)

@@ -3,7 +3,11 @@ from datetime import datetime
 
 import pytest
 
-from aristech.application.use_cases import DetectHornetVisual, DetectHornetVisualConfig
+from aristech.application.use_cases import (
+    DetectHornetVisual,
+    DetectHornetVisualConfig,
+    DetectionRun,
+)
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
 
 
@@ -67,22 +71,23 @@ def test_reports_threats_and_abstentions_never_other_species():
 
     result = use_case.run()
 
-    assert result.threats == [high]
-    assert result.abstentions == [low]
+    assert result == DetectionRun(threats=1, abstentions=1)
     assert notifier.received == [high]
     assert notifier.abstained == [low]
 
 
 def test_target_exactly_at_threshold_acts():
     edge = _det(Species.VESPA_VELUTINA, 0.5)
+    notifier = _RecordingNotifier()
     use_case = DetectHornetVisual(
         video=_FakeVideoSource([_frame()]),
         detector=_ScriptedDetector([[edge]]),
-        notifier=(notifier := _RecordingNotifier()),
+        notifier=notifier,
         config=DetectHornetVisualConfig(confidence_threshold=0.5),
     )
     result = use_case.run()
-    assert result.threats == [edge]
+    assert result == DetectionRun(threats=1, abstentions=0)
+    assert notifier.received == [edge]
     assert notifier.abstained == []
 
 
@@ -94,8 +99,7 @@ def test_returns_empty_when_no_frames():
         notifier=_RecordingNotifier(),
     )
     result = use_case.run()
-    assert result.threats == []
-    assert result.abstentions == []
+    assert result == DetectionRun()
     assert video.closed, "VideoSource.close() doit être appelée même sans frame"
 
 

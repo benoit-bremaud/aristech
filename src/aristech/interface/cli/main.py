@@ -164,8 +164,8 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     result = use_case.run()
     log.info(
         "Analyse terminée — %d menace(s), %d abstention(s) sous le seuil.",
-        len(result.threats),
-        len(result.abstentions),
+        result.threats,
+        result.abstentions,
     )
     return 0
 

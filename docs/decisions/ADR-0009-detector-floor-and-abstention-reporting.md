@@ -39,6 +39,9 @@ implementation and the test fake are updated together.
 ## Consequences
 
 - `--confidence` keeps its meaning for users (operating threshold); the detector floor is new.
-- `DetectHornetVisual.run()` returns a result with threats and abstentions, so the CLI can count both.
+- `DetectHornetVisual.run()` returns `DetectionRun` counts (threats, abstentions), not lists: a live
+  camera never ends, so storing detections would grow memory without bound.
+- Abstentions are logged at INFO on purpose (owner choice at the gate): they are the field data
+  issue #18 needs. Revisit the level if the log volume becomes a problem.
 - Every future `Notifier` adapter must handle abstentions (may be a no-op).
 - Supersedes nothing; closes the "known gap" consequence of ADR-0004.
