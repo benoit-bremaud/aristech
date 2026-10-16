@@ -1,4 +1,4 @@
-.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run train sonar
+.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run sonar
 
 install:
 	pip install -e .
@@ -41,9 +41,6 @@ sonar:
 
 run:
 	python -m aristech --config config/config.yaml
-
-train:
-	python scripts/train_model.py
 
 clean:
 	rm -rf build dist *.egg-info .pytest_cache .mypy_cache .ruff_cache .scannerwork coverage.xml

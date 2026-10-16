@@ -1,6 +1,6 @@
 # Traceability matrix
 
-Use case ↔ diagrams ↔ ADRs ↔ code ↔ tests. Feature `detection` drawn as-built on 2026-10-16, updated for brick B4 (ADR-0009).
+Use case ↔ diagrams ↔ ADRs ↔ code ↔ tests. Feature `detection` drawn as-built on 2026-10-16, updated for brick B4 (ADR-0009) and B5 (ADR-0010).
 
 | Use case | Diagrams | ADRs | Code | Tests |
 |----------|----------|------|------|-------|

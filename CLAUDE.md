@@ -7,8 +7,8 @@ on top; this file only adds what is specific to aristech.
 
 Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.10+,
 Clean Architecture (`domain` → `application` → `infrastructure` / `interface`), plus
-`evaluation/` (offline metrics, heavy imports lazy) and the legacy Keras `training/` package
-(slated for removal, audit S3). First adapter: the VespAI YOLOv5 detector.
+`evaluation/` (offline metrics, heavy imports lazy) and `datasets/` (stdlib dataset split
+helper). First adapter: the VespAI YOLOv5 detector.
 Scope, roadmap and milestones: `docs/INDEX.md`, `docs/ROADMAP.md`, `docs/requirements.md`.
 
 ## Working method (owner decision 2026-10-15)
@@ -31,7 +31,7 @@ skip a gate because a change looks small.
 
 - The dependency rule holds: `domain/` imports stdlib and `domain/` only, `application/` imports
   `domain/` only, heavy libraries (torch, cv2, yolov5) live in `infrastructure/` or behind a lazy
-  import (`evaluation/runner.py`). `training/` (tensorflow) is the known exception until removed.
+  import (`evaluation/runner.py`).
 - A new port needs a present force (a second implementation, a test fake, an optional extra).
   No speculative ports.
 - Heavy dependencies go in an optional extra (`vision`, `audio`, …), never in the core

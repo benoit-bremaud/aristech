@@ -16,11 +16,3 @@ class VideoFrame:
     width: int
     height: int
     timestamp: datetime
-
-
-@dataclass(frozen=True, slots=True)
-class AudioSample:
-    samples: Any
-    sample_rate: int
-    duration_s: float
-    timestamp: datetime

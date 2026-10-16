@@ -41,11 +41,10 @@ Modèles métier purs, sans I/O ni dépendance externe (hors stdlib +
 
 - `Species` — `VESPA_VELUTINA`, `VESPA_CRABRO`, `APIS_MELLIFERA`,
   `UNKNOWN`.
-- `BoundingBox`, `Point2D`, `Point3D` — géométrie.
-- `VideoFrame`, `AudioSample` — données capteur.
+- `BoundingBox`, `Point2D` — géométrie.
+- `VideoFrame` — données capteur.
 - `Detection` — `species + bbox + confidence + timestamp`, avec
   `is_hornet()` et `is_threat()`.
-- `Target` — entité de piste (UUID + position 3D + confiance + last_seen).
 
 ### `application/` — Use cases et ports
 
@@ -70,13 +69,11 @@ locales qui implémentent simplement le protocole — duck typing structurel).
 | Port | Méthode(s) |
 | --- | --- |
 | `VideoSource` | `frames() -> Iterator[VideoFrame]`, `close()` |
-| `AudioSource` | `samples() -> Iterator[AudioSample]`, `close()` |
 | `HornetDetector` | `detect(frame) -> Sequence[Detection]` |
-| `SoundClassifier` | `classify(sample) -> tuple[Species, float]` |
-| `DistanceSensor` | `distance_to(bbox) -> float \| None` |
-| `Actuator` | `aim(target)`, `fire()`, `safe()` |
-| `Notifier` | `notify_detection(detection)` |
-| `Clock` | `now() -> datetime` (testabilité du temps) |
+| `Notifier` | `notify_detection(detection)`, `notify_abstention(detection)` |
+
+Les ports spéculatifs (audio, distance, actionneur, horloge) ont été retirés
+(ADR-0010) : chacun revient avec le use case qui le consomme.
 
 ### `infrastructure/` — Adaptateurs
 
@@ -102,11 +99,11 @@ audio Nottingham Trent / Coimbra) plutôt que de tout réécrire.
   qu'on les injecte dans les use cases. C'est le **seul** endroit où
   `interface` importe `infrastructure`.
 
-### `training/`
+### `datasets/`
 
-Pipelines d'entraînement des modèles (vision, audio, distance). Isolés
-du runtime temps réel pour qu'on puisse retravailler les modèles sans
-toucher au cœur applicatif.
+Répartition train/validation/test des fichiers sources (stdlib seule),
+utilisée par `scripts/distribute_*.py`. Le pipeline Keras `training/`
+historique a été retiré (ADR-0010).
 
 ## SOLID en pratique
 

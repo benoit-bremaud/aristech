@@ -12,7 +12,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from aristech.training.distribute import distribute_files
+from aristech.datasets.distribute import distribute_files
 
 VIDEO_EXTENSIONS = (".mp4", ".mov", ".avi", ".mkv", ".webm")
 

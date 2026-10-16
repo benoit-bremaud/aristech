@@ -69,7 +69,7 @@ Toujours brancher depuis `main`. Jamais de commit direct sur `main`.
 ### Python
 
 - **mypy strict** doit passer sur `src/` (sauf override explicite dans
-  `pyproject.toml` pour la couche `training/` historique).
+  `pyproject.toml` pour `infrastructure/`).
 - **Pas de `Any` non justifié.** Si nécessaire, commenter pourquoi.
 - **Exports nommés** explicites via `__all__`.
 - **Conventions Clean Architecture** ([architecture.md](architecture.md)) :
