@@ -32,6 +32,8 @@ insects in the conditions of **our** hive entrances, with a recall far above Ves
   "pre-field", keep VespAI as the default detector.
 - **A2** The own model does not beat VespAI on the frozen set → do not ship; analyse failure modes.
 - **A3** A data source's licence is unclear → excluded until clarified.
+- **A4** Captive-hornet footage (owner idea) is used for training only, never in the frozen test
+  set (unnatural behaviour).
 
 ## Acceptance criteria
 

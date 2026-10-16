@@ -38,6 +38,10 @@ Q6). Order:
 | Autumn 2027 | **M5 own model** ([spec](architecture/specs/own-vision-model.md)) + **M4 two operating points** (ADR-0014) | beats VespAI; zero bees at ACT |
 | With M6 | **Attack alert** ([spec](architecture/specs/attack-alert.md)) | one alert per episode |
 
+Brick order (owner, Q12): **C1 first**, right after this dossier; the M3 report is slotted in
+while C1 hardware ships. The first C1 unit goes to the home hives (mains, Wi-Fi), a second one to
+the remote apiary later.
+
 M0–M4 below are the original staircase (M0–M2 done; M3 harness and M4 single point shipped,
 M3 report open). M5 and M6 are refined by the plan above.
 

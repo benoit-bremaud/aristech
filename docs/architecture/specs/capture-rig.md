@@ -38,12 +38,20 @@ A **watchtower on a stake** ("mirador"), about 0.5–1 m from the entrance and s
 A rotating 360° turret was rejected (motor noise in the wingbeat band, moving background,
 intermittent coverage of the entrance, moving parts outdoors); rotation belongs to v2 aiming.
 
+## Sites and recording policy (needs brainstorm Q8, Q10)
+
+- **First unit at home** — mains power, Wi-Fi upload, daily supervision. **Second unit later at
+  the remote apiary** — remote solar stake, local storage, periodic visits.
+- **Recording**: audio continuous in daylight; video kept in a rolling buffer and saved from a few
+  seconds before to a few seconds after each motion event (durations fixed at the gate).
+- **Budget**: not set; the brick prices a BOM that the owner validates before ordering.
+
 ## Main scenario
 
 1. The rig (fixed camera over the flight volume, one microphone at
    the entrance with wind protection, one microphone inside or against the hive) is mounted.
-2. It records in segments with a common timestamp for video and both audio channels, on motion or
-   continuously in daylight (policy fixed at the gate).
+2. It records audio continuously in daylight and saves buffered video around each motion event,
+   all on a common timestamp.
 3. Each segment's metadata (hive, time, settings, light, weather if known) is stored with it.
 4. The researcher collects the segments (local disk swap or upload) for annotation.
 

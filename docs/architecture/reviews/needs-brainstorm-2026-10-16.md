@@ -152,6 +152,57 @@ unit: a motor beside the microphone pollutes the wingbeat band and a moving back
 training data. The second (colony) microphone touches the hive by cable, outside the watchtower.
 Recorded in spec [capture-rig](../specs/capture-rig.md).
 
+## Follow-up questions (same session)
+
+### Q8 — Sites (facts)
+
+The owner has hives **at home** (mains power and Wi-Fi in reach) and a **remote apiary**.
+Consequence: the first C1 unit goes home (mains, Wi-Fi upload, daily supervision); a second unit
+goes to the remote apiary later (solar on its own stake, local storage), adding different
+conditions for generalisation. Power: the solar panel stands on its own well-exposed stake, cabled
+to battery and electronics; panel and battery are sized from the prototype's measured consumption
+plus the recharge need, never from a guess. Form reference: a garden solar stake lamp.
+
+### Q9 — Captive hornets (owner idea)
+
+Kept as a **complementary** data source (close-ups, isolated wingbeat audio, off-season), **never
+in the frozen test set** (unnatural behaviour). *V. velutina* is an invasive alien species; only
+it is captured.
+
+### Q10 — Recording policy
+
+| Criterion (weight) | A. Continuous video + audio in daylight | B. Motion-triggered only | C. Continuous audio + video ring buffer saved before/after each motion |
+|---|---|---|---|
+| Data completeness — rare attacks, negatives, gap-free audio (35) | 5 | 2 | 4 |
+| Storage / energy (25) | 1 | 5 | 4 |
+| Simplicity (20) | 5 | 3 | 2 |
+| Annotation workload (20) | 2 | 4 | 4 |
+| **Total /500** | 340 | 335 | **360** |
+
+Sensitivity (script-checked): storage 35 / completeness 25 → **B 365, C 360 (flip)**;
+completeness 45 / storage 15 → **A 380, C 360 (flip)**. Close call; C serves both the home site
+(storage cheap) and the remote one (storage scarce) with one policy. **Decision: C** (owner).
+
+### Q11 — Budget (fact)
+
+Unknown yet: the C1 brick prices a BOM and the owner validates it before ordering.
+
+### Q12 — Next brick
+
+The owner asked for the detailed analysis (content of each brick, calendar, one-session rule).
+
+| Criterion (weight) | A. M3 report first | B. C1 collector first, M3 report slotted in during hardware delivery | C. First public-data model |
+|---|---|---|---|
+| Season 2027 deadline (35) | 3 | 5 | 2 |
+| Unblocks the rest (25) | 4 | 5 | 2 |
+| Effort / brick size (20) | 5 | 2 | 3 |
+| Value delivered (20) | 3 | 4 | 2 |
+| **Total /500** | 365 | **420** | 220 |
+
+Sensitivity (script-checked): effort 40 / season 25 / unblock 15 → **A 395, B 360 (flip)**.
+**Decision: B** (owner) — C1 starts right after this dossier merges; the small M3 report is done
+as an interleaved brick while hardware ships (one session at a time).
+
 ## Score corrections
 
 Totals and sensitivity checks were recomputed by script after the session: Q2 option B is 425
