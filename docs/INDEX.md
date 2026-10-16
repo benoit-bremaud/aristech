@@ -28,7 +28,9 @@ opening five of them.
 | Document                                                  | Role                                                                                                                                                  |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [docs/README.md](README.md)                               | Documentation landing page — how to build and navigate the docs (Sphinx).                                                                              |
-| [docs/architecture.md](architecture.md)                   | Clean Architecture layers, ports, use cases, open decisions, hard constraints (legal floor). Authority on _how aristech models the world_.            |
+| [docs/architecture/](architecture/README.md) | Design dossier (specs, UML diagrams, traceability, conception gates, reviews). Authority on _how aristech models the world_. |
+| [docs/decisions/](decisions/README.md) | Architecture Decision Records with scored options. |
+| [docs/architecture.md](architecture.md) | Legacy single-page overview, superseded by the design dossier (refresh planned in ROADMAP docs work). |
 | [docs/source/](source/)                                   | Sphinx documentation source (HTML build under `_build/`).                                                                                              |
 | [docs/Makefile](Makefile) / [docs/make.bat](make.bat)     | Sphinx build entry points.                                                                                                                             |
 
@@ -66,7 +68,7 @@ the full authoring rules.
 | Kind of new content                                                  | Goes in                                                                                          |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | A merged PR's chronological entry                                    | `PROJECT_LOG.md`                                                                                  |
-| A formal architectural decision (was deferred → decided)              | `docs/architecture.md` + a `Decisions:` sub-bullet under the PR entry in `PROJECT_LOG.md`        |
+| A formal architectural decision (was deferred → decided) | `docs/decisions/ADR-NNNN-<slug>.md` + a `Decisions:` sub-bullet under the PR entry in `PROJECT_LOG.md` |
 | A new academic paper / dataset / repo discovered                     | `docs/research/state-of-the-art.md` (narrative) + `docs/research/references.md` (URL index)      |
 | A new vendor link or BOM line item                                   | `docs/research/prototype-foundations.md` § C + `docs/research/references.md` § 16                |
 | A measured biological constant                                        | `docs/research/prototype-foundations.md` § A (flag `peer-reviewed` / `unverified` / `aristech-measured`) |
