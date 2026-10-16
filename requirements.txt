@@ -39,7 +39,7 @@ flatbuffers==24.3.25
     # via tensorflow
 fonttools==4.53.0
     # via matplotlib
-fsspec==2024.5.0
+fsspec==2026.6.0
     # via torch
 gast==0.5.4
     # via tensorflow
