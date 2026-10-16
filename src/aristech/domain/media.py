@@ -1,3 +1,5 @@
+"""Sensor data entering the domain."""
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -5,11 +7,10 @@ from typing import Any
 
 @dataclass(frozen=True, slots=True)
 class VideoFrame:
-    """Image capturée à un instant donné.
+    """An image captured at a given instant.
 
-    `pixels` est un tableau opaque (typiquement numpy.ndarray) : le domain
-    ne connaît pas numpy, mais accepte n'importe quel conteneur que les
-    adaptateurs et use cases savent manipuler.
+    `pixels` is opaque (typically a `numpy.ndarray`): the domain does not know
+    numpy, it carries whatever container the adapters and use cases handle.
     """
 
     pixels: Any

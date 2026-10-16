@@ -1,3 +1,5 @@
+"""Legal-floor decision rule applied to every detection."""
+
 from enum import Enum
 
 from aristech.domain import Detection

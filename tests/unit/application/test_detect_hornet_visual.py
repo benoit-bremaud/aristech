@@ -100,7 +100,7 @@ def test_returns_empty_when_no_frames():
     )
     result = use_case.run()
     assert result == DetectionRun()
-    assert video.closed, "VideoSource.close() doit être appelée même sans frame"
+    assert video.closed, "VideoSource.close() must run even with no frame"
 
 
 def test_closes_video_source_on_detector_exception():
@@ -116,4 +116,4 @@ def test_closes_video_source_on_detector_exception():
     )
     with pytest.raises(RuntimeError, match="boom"):
         use_case.run()
-    assert video.closed, "VideoSource.close() doit être appelée même en cas d'erreur"
+    assert video.closed, "VideoSource.close() must run even on error"

@@ -1,3 +1,5 @@
+"""Live visual detection use case."""
+
 from dataclasses import dataclass
 
 from aristech.application.decision import Decision, decide
@@ -6,6 +8,8 @@ from aristech.application.ports import HornetDetector, Notifier, VideoSource
 
 @dataclass(frozen=True, slots=True)
 class DetectHornetVisualConfig:
+    """`confidence_threshold`: the operating threshold for `decide()` (ADR-0004)."""
+
     confidence_threshold: float = 0.5
 
     def __post_init__(self) -> None:
@@ -24,13 +28,11 @@ class DetectionRun:
 
 
 class DetectHornetVisual:
-    """Use case : consomme les frames d'une source vidéo, applique un
-    détecteur ML, et notifie chaque menace (ACT) et chaque abstention (cible sous le
-    seuil, ABSTAIN) ; les autres espèces sont ignorées.
+    """Reads frames, runs the detector and notifies every threat (ACT) and every
+    abstention (target below the threshold, ABSTAIN); other species are ignored.
 
-    Toutes les dépendances sont injectées (DIP) et abstraites par des
-    Protocols (ISP) : on peut substituer caméra, modèle et canal de
-    notification sans toucher au code de ce use case (OCP).
+    Every dependency is injected behind a port, so camera, model and notification
+    channel can change without touching this use case.
     """
 
     def __init__(
@@ -46,6 +48,7 @@ class DetectHornetVisual:
         self._config = config or DetectHornetVisualConfig()
 
     def run(self) -> DetectionRun:
+        """Consume the whole source, then close it, even on error."""
         threats = abstentions = 0
         try:
             threshold = self._config.confidence_threshold

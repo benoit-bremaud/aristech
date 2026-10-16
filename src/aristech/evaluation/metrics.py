@@ -38,6 +38,9 @@ def iou(a: BoundingBox, b: BoundingBox) -> float:
 
 @dataclass(frozen=True, slots=True)
 class ClassMetrics:
+    """Per-class counts. Ratios with a zero denominator are 0.0, never NaN: a class
+    the model never predicts scores precision 0, which keeps sweeps comparable."""
+
     species: Species
     tp: int
     fp: int
@@ -45,16 +48,19 @@ class ClassMetrics:
 
     @property
     def precision(self) -> float:
+        """TP / (TP + FP); 0.0 when nothing was predicted."""
         denom = self.tp + self.fp
         return self.tp / denom if denom else 0.0
 
     @property
     def recall(self) -> float:
+        """TP / (TP + FN); 0.0 when the class is absent from the ground truth."""
         denom = self.tp + self.fn
         return self.tp / denom if denom else 0.0
 
     @property
     def f1(self) -> float:
+        """Harmonic mean of precision and recall; 0.0 when both are 0."""
         p, r = self.precision, self.recall
         return 2 * p * r / (p + r) if (p + r) else 0.0
 
@@ -91,11 +97,14 @@ def _match_image(
 
 @dataclass(frozen=True, slots=True)
 class EvaluationReport:
+    """Confusion counts keyed by (true label, predicted label) at fixed thresholds."""
+
     confusion: dict[tuple[str, str], int]
     iou_threshold: float
     confidence_threshold: float
 
     def class_metrics(self, species: Species) -> ClassMetrics:
+        """Counts for one species read from the confusion matrix."""
         label = species.value
         tp = self.confusion.get((label, label), 0)
         fp = sum(c for (t, p), c in self.confusion.items() if p == label and t != label)
@@ -103,11 +112,13 @@ class EvaluationReport:
         return ClassMetrics(species=species, tp=tp, fp=fp, fn=fn)
 
     def all_class_metrics(self) -> list[ClassMetrics]:
+        """Metrics for every species that appears as truth or prediction."""
         seen = {t for t, _ in self.confusion} | {p for _, p in self.confusion}
         species = [s for s in Species if s.value in seen]
         return [self.class_metrics(s) for s in species]
 
     def format_text(self) -> str:
+        """Plain-text table of P, R, F1, TP, FP, FN per class."""
         lines = [
             f"Evaluation (IoU>={self.iou_threshold:.2f}, conf>={self.confidence_threshold:.2f})",
             f"{'class':<16}{'P':>8}{'R':>8}{'F1':>8}{'TP':>6}{'FP':>6}{'FN':>6}",

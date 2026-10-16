@@ -1,1 +1,1 @@
-"""Dataset preparation helpers (stdlib only)."""
+"""Dataset preparation helpers (stdlib only): random train/validation/test split."""
