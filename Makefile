@@ -1,4 +1,4 @@
-.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run train
+.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run train sonar
 
 install:
 	pip install -e .
@@ -30,6 +30,11 @@ format:
 type-check:
 	mypy
 
+# Coverage + analysis on the local SonarQube; needs SONAR_TOKEN in the environment.
+sonar:
+	pytest tests/unit -q --cov=aristech --cov-report=xml
+	sonar-scanner
+
 run:
 	python -m aristech --config config/config.yaml
 
@@ -37,5 +42,5 @@ train:
 	python scripts/train_model.py
 
 clean:
-	rm -rf build dist *.egg-info .pytest_cache .mypy_cache .ruff_cache
+	rm -rf build dist *.egg-info .pytest_cache .mypy_cache .ruff_cache .scannerwork coverage.xml
 	find . -type d -name __pycache__ -exec rm -rf {} +
