@@ -10,6 +10,28 @@ alerts on 2026-10-16: 1 critical, 13 high, 13 medium, 5 low. The critical one is
 RCE (torch < 2.6.0). An operator who installs the `vision` extra must get versions without known
 critical or high vulnerabilities, and the VespAI checkpoint must still load and detect the same.
 
+## Actors
+
+- **Operator** — installs the `vision` extra and runs the live detector with the VespAI weights.
+- **Maintainer** — keeps the lock free of known critical/high vulnerabilities (Dependabot).
+
+## Main scenario
+
+1. Dependabot reports alerts on `requirements.txt`.
+2. The maintainer raises the floors in the `vision` extra and `requirements.in` (ADR-0012) and
+   relocks.
+3. The maintainer checks every locked version against the open alert ranges.
+4. The maintainer loads the real VespAI checkpoint on the old and new lock and compares detections.
+5. After merge, Dependabot closes the alerts.
+
+## Alternative scenarios
+
+- **A1** An alert has no patched version → it closes only if the locked version leaves its range;
+  otherwise the owner accepts it explicitly with a reason.
+- **A2** The checkpoint fails to load or detections differ on the new lock → no merge; the bound
+  that causes it is reconsidered through the ADR.
+- **A3** The weights are not available → the owner explicitly accepts the AC5 gap with a reason.
+
 ## Inventory (2026-10-16)
 
 | Package | Locked | Alerts | First fix covering all fixable alerts |
@@ -35,6 +57,12 @@ Three torch advisories (`<= 2.6.0`, no patched version) close as soon as torch >
   (weights_only=False patch) and `scripts/measure_operating_point.py` gives the same detections as
   on torch 2.3.0. If weights are not available, the owner explicitly accepts the gap with a reason.
 - **AC6** After merge, Dependabot shows 0 open critical/high alerts.
+
+## Outcome (2026-10-16)
+
+AC1–AC6 met: PR #73. AC5 with VespAI `yolov5s-all-data.pt` on 12 example frames, byte-identical
+detections on torch 2.3.0 and 2.14.1. Dependabot: 0 open alerts after merge. Evidence:
+`reviews/chore-b7-dependabot-relock.md`.
 
 ## Design impact
 

@@ -21,13 +21,37 @@ pre-commit install
 ### Extras
 
 - `vision` — torch, torchvision, OpenCV, pandas, Pillow: the live detector and the evaluation
-  runner.
+  runner. Version floors follow the security advisories (ADR-0012); `numpy<2` and
+  `opencv-python<5` are held on purpose.
 - `dev` — pytest, ruff, mypy, pre-commit, pip-tools.
 - `gpu` — NVIDIA CUDA libraries (Linux x86_64 only).
 
 ```bash
 pip install -e ".[dev,vision,gpu]"     # Linux GPU target
 ```
+
+### VespAI weights and YOLOv5
+
+The live detector and the integration test need two operator-supplied inputs, never committed
+(VespAI weights are CC BY-NC-SA, ADR-0002):
+
+- the weights: a YOLOv5s checkpoint from
+  [andrw3000/vespai](https://github.com/andrw3000/vespai), `models/yolov5-params/`
+  (e.g. `yolov5s-all-data.pt`);
+- the YOLOv5 code at the commit VespAI pins as its `models/yolov5` submodule
+  (`23701eac7a7b160e478ba4bbef966d0af9348251` of
+  [ultralytics/yolov5](https://github.com/ultralytics/yolov5)).
+
+That YOLOv5 commit imports `pkg_resources`, so the environment also needs `setuptools<81`, plus
+YOLOv5's own runtime packages (`matplotlib`, `scipy`, `seaborn`, `tqdm`, `requests`, `psutil`):
+
+```bash
+pip install "setuptools<81" matplotlib scipy seaborn tqdm requests psutil
+```
+
+The checkpoint is a pickle: torch ≥ 2.6 refuses it by default, and `VespAIDetector` loads it with
+`weights_only=False` because it comes from a trusted path. Never point `--weights` at an untrusted
+file.
 
 ## Configuration
 
