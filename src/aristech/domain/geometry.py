@@ -25,10 +25,3 @@ class BoundingBox:
 class Point2D:
     x: float
     y: float
-
-
-@dataclass(frozen=True, slots=True)
-class Point3D:
-    x: float
-    y: float
-    z: float

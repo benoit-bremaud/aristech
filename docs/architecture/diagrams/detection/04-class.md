@@ -8,7 +8,7 @@
 ## Context
 
 The entities exchanged on the detection path and the decision vocabulary. Types used only by the
-speculative ports (`Target`, `Point3D`, `AudioSample`) are omitted (audit S1).
+speculative ports (`Target`, `Point3D`, `AudioSample`) were removed in B5 (ADR-0010).
 
 ## Diagram
 

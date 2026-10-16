@@ -35,7 +35,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       # Installe le package pour que `aristech.*` soit importable comme
-      # en prod. Les deps lourdes (tensorflow/torch) ne sont pas requises
+      # en prod. Les deps lourdes (torch) ne sont pas requises
       # par tests/unit (qui mocke les ports) — donc on installe seulement
       # ce que les tests utilisent.
       - run: pip install -e . --no-deps

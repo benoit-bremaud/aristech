@@ -1,9 +1,0 @@
-from typing import Protocol
-
-from aristech.domain import Target
-
-
-class Actuator(Protocol):
-    def aim(self, target: Target) -> None: ...
-    def fire(self) -> None: ...
-    def safe(self) -> None: ...

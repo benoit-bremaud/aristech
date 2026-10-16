@@ -1,6 +1,6 @@
 # ADR-0001: Clean Architecture with ports and optional heavy extras
 
-- Status: Accepted
+- Status: Accepted — extras list superseded by ADR-0010
 - Date: 2026-05-19 (PR #1), extended 2026-05-21 (PR #22)
 
 > Retroactive ADR (written 2026-10-16, brick B1). The decision predates the ADR practice;

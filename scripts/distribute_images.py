@@ -10,7 +10,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from aristech.training.distribute import distribute_files
+from aristech.datasets.distribute import distribute_files
 
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp")
 

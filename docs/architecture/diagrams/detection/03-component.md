@@ -6,8 +6,8 @@
 ## Context
 
 Structural boundaries of the detection path and the offline evaluation, with the dependency rule
-(arrows point to what a component depends on). Speculative ports with no consumer (audit S1) are
-left out on purpose.
+(arrows point to what a component depends on). Speculative ports with no consumer (audit S1) were
+removed in brick B5 (ADR-0010).
 
 ## Diagram
 
@@ -64,4 +64,6 @@ flowchart TB
   YOLOv5 stay in `infrastructure/` or behind a lazy import (`evaluation/runner.py`).
 - `HornetDetector` has two consumers (live use case, offline evaluation): the force that
   justifies the port.
-- The legacy `training/` package is outside this path and slated for removal (audit S3).
+- The legacy Keras `training/` package was removed in B5 (ADR-0010). Its generic file splitter
+  survives as `aristech.datasets.distribute`, a stdlib-only helper used by the dataset scripts,
+  outside the detection path.

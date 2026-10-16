@@ -86,7 +86,8 @@ aristech/
 │   │   └── ports/              # Protocols (DIP)
 │   ├── infrastructure/         # adaptateurs (vide pour l'instant)
 │   ├── interface/cli/main.py   # composition root
-│   └── training/               # pipelines ML
+│   ├── evaluation/             # métriques offline
+│   └── datasets/               # répartition train/val/test
 ├── tests/{unit,integration,e2e}/
 ├── config/                     # config.yaml, logging.yaml
 └── docs/                       # INDEX, architecture, research/, INSTALL, MAINTENANCE
@@ -135,13 +136,11 @@ Configuration : éditer [config/config.yaml](config/config.yaml) et
 ```bash
 # Préparer la répartition train/val/test des images
 python scripts/distribute_images.py
-
-# Lancer l'entraînement (lit .env, écrit dans models/)
-make train     # ou : python scripts/train_model.py
 ```
 
 Les modèles entraînés (`models/*.keras`) ne sont **pas** versionnés ;
-ils se régénèrent depuis le pipeline `aristech.training.*`. Convention
+le pipeline Keras historique a été retiré (ADR-0010) ; le fine-tune
+YOLO est prévu en M5. Convention
 de distribution à trancher (cf. décision `models-out-of-tree` dans
 [PROJECT_LOG.md](PROJECT_LOG.md)).
 

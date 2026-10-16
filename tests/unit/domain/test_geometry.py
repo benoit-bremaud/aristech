@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from aristech.domain import BoundingBox, Point2D, Point3D
+from aristech.domain import BoundingBox, Point2D
 
 
 def test_bounding_box_area():
@@ -43,10 +43,3 @@ def test_point2d_equality_and_frozen():
     assert Point2D(1.0, 2.0) != Point2D(2.0, 1.0)
     with pytest.raises(FrozenInstanceError):
         Point2D(1.0, 2.0).x = 3.0  # type: ignore[misc]
-
-
-def test_point3d_equality_and_frozen():
-    assert Point3D(1.0, 2.0, 3.0) == Point3D(1.0, 2.0, 3.0)
-    assert Point3D(1.0, 2.0, 3.0) != Point3D(1.0, 2.0, 4.0)
-    with pytest.raises(FrozenInstanceError):
-        Point3D(1.0, 2.0, 3.0).z = 9.0  # type: ignore[misc]

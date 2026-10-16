@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from aristech.training.distribute import distribute_files
+from aristech.datasets.distribute import distribute_files
 
 
 def test_distribute_files_splits_70_20_10(tmp_path: Path):
