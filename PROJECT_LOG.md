@@ -242,3 +242,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
 
 - **PR #53 merged** (`3fd36f7`) — `docs(detection/architecture): add as-built UML deliverables for detection (B1 part 3)`. Branch `docs/b1-uml`, squash-merged. Use-case, sequence (live loop), component and class diagrams of the current detection path, plus the first traceability matrix. The sequence diagram makes the double confidence filter visible: the detector and `decide()` filter at the same threshold, so ABSTAIN never fires live (audit M3) — the input of the next brick (B4).
   - **Review cycle** — local report checked every arrow against the code: Must 2, Should 4, Nice 1, all fixed before push; diagrams render-checked.
+
+- **PR #55 merged** (`8c66fe3`) — `chore(sonar): read the aristech project token file in make sonar`. Branch `chore/sonar-project-token`, squash-merged. `make sonar` reads the project analysis token `project-aristech-local-2026` from `~/.config/sonar-tokens/aristech` (mode 600, outside the repo) and falls back to `SONAR_TOKEN`. The auto-created SonarQube project was private with no grants (invisible in the UI); it is now public on the local instance. Control scan with the project token: analysis successful.
+  - **Decisions** — dedicated project token rather than the global analysis token (owner choice).
+  - **Review cycle** — local report: no Must/Should; one Nice (reading results needs a user token, out of scope). Automated reviewer unavailable (usage limit).
