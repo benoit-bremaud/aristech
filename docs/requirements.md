@@ -46,7 +46,7 @@ protected species, and without daily human labour.**
   no actuator / aiming engineering starts until a field test (ROADMAP **D0**)
   shows hornets are actually deterred. Detection and deterrence are
   **decoupled, complementary modules** wired by the detection signal: the
-  detector emits `Detection` / `Target`, and deterrence is a separate
+  detector emits `Detection`, and deterrence is a separate
   consumer that plugs into it later (ports), without touching the detection
   core.
 - Acoustic recognition axis, multi-modal fusion.
@@ -91,9 +91,9 @@ The system must, expressed as actor/system goals independent of technology:
   geometric **no-spray exclusion zone** around the landing board is enforced
   independently of the classifier; any trap-like activity must be
   **selective**; **pure water only**, no biocide. See
-  [architecture.md](architecture.md) § Plancher légal.
+  [architecture.md](architecture.md#legal-floor) and ADR-0003.
 - **Non-lethal, non-contact** deterrence only (decided, PR #4 — see
-  [architecture.md](architecture.md) § Décisions ouvertes).
+  [architecture.md](architecture.md#open-decisions) and ADR-0005).
 
 ## Decisions — detection (v1), with rationale
 
@@ -157,23 +157,20 @@ push of aggregated detections), which were the wrong model.
 - **Decoupled from detection (SOLID / Dependency Inversion)** — detection and
   deterrence are **complementary, independent modules** wired only by the
   detection signal. Deterrence depends on the **abstractions** the detector
-  emits (`Detection` / `Target`) and on the ports — never on the concrete
+  emits (`Detection`) and on the ports — never on the concrete
   detector. So detection is validated and shipped on its own; deterrence
   plugs into its output later as a separate consumer, with no change to the
-  detection core. (DIP in practice — cf. [architecture.md](architecture.md)
-  § SOLID.)
+  detection core. (DIP in practice — cf. [architecture.md](architecture.md#layers).)
 
 ## Explicitly deferred (not in v1)
 
 - **Acoustic axis** and multi-modal fusion.
 - **After-detection chain**: tracking, distance, decision policy,
-  deterrence (the `NeutralizeTarget` use case and its open decisions).
+  deterrence (ADR-0005 and its open decisions).
 - **Embedded target**: real-time camera, on-device NPU, headless service.
-- **UML diagrams** — held until the open product decisions stabilise the
-  scope enough to be worth drawing.
 - **Tech debt**: `.gitignore` inline-comment bug, agent-agnostic cleanup of
   historical log entries, `git filter-repo` blob purge, portable
-  `requirements.txt`, legacy `DIY_INSTRUCTIONS.md` / `BOM.md` reconciliation.
+  `requirements.txt`.
 
 ## Hardware target (downstream of needs)
 

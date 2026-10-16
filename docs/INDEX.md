@@ -30,7 +30,7 @@ opening five of them.
 | [docs/README.md](README.md) | Pointer to this index. |
 | [docs/architecture/](architecture/README.md) | Design dossier (specs, UML diagrams, traceability, conception gates, reviews). Authority on _how aristech models the world_. |
 | [docs/decisions/](decisions/README.md) | Architecture Decision Records with scored options. |
-| [docs/architecture.md](architecture.md) | Legacy single-page overview, superseded by the design dossier (refresh planned in ROADMAP docs work). |
+| [docs/architecture.md](architecture.md) | One-page as-built overview; the design dossier is the source of truth. |
 
 ## Operational (install, maintenance, governance)
 
@@ -44,8 +44,7 @@ opening five of them.
 
 | Document                                                       | Role                                                                                              |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [docs/DIY_INSTRUCTIONS.md](DIY_INSTRUCTIONS.md)                | DIY build instructions for the apiarist (legacy — to be revised against `docs/research/prototype-foundations.md`). |
-| [docs/BOM.md](BOM.md)                                          | Bill of Materials (legacy — to be revised against the new BOM section in `prototype-foundations.md` § C). |
+| [docs/research/prototype-foundations.md](research/prototype-foundations.md) § B, § C | Hive mounting and hardware BOM (replaces the 2024 `BOM.md` / `DIY_INSTRUCTIONS.md`). |
 
 ## Research
 

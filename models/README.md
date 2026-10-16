@@ -1,21 +1,20 @@
 # models/
 
-Ce dossier accueille les poids de modèles locaux. **Aucun n'est versionné.**
+Local model weights live here. **None is versioned.**
 
 ## Convention
 
-| Fichier attendu | Source | Statut Git |
+| Expected file | Source | Git status |
 | --- | --- | --- |
-| poids VespAI (`*.pt`) | fournis par l'opérateur (CC BY-NC-SA), passés via `--weights` | gitignoré |
+| VespAI weights (`*.pt`) | supplied by the operator (CC BY-NC-SA), passed with `--weights` | ignored |
 
-Patterns ignorés : `models/*.keras`, `models/*.h5`, `models/*.pth`,
-`models/*.pt` — voir [`.gitignore`](../.gitignore).
+Ignored patterns: `models/*.keras`, `models/*.h5`, `models/*.pth`, `models/*.pt` — see
+[`.gitignore`](../.gitignore).
 
-Le pipeline d'entraînement Keras historique a été retiré (ADR-0010) ; le
-fine-tune YOLO sur données propres est prévu en M5.
+The legacy Keras training pipeline was removed (ADR-0010); a YOLO fine-tune on own data is planned
+for M5.
 
-## Récupérer un modèle pré-entraîné (à venir)
+## Fetching a pre-trained model (planned)
 
-Une fois la stratégie de distribution choisie (GitHub Releases, HuggingFace
-Hub, S3…), un script `scripts/download_model.py` fera le `wget` / `huggingface-cli
-download` correspondant.
+Once a distribution channel is chosen (GitHub Releases, Hugging Face Hub, S3…), a
+`scripts/download_model.py` will fetch the weights.
