@@ -22,3 +22,14 @@ class LoggingNotifier:
             c.y,
             detection.timestamp.isoformat(),
         )
+
+    def notify_abstention(self, detection: Detection) -> None:
+        c = detection.bbox.center
+        _log.info(
+            "abstain %s conf=%.2f below operating threshold at (%.0f,%.0f) %s",
+            detection.species.value,
+            detection.confidence,
+            c.x,
+            c.y,
+            detection.timestamp.isoformat(),
+        )
