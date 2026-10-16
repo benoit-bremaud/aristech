@@ -9,6 +9,13 @@ updates:
     groups:
       pip:
         patterns: ["*"]
+    # ADR-0012: numpy 2 and opencv-python 5 are held back; a move to either major needs its own
+    # ADR and a real-weights check. Alerts stay visible: only the update PRs are suppressed.
+    ignore:
+      - dependency-name: "numpy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "opencv-python"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
