@@ -30,7 +30,6 @@ pre-commit install
 ### Extras disponibles
 
 - `dev` — pytest, ruff, mypy, pip-tools.
-- `docs` — Sphinx.
 - `gpu` — libs NVIDIA CUDA (Linux x86_64 uniquement).
 
 ```bash

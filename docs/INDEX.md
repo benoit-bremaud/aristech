@@ -27,12 +27,10 @@ opening five of them.
 
 | Document                                                  | Role                                                                                                                                                  |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [docs/README.md](README.md)                               | Documentation landing page — how to build and navigate the docs (Sphinx).                                                                              |
+| [docs/README.md](README.md) | Pointer to this index. |
 | [docs/architecture/](architecture/README.md) | Design dossier (specs, UML diagrams, traceability, conception gates, reviews). Authority on _how aristech models the world_. |
 | [docs/decisions/](decisions/README.md) | Architecture Decision Records with scored options. |
 | [docs/architecture.md](architecture.md) | Legacy single-page overview, superseded by the design dossier (refresh planned in ROADMAP docs work). |
-| [docs/source/](source/)                                   | Sphinx documentation source (HTML build under `_build/`).                                                                                              |
-| [docs/Makefile](Makefile) / [docs/make.bat](make.bat)     | Sphinx build entry points.                                                                                                                             |
 
 ## Operational (install, maintenance, governance)
 
@@ -41,7 +39,6 @@ opening five of them.
 | [docs/INSTALL.md](INSTALL.md)                                  | Installation instructions for the codebase.                                                       |
 | [docs/MAINTENANCE.md](MAINTENANCE.md)                          | Post-merge hygiene, `git filter-repo` procedure, lock regeneration.                                |
 | [docs/CONTRIBUTING.md](CONTRIBUTING.md)                        | Contribution rules (PR workflow, conventions).                                                     |
-| [docs/LICENSE.md](LICENSE.md)                                  | License notes complementing root `LICENSE`.                                                        |
 
 ## Hardware / DIY
 

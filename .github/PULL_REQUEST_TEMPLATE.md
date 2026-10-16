@@ -19,7 +19,7 @@
 - [ ] CI green (`make lint type-check test`, or markdownlint for docs-only PRs)
 - [ ] No `Any` introduced without justification; no inline secrets
 - [ ] English in all GitHub artefacts (title, body, code comments, replies)
-- [ ] No AI attribution anywhere (commits, PR body, comments)
+- [ ] AI attribution, if any, stays sober (`Co-Authored-By` trailer, one line in the PR body)
 - [ ] Every SHA cited resolves via `git rev-parse`
 - [ ] New URLs added to `docs/research/references.md` (if a research/doc PR)
 - [ ] `docs/INDEX.md` updated (if a new top-level doc was added)
