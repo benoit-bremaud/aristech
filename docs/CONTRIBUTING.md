@@ -1,40 +1,49 @@
-# Workflow de développement
+# Development workflow
 
-Notes de workflow internes pour aristech. Le dépôt est **privé** et
-mené en R&D ; ce document décrit les conventions appliquées (du commit
-au merge), pas une procédure de recrutement de contributeurs externes.
-Il sert de référence au mainteneur et à tout collaborateur qui
-rejoindrait le projet plus tard.
+Internal workflow notes for aristech, an R&D project. This document describes the conventions
+applied from commit to merge; it is the reference for the maintainer and for any collaborator who
+joins later.
 
-## Installation dev
+## Dev install
 
 ```bash
 git clone git@github.com:benoit-bremaud/aristech.git
 cd aristech
-
-python -m venv venv
-source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
 pre-commit install
 ```
 
-## Conventions de branche
+## Method
 
-Toujours brancher depuis `main`. Jamais de commit direct sur `main`.
+aristech follows a design-first method (ADR-0008):
 
-| Préfixe            | Pour quoi                                          |
-| ------------------ | -------------------------------------------------- |
-| `feat/<sujet>`     | nouvelle fonctionnalité                            |
-| `fix/<sujet>`      | correction de bug                                  |
-| `docs/<sujet>`     | documentation seulement                            |
-| `research/<sujet>` | veille technique, ajout d'une étude                |
-| `chore/<sujet>`    | hygiène repo, refactor sans changement fonctionnel |
-| `ci/<sujet>`       | modification des workflows CI                      |
+- **Design dossier first** — model a feature in [docs/architecture/](architecture/README.md)
+  (spec, UML) and get the conception gate signed before writing implementation code.
+- **ADRs** — every structuring decision goes in [docs/decisions/](decisions/README.md) with scored
+  options; an accepted ADR is superseded, never edited.
+- **Review report** — every branch gets a pre-push review report in
+  `docs/architecture/reviews/<branch>.md`.
 
-## Cycle de travail
+## Branch conventions
 
-1. Créer la branche dédiée.
-2. Développer. Faire passer localement :
+Always branch from `main`. Never commit directly to `main`.
+
+| Prefix             | For                                            |
+| ------------------ | ---------------------------------------------- |
+| `feat/<topic>`     | new feature                                    |
+| `fix/<topic>`      | bug fix                                        |
+| `docs/<topic>`     | documentation only                             |
+| `research/<topic>` | technical survey, new study                    |
+| `refactor/<topic>` | restructuring without behaviour change         |
+| `chore/<topic>`    | repository hygiene                             |
+| `ci/<topic>`       | CI workflow change                             |
+
+## Work cycle
+
+1. Create the dedicated branch.
+2. Develop, then run locally:
 
    ```bash
    make lint type-check test
@@ -43,96 +52,80 @@ Toujours brancher depuis `main`. Jamais de commit direct sur `main`.
    `make lint` runs `ruff check` and `ruff format --check`, like CI; `make format` fixes the
    formatting.
 
-3. Commit au format [Conventional Commits](https://www.conventionalcommits.org/) :
+3. Commit in [Conventional Commits](https://www.conventionalcommits.org/) format:
 
    ```text
-   feat(application): add DetectHornetAudio use case
+   feat(application): report abstentions through the notifier
    fix(infrastructure): close OpenCV VideoCapture on exception
    docs(research): add Hall et al. 2025 to acoustic section
    ```
 
-4. Pull request vers `main`. Le template
-   (`.github/PULL_REQUEST_TEMPLATE.md`) s'applique automatiquement —
-   compléter chaque section.
-
-5. Revue : CI (ruff, mypy, pytest 3.10-3.12) + revue automatique
-   (Copilot, parfois Codex). Adresser chaque commentaire inline avec la
-   référence du commit qui le corrige.
-
-6. Merge `squash & delete branch` par défaut, puis cleanup local :
+4. Open a pull request to `main`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
+   automatically; fill every section.
+5. Merge gate: CI green (ruff, mypy, pytest 3.10–3.12, security baseline), every review comment
+   handled, local checks green (tests, lint, format, mypy, coverage, gitleaks, smoke run).
+6. Squash-merge and delete the branch, then clean up locally:
 
    ```bash
    git checkout main && git pull
-   git branch -d <branche>   # -D si besoin : un squash-merge laisse souvent la branche « non mergée » aux yeux de git
+   git branch -d <branch>   # -D if needed: a squash merge often leaves the branch "unmerged" for git
    git remote prune origin
    ```
 
-## Standards de code
+7. Add the `PROJECT_LOG.md` entry for the merged PR.
+
+## Code standards
 
 ### Python
 
-- **mypy strict** doit passer sur `src/` (sauf override explicite dans
-  `pyproject.toml` pour `infrastructure/`).
-- **Pas de `Any` non justifié.** Si nécessaire, commenter pourquoi.
-- **Exports nommés** explicites via `__all__`.
-- **Conventions Clean Architecture** ([architecture.md](architecture.md)) :
-  le `domain` ne dépend de rien ; les `application/ports` sont des
-  `Protocol` ; les implémentations concrètes vivent dans
-  `infrastructure/`.
+- **mypy strict** passes on `src/` (except explicit overrides in `pyproject.toml` for
+  `infrastructure/`).
+- **No unjustified `Any`.** If one is needed, comment why.
+- **Explicit named exports** through `__all__`.
+- **Clean Architecture** ([architecture.md](architecture.md)): `domain` depends on nothing;
+  `application/ports` are `Protocol`s; concrete implementations live in `infrastructure/`; heavy
+  libraries go in an optional extra.
 
 ### Style
 
-- **ruff** pour le lint et le format (`pyproject.toml`). Faire passer
-  `make format lint` avant commit.
-- **Pas de commentaire évident** : un commentaire explique un *pourquoi*
-  non trivial, jamais un *quoi* déductible du code.
-- **Docstrings** courtes et factuelles sur les ports et use cases.
+- **ruff** for lint and format (`pyproject.toml`). Run `make format lint` before committing.
+- **No obvious comments**: a comment explains a non-trivial *why*, never a *what* the code shows.
+- **Docstrings** short and factual on ports, use cases and public functions.
 
 ### Tests
 
-- **Tests obligatoires** pour toute nouvelle fonctionnalité ou
-  correction de bug.
-- **Hiérarchie** :
+- **Tests are mandatory** for every new feature or bug fix.
+- **Levels**:
 
-  | Niveau                       | Périmètre                                     | Marqueur pytest     |
-  | ---------------------------- | --------------------------------------------- | ------------------- |
-  | `tests/unit/domain/`         | entités pures                                 | aucun               |
-  | `tests/unit/application/`    | use cases avec fakes des ports                | aucun               |
-  | `tests/unit/infrastructure/` | adaptateurs, parfois fixtures                 | `integration` si HW |
-  | `tests/integration/`         | plusieurs couches enchaînées, sans hardware   | `integration`       |
-  | `tests/e2e/`                 | bout en bout, peut nécessiter du matériel     | `e2e`               |
+  | Level                | Scope                                                     | pytest marker  |
+  | -------------------- | --------------------------------------------------------- | -------------- |
+  | `tests/unit/`        | domain, use cases with fakes at the ports, evaluation     | none           |
+  | `tests/integration/` | real adapters; needs `.env`, weights or data              | `integration`  |
+  | `tests/e2e/`         | end to end, may need hardware                             | `e2e`          |
 
-- **Fakes plutôt que mocks** : implémenter le `Protocol` cible dans une
-  classe locale au test. Plus lisible, plus typesafe.
+- **Fakes over mocks**: implement the target `Protocol` in a class local to the test. More
+  readable, type-safe; never mock the domain.
 
-## Sécurité
+## Security
 
-- **Jamais de secrets** dans le code, les commits, ou les exemples.
-  `.env.example` ne contient que des placeholders.
-- **Pas de force-push sur `main`.**
-- **Plancher légal aristech** (Art. L411-1 + L415-3 Code env.) : toute
-  fonctionnalité pouvant blesser un pollinisateur doit défaut à
-  l'abstention. Voir [architecture.md § Plancher légal](architecture.md).
+- **Never put secrets** in code, commits or examples. `.env.example` holds placeholders only.
+- **No force-push to `main`.**
+- **aristech legal floor** (Code de l'environnement L411-1 + L415-3): any feature that could harm a
+  pollinator defaults to abstention. See [architecture.md § Legal floor](architecture.md#legal-floor).
 
-## Discipline documentaire
+## Documentation discipline
 
-Voir [docs/INDEX.md](INDEX.md) pour la carte des documents. Règles :
+See [docs/INDEX.md](INDEX.md) for the document map. Rules:
 
-- Pas de `[[wikilinks]]` Obsidian — uniquement des liens Markdown
-  standards `[text](path.md)`.
-- Toute URL citée dans un narratif va aussi dans
+- All artefacts in English.
+- No Obsidian `[[wikilinks]]`; standard Markdown links `[text](path.md)` only.
+- Every URL cited in a narrative also goes in
   [docs/research/references.md](research/references.md).
-- Les décisions architecturales sont consignées **à la fois** dans
-  [PROJECT_LOG.md](../PROJECT_LOG.md) (sous-bullet de l'entrée PR) et
-  dans [architecture.md](architecture.md) (section "Décisions
-  ouvertes").
-- `markdownlint` doit passer (`npx markdownlint-cli <file>`) avant
-  commit.
+- Structuring decisions go in an ADR; the `PROJECT_LOG.md` entry of the PR summarises them.
+- `markdownlint` passes (`npx markdownlint-cli <file>`) before committing.
 
-## Suivi interne
+## Tracking
 
-Le suivi des tâches et des PRs passe par le GitHub Project
-**aristech #57**. Les bugs et idées de fonctionnalités se notent en issues
-rattachées au projet, classées par couche Clean Architecture concernée
-(`domain` / `application` / `infrastructure` / `interface`) — utile pour
-savoir où une modification atterrit.
+Tasks and PRs are tracked in the GitHub Project **aristech #57**. Bugs and feature ideas are
+issues attached to it, labelled by the Clean Architecture layer they touch (`domain` /
+`application` / `infrastructure` / `interface`).

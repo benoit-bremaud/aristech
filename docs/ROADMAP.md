@@ -109,7 +109,7 @@ draw.
 ## Deterrence track (v2) — gated on a field test
 
 The deterrence axis is **decoupled** from detection (SOLID / Dependency
-Inversion): it consumes the detector's signal (`Detection` / `Target`) via
+Inversion): it consumes the detector's signal (`Detection`) via
 the ports and adds nothing to the detection core. It is gated on **D0**,
 before any mechanics are built.
 

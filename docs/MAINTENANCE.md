@@ -1,30 +1,27 @@
-# Maintenance — nettoyage du dépôt
+# Maintenance — repository cleanup
 
-## Pourquoi ce document
+## Why this document
 
-Le dépôt a porté pendant un temps deux modèles entraînés (`hornet_recognition_model.h5`
-et `model.keras`, ~40 MB chacun). Ils ont été retirés du working tree dans la
-refonte Clean Architecture, mais **les blobs Git restent dans l'historique
-(`.git/objects/`)** tant que l'historique n'est pas réécrit.
+The repository once carried two trained models (`hornet_recognition_model.h5` and `model.keras`,
+~40 MB each). They left the working tree during the Clean Architecture refactor, but **their Git
+blobs stay in the history (`.git/objects/`)** until the history is rewritten.
 
-Tant que personne ne purge, un `git clone` télécharge les ~80 MB.
+Until someone purges them, a `git clone` downloads the ~80 MB.
 
-## Procédure de purge (réécrit l'historique)
+## Purge procedure (rewrites history)
 
-> ⚠️ Destructif. Réécrit tous les commits qui touchent ces fichiers.
-> À faire en pleine conscience, idéalement juste après le merge de
-> `refactor/clean-architecture` sur `main`, **avant** de pousser le
-> nouveau `main` à des collaborateurs.
+> ⚠️ Destructive. Rewrites every commit that touches these files, and needs a force-push of
+> `main`, which the branch rules forbid by default: an explicit owner decision is required first.
 
 ```bash
-# 1. Sauvegarde du repo, par sécurité.
+# 1. Back up the repository.
 cp -r aristech aristech.backup
 
-# 2. Installer git-filter-repo (recommandé sur BFG).
+# 2. Install git-filter-repo (preferred over BFG).
 pip install git-filter-repo
-# ou: brew install git-filter-repo
+# or: brew install git-filter-repo
 
-# 3. Purger les blobs des modèles.
+# 3. Purge the model blobs.
 git filter-repo \
   --invert-paths \
   --path hornet_recognition_model.h5 \
@@ -34,31 +31,30 @@ git filter-repo \
   --path update_requirements.py \
   --path setup.py
 
-# 4. Garbage-collect pour libérer l'espace.
+# 4. Garbage-collect to free the space.
 git reflog expire --expire=now --all
 git gc --prune=now --aggressive
 
-# 5. Vérifier le résultat.
+# 5. Check the result.
 du -sh .git
 ```
 
-Le `.git/` devrait tomber de ~61 MB à ~1 MB.
+`.git/` should drop from ~61 MB to ~1 MB.
 
-## Force-push si remote
+## Force-push to the remote
 
-Si tu as un remote (origin) avec ces commits déjà poussés :
+If the remote already holds these commits:
 
 ```bash
 git push --force-with-lease --all
 git push --force-with-lease --tags
 ```
 
-`--force-with-lease` est plus sûr que `--force` brut : il refuse si quelqu'un
-d'autre a poussé entre temps.
+`--force-with-lease` is safer than a bare `--force`: it refuses if someone else pushed in between.
 
-## Pour les collaborateurs (s'il y en a)
+## For collaborators
 
-Après le force-push, **chaque clone existant doit être refait** :
+After the force-push, **every existing clone must be recreated**:
 
 ```bash
 cd ..
@@ -66,18 +62,19 @@ rm -rf aristech
 git clone <url> aristech
 ```
 
-Un simple `git pull` ne suffit pas après une réécriture d'historique.
+A plain `git pull` is not enough after a history rewrite.
 
-## Distribution future des modèles
+## Future model distribution
 
-Comme les `.keras` ne sont plus versionnés (cf. `models/README.md`), il faut
-un canal de distribution. Trois pistes :
+Weights are not versioned (see [models/README.md](../models/README.md)), so they need a
+distribution channel. Three options:
 
-- **GitHub Releases** : attache le `.keras` à une release, ajoute un
-  `scripts/download_model.py` qui fait un `curl -L` sur l'URL de release.
-- **HuggingFace Hub** : `huggingface-cli upload` du dossier `models/`,
-  puis `huggingface-cli download` au runtime.
-- **S3 / object storage privé** : `boto3` ou `mc` pour push/pull.
+- **GitHub Releases**: attach the weights to a release and add a `scripts/download_model.py` that
+  fetches the release URL.
+- **Hugging Face Hub**: `huggingface-cli upload` of `models/`, then `huggingface-cli download` at
+  runtime.
+- **S3 / private object storage**: `boto3` or `mc` for push and pull.
 
-Mon conseil : commencer par GitHub Releases (zéro infra), migrer vers
-HuggingFace quand on veut publier le modèle.
+Starting point: GitHub Releases (no infrastructure), moving to Hugging Face once the model is
+published. VespAI weights are CC BY-NC-SA and cannot be redistributed as ours; only weights we
+train ourselves (M5) are candidates.
