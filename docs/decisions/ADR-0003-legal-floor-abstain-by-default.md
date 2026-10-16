@@ -31,5 +31,5 @@ and a no-spray exclusion zone around the landing board is enforced independently
 
 ## Consequences
 
-- Drives the operating-point policy (ADR-0004).
+- Drives the operating-point policy (ADR-0004) and the rejection of lethal deterrents (ADR-0005).
 - The abstention must be reachable in the live path; the audit (M3) found it is not yet (B4).

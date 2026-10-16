@@ -18,7 +18,7 @@ Criteria and weights (C1…): risk reduction 40, cost 25, maintenance 20, signal
 
 | Option | C1 | C2 | C3 | C4 | Total /500 |
 |---|---|---|---|---|---|
-| A. Gitleaks, CodeQL, dependency review, Scorecard, Dependabot in CI + local SonarQube scan on main | 5 | 5 | 4 | 4 | 465 |
+| A. Gitleaks, CodeQL, dependency review, Scorecard, Dependabot in CI + local SonarQube scan on main | 5 | 4 | 4 | 4 | 440 |
 | B. Gitleaks only | 2 | 5 | 5 | 3 | 350 |
 | C. Hosted SonarCloud with PR decoration | 4 | 3 | 4 | 5 | 390 |
 

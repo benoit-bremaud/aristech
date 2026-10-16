@@ -26,10 +26,11 @@ Criteria and weights (C1…): legal floor 45, hornet recall 30, explainability 2
 
 Option A, in `evaluation/operating_point.py` (`select_operating_point`). `application/decision.py`
 exposes `Decision` (ACT / ABSTAIN / IGNORE) and a pure `decide()`; a target below the threshold
-abstains explicitly.
+abstains explicitly. This refines the "high confidence threshold + abstention" wording of
+`docs/requirements.md`: the threshold is measured, not fixed high.
 
 ## Consequences
 
-- The threshold is measured on an annotated set (`scripts/measure_operating_point.py`, #18).
+- The threshold is measured on an annotated set (`scripts/measure_operating_point.py`, PR #37, issue #18).
 - Known gap: the CLI pre-filters detections at the same confidence, so ABSTAIN never fires live
   (`interface/cli/main.py`, audit M3); fixed in brick B4.

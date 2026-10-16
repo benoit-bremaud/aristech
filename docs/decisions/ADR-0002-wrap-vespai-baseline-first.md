@@ -10,7 +10,7 @@
 ## Context
 
 Training a hornet detector from scratch needs an annotated corpus the project does not have yet.
-VespAI (YOLOv5) is published, detects *V. velutina* and *V. crabro*, ships weights and runs on a
+VespAI (YOLOv5s detector + ResNet classifier) is published, detects *V. velutina* and *V. crabro*, ships weights and runs on a
 Pi 4, but its weights are CC BY-NC-SA and it has no bee class.
 
 ## Options (MCDA)
@@ -25,8 +25,8 @@ Criteria and weights (C1…): time to a working pipeline 35, detection quality 3
 
 ## Decision
 
-Option A. VespAI is loaded from an operator-supplied weights path (never committed), wrapped at
-runtime in `infrastructure/vision/vespai_detector.py`; the bee is handled as a negative.
+Option A. VespAI is loaded from an operator-supplied weights path (never committed), its YOLOv5 detector is wrapped
+at runtime in `infrastructure/vision/vespai_detector.py`; the bee is handled as a negative.
 
 ## Consequences
 
