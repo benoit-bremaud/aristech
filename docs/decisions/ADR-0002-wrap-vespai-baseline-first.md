@@ -1,6 +1,6 @@
 # ADR-0002: Wrap the VespAI YOLOv5 model as the first detector
 
-- Status: Accepted
+- Status: Superseded by ADR-0015 (VespAI kept as the comparison baseline)
 - Date: 2026-05-21 (PR #11), confirmed 2026-05-21 (PR #20)
 
 > Retroactive ADR (written 2026-10-16, brick B1). The decision predates the ADR practice;

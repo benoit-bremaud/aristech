@@ -21,6 +21,26 @@ will be mirrored as a GitHub **Epic + sub-issues** on Project #57: each
 step becomes an issue, its sub-tasks become sub-issues / checklist items,
 its gate becomes the issue's definition of done.
 
+## Re-targeted plan (needs brainstorm 2026-10-16)
+
+Own model, A0 and D0 all need field data, and hornets are active only August–November, so the
+**capture rig is the critical path** ([record](architecture/reviews/needs-brainstorm-2026-10-16.md),
+Q6). Order:
+
+| When | Brick | Gate |
+|---|---|---|
+| Winter 2026–27 | **M3 report** — reproducible VespAI baseline on the Roboflow set (one command, committed numbers) | per-class P/R recomputable on demand |
+| Winter 2026–27 | **C1 neutral collector** — fixed watchtower, camera + 2 mics on one clock, unattended recording ([spec](architecture/specs/capture-rig.md)) | a week unattended, drift ≤ 1 frame |
+| Winter 2026–27 | **Annotation pipeline** + first model on public CC BY data ("pre-field") | frozen test set defined, licences recorded |
+| Late 2026 or Aug–Nov 2027 | **D0** field test ([spec](architecture/specs/deterrence-field-test.md)) | lasting break-off or reorient |
+| Aug–Nov 2027 | **Capture season** with C1 (extend to neighbouring hives if C1 is stable) | segments collected with metadata |
+| Autumn 2027 | **A0** acoustic feasibility ([spec](architecture/specs/acoustic-feasibility.md)) | role decided on data |
+| Autumn 2027 | **M5 own model** ([spec](architecture/specs/own-vision-model.md)) + **M4 two operating points** (ADR-0014) | beats VespAI; zero bees at ACT |
+| With M6 | **Attack alert** ([spec](architecture/specs/attack-alert.md)) | one alert per episode |
+
+M0–M4 below are the original staircase (M0–M2 done; M3 harness and M4 single point shipped,
+M3 report open). M5 and M6 are refined by the plan above.
+
 ## The detection staircase
 
 ### M0 — VespAI feasibility spike *(disposable)*
@@ -91,12 +111,13 @@ recomputable on demand.
 **🚪 Gate** — documented threshold + tested abstention; "never a bee
 classified as a target above threshold" **verified on the set**.
 
-### M5 — Own data *(sketch)*
+### M5 — Own data and own model
 
-Capture protocol at the apiary → annotation pipeline → re-evaluate on **our**
-conditions → optional fine-tune.
+Capture with C1 → annotation pipeline → frozen test set → fine-tune a permissively licensed
+pre-trained detector (ADR-0015) → compare with VespAI → measure both operating points (ADR-0014).
+No longer optional: VespAI's recall does not transfer and its licence blocks a product.
 
-**🚪 Gate** — field evaluation ≥ public baseline; fine-tune decided or not.
+**🚪 Gate** — own model beats VespAI on the frozen set; zero bees at the ACT point.
 
 ### M6 — Live / embedded *(sketch)*
 
@@ -129,21 +150,24 @@ strikes (an *objective*, not a gate — see
 
 Once M3 (detection figures) and M6 (embedded) are done, the v1 monitoring
 build can go to the apiary: it delivers hornet-pressure data, feeds M5
-(footage), and provides the hornets D0 needs to test against.
+(footage), and provides the hornets D0 needs to test against. *Since 2026-10-16
+the footage comes first from the C1 neutral collector, before M6 (see the
+re-targeted plan).*
 
 ## Cross-cutting gate rules
 
 - **1 step = 1 PR** (or a few), CI green, tests, decisions logged in
   `PROJECT_LOG.md`.
-- **Dependencies**: M3 needs annotations (from M1/M5); M4 needs M3; M2
+- **Dependencies**: M3 needs annotations (from M1/M5; field annotations come from C1); M4 needs M3; M2
   depends only on M0.
 - Each gate is a **bifurcation point** — reorient without sunk cost.
 
 ## Key risk
 
-**VespAI's classes may not match our 3 classes** (it may detect only
-"hornet", with no "bee" class). The M0 check exists for this: it can turn
-"wrap" into "wrap + fine-tune" earlier than planned.
+*Realised and resolved (2026-10-16).* VespAI has no bee class (M0) and its recall does not
+transfer (~3–13 % on the Roboflow set); ADR-0015 replaces it with an own model, keeping VespAI as
+the baseline. The key risks now are the season deadline for C1, the D0 hypothesis and the acoustic
+SNR (A0).
 
 ## Deferred tracks (out of the detection-first scope)
 
@@ -151,8 +175,8 @@ build can go to the apiary: it delivers hornet-pressure data, feeds M5
   [requirements.md](requirements.md) (detections → local log; heartbeat
   liveness; fault-only alerts; server-side dead-man's-switch watchdog).
   Implementation lands with the embedded deployment (M6).
-- **Acoustic axis** — feasibility (SNR at a hive), signature, role
-  (wake-up trigger vs parallel confirmer).
+- **Acoustic axis** — recording starts with C1; feasibility gate A0 (SNR, simple classifier)
+  decides the role (confirmer, wake-up, both, none) — ADR-0016.
 - **After-detection** — tracking, distance, decision policy, non-lethal
   deterrence (the deterrence track above; gated on **D0**).
 - **Embedded** — see M6 and the hardware target in

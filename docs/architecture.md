@@ -42,7 +42,8 @@ domain/          Species, Detection, BoundingBox, Point2D, VideoFrame (stdlib on
 Outside the runtime path:
 
 - **`evaluation/`** — offline metrics (IoU matching, precision/recall per class), operating-point
-  selection (lowest threshold with zero bees taken as targets, ADR-0004) and a YOLO-label dataset
+  selection (lowest threshold with zero bees taken as targets, ADR-0004 — becomes the ACT point of
+  ADR-0014, which adds a planned COUNT point) and a YOLO-label dataset
   runner; heavy imports are lazy.
 - **`datasets/`** — stdlib train/validation/test file splitter used by `scripts/distribute_*.py`.
 
@@ -76,7 +77,8 @@ l'environnement L411-1, L415-3), so "never act on a bee" is an architecture cons
 preference:
 
 - abstain by default: an uncertain target never acts (ADR-0003);
-- the operating threshold is the lowest one with zero bees taken as targets (ADR-0004);
+- the operating threshold is the lowest one with zero bees taken as targets (ADR-0004; as-built —
+  ADR-0014 keeps it as the ACT point and plans a separate COUNT point for counts and the alert);
 - the detector floor is separate from that threshold so abstentions stay observable (ADR-0009);
 - a future deterrent adds a geometric exclusion zone around the landing board, independent of the
   classifier, and uses pure water only (no biocide).
@@ -88,8 +90,9 @@ Legal analysis: [docs/research/state-of-the-art.md](research/state-of-the-art.md
 The deterrent is a non-lethal water jet, decoupled from detection and gated by a D0 experiment
 (ADR-0005). Still open:
 
-1. **Multimodal fusion** — whether acting needs vision and audio to agree; no published
-   multimodal baseline exists for *V. velutina*.
+1. **Multimodal fusion** — partly settled by ADR-0016: synchronised audio is recorded first, its
+   role is decided by gate A0, and audio may only reinforce abstention in the action path. The
+   fusion rule itself stays open until A0.
 2. **Fail-safe** — dry-run by default, acting only behind an explicit configuration flag; settled
    with the first prototype.
 3. **Deterrent medium** — pure water (default) vs an air pulse, chosen by the D0 multi-arm

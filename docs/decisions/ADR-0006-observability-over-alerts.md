@@ -1,6 +1,6 @@
 # ADR-0006: Observability model instead of per-detection alerts
 
-- Status: Accepted
+- Status: Superseded by ADR-0013 (model kept, one aggregated attack alert added)
 - Date: 2026-05-22 (PR #26)
 
 > Retroactive ADR (written 2026-10-16, brick B1). The decision predates the ADR practice;

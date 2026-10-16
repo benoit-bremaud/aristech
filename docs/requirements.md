@@ -22,6 +22,29 @@ and can collapse.
 **Root need:** reduce predation pressure at the apiary, **without harming
 protected species, and without daily human labour.**
 
+## Needs re-targeting (2026-10-16)
+
+Outcome of the needs brainstorm after the audit plan B0–B7
+([record](architecture/reviews/needs-brainstorm-2026-10-16.md)):
+
+- **Product goal** — monitoring (count, log, evidence) **plus one aggregated "attack in progress"
+  alert** per episode (ADR-0013). Still no per-detection push.
+- **Two operating points** — ACT = zero bees as target (legal floor, the only point that may drive
+  an actuator); COUNT = high *V. velutina* precision (≈ 95 %, to confirm) for counts and the alert
+  (ADR-0014).
+- **Own vision model** — permissively licensed pre-trained base fine-tuned on own footage and
+  CC BY / CC0 public data, explicit bee class; VespAI becomes the comparison baseline (ADR-0015).
+- **Acoustic axis** — synchronised audio+video recorded from the first capture campaign; gate A0
+  decides its role on data; audio may only reinforce abstention in the action path (ADR-0016).
+- **First hardware** — a **neutral collector** (C1): a fixed watchtower on a stake that only
+  records video and two audio channels at a hive entrance (spec
+  [capture-rig](architecture/specs/capture-rig.md)).
+- **Deterrence** — unchanged (ADR-0005); D0 gets a written protocol
+  ([deterrence-field-test](architecture/specs/deterrence-field-test.md)).
+
+The sections below are updated accordingly; where they conflict with an older wording, this
+section and the ADRs win.
+
 ## Scope
 
 ### v1 — Detection + logging
@@ -49,7 +72,9 @@ protected species, and without daily human labour.**
   detector emits `Detection`, and deterrence is a separate
   consumer that plugs into it later (ports), without touching the detection
   core.
-- Acoustic recognition axis, multi-modal fusion.
+- Acoustic recognition and multi-modal fusion — **data collection starts with C1**; any audio
+  code waits for a positive A0 (ADR-0016).
+- Aggregated attack alert (ADR-0013), with the M6 push channel.
 - Tracking, distance estimation, aiming.
 
 ## Functional needs
@@ -99,13 +124,13 @@ The system must, expressed as actor/system goals independent of technology:
 
 | Decision | Choice | Rationale |
 | --- | --- | --- |
-| Model approach | **Wrap the VespAI baseline first** ([andrw3000/vespai](https://github.com/andrw3000/vespai), YOLOv5s + ResNet, weights provided), fine-tune on own data later (hybrid) | Detect within days, no corpus/GPU needed to start; avoids blocking the whole project on data. |
-| Axis order | **Vision first**, audio later | Vision is mature with a baseline; audio at a hive (thousands of bees + wind) is an unproven SNR bet to isolate later. |
+| Model approach *(superseded by ADR-0015: own model on a permissive base; VespAI = baseline)* | **Wrap the VespAI baseline first** ([andrw3000/vespai](https://github.com/andrw3000/vespai), YOLOv5s + ResNet, weights provided), fine-tune on own data later (hybrid) | Detect within days, no corpus/GPU needed to start; avoids blocking the whole project on data. |
+| Axis order | **Vision first**, audio later — *refined by ADR-0016: synchronised audio is recorded from C1, audio code after A0* | Vision is mature with a baseline; audio at a hive (thousands of bees + wind) is an unproven SNR bet to isolate later. |
 | Classes (v1) | **velutina = sole target; crabro detected but non-target; bee = negative, not a positive class** | M0 finding: VespAI outputs only *V. velutina* + *V. crabro*, no bee class. Only *V. velutina* is the threat (cf. `Detection.is_threat()`); *V. crabro* (native European hornet) is detected but **non-target — do not act**. For v1 the legal floor still holds via "bee → no hornet detection → no action". An explicit bee class is deferred to fine-tuning on own data (M5). |
-| Baseline licence | **VespAI is CC BY-NC-SA 4.0** — accepted for v1 | Usable for non-commercial R&D. **Blocks commercial use**; fine-tuning its weights yields a CC BY-NC-SA derivative. A permissively-licensed model is required before any product — revisit then. |
+| Baseline licence | **VespAI is CC BY-NC-SA 4.0** — accepted for v1 R&D only; the product model is our own (ADR-0015) | Usable for non-commercial R&D. **Blocks commercial use**; fine-tuning its weights yields a CC BY-NC-SA derivative. A permissively-licensed model is required before any product — revisit then. |
 | Detection output | **2D bbox + species + confidence** (the `Detection` entity) | Free with VespAI (it outputs bboxes); survives into v2 (tracking, exclusion zone, aiming). 3D distance deferred. |
 | Observation | **Fixed camera** over the flight volume | Stable background → better detection, no early mechanics. Pan/tilt belongs to v2 aiming. |
-| Operating point | **~100% precision (never flag a bee / non-hornet as a target), relaxed hornet recall** | Never classify a non-hornet as a target — in v1 that means never raising a false hornet alert; in v2 the same guard gates the actuator (legal). Missing some hornets is tolerable — this is deterrence, not extermination. High confidence threshold + abstention default. |
+| Operating point *(refined by ADR-0014: ACT point = this rule; a separate COUNT point serves counts and the alert)* | **~100% precision (never flag a bee / non-hornet as a target), relaxed hornet recall** | Never classify a non-hornet as a target — in v1 that means never raising a false hornet alert; in v2 the same guard gates the actuator (legal). Missing some hornets is tolerable — this is deterrence, not extermination. High confidence threshold + abstention default. |
 | Evaluation | **Qualitative → quantified offline → representative → live** | A trajectory, not a single choice; numbers before trust, field validation last. |
 | Data | **Inventory public → small validation set → own footage + annotation** | Public datasets unblock the start; own apiary footage is the gold data (and a publishable contribution). |
 
@@ -117,7 +142,7 @@ notification model is therefore **operational health, not detection events**
 
 | Signal | What | Channel | Cadence |
 | --- | --- | --- | --- |
-| **Detections** | species, position, time | **structured local log** | continuous, **never pushed** (feeds statistics + the data flywheel) |
+| **Detections** | species, position, time | **structured local log** | continuous, **never pushed per detection** (feeds statistics + the data flywheel); one aggregated attack alert per episode (ADR-0013) |
 | **Heartbeat** | "alive and functional" | periodic ping to a server | every N minutes |
 | **Faults** | a problem the device can detect | **push notification** (Telegram / email) | only when something is wrong |
 
@@ -131,12 +156,16 @@ notification model is therefore **operational health, not detection events**
   surfaced by the watchdog seeing a missing heartbeat.
 - **No per-detection notification** — that would be hundreds of pushes a
   day and is pure noise. Detections are logged for analysis instead.
+- **Attack alert** (ADR-0013) — the one exception to "never pushed": a single aggregated alert per
+  attack episode (hornet pressure over a window, with cool-down), on the same push channel as the
+  faults. Spec [attack-alert](architecture/specs/attack-alert.md).
 - **Scope** — v1 already logs detections (the `LoggingNotifier`). The
   heartbeat + fault-alerting + the server-side watchdog land with the
   autonomous deployment (embedded phase, M6), not before.
 
 This **supersedes the earlier provisional "alert" defaults** (Telegram
-push of aggregated detections), which were the wrong model.
+push of aggregated detections), which were the wrong model. ADR-0013 (2026-10-16) brings back a
+single, episode-level attack alert on top of this model — not a stream of detection pushes.
 
 ## Deterrence — objective and unvalidated hypothesis (v2)
 
@@ -164,7 +193,7 @@ push of aggregated detections), which were the wrong model.
 
 ## Explicitly deferred (not in v1)
 
-- **Acoustic axis** and multi-modal fusion.
+- **Acoustic code** and multi-modal fusion (recording starts with C1; code after A0).
 - **After-detection chain**: tracking, distance, decision policy,
   deterrence (ADR-0005 and its open decisions).
 - **Embedded target**: real-time camera, on-device NPU, headless service.
