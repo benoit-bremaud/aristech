@@ -13,6 +13,12 @@ role audio plays — confirmer, wake-up, both, or none — before any audio code
 
 - **Researcher** (primary).
 
+## Reference signatures (captive lab, needs brainstorm Q9)
+
+Before the field analysis, single captive *V. velutina* are recorded with no bees and no wind to
+get a clean **reference wingbeat signature** (fundamental and harmonics). It tells the field
+analysis which band to look for; it is never used as field evidence nor in the held-out split.
+
 ## Main scenario
 
 1. From the synchronised recordings (spec `capture-rig`), the annotated video labels audio windows

@@ -26,6 +26,12 @@ insects in the conditions of **our** hive entrances, with a recall far above Ves
    (ADR-0014) are measured.
 6. The model ships as a second `HornetDetector` adapter, loaded from a path.
 
+## Captive lab (needs brainstorm Q9)
+
+Captive *V. velutina* filmed under controlled distance, angle, light (backlight, dusk) and
+background give a **robustness map** of the model (where it fails) and high-frame-rate footage of
+flight. Training and robustness analysis only — never the frozen test set.
+
 ## Alternative scenarios
 
 - **A1** Not enough field data after the season → train on public data only, label the result

@@ -14,6 +14,13 @@ protocol, not a system feature.
 - **Researcher** (primary) — sprays and records.
 - **Beekeeper** — hosts the test and keeps the colony safe.
 
+## Optional enclosure pre-test (captive lab, needs brainstorm Q9)
+
+Off-season, captive *V. velutina* in an enclosure **with no bee present** are sprayed with pure
+water to observe the immediate reaction, the time before resuming flight and habituation over
+repeated trials. It partly de-risks the hypothesis early; it **does not replace** the field D0,
+because hunting behaviour at a hive entrance cannot be reproduced in a cage.
+
 ## Main scenario
 
 1. At a hive under hornet pressure, the researcher stands outside the landing-board exclusion zone

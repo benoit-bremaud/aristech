@@ -169,6 +169,13 @@ Kept as a **complementary** data source (close-ups, isolated wingbeat audio, off
 in the frozen test set** (unnatural behaviour). *V. velutina* is an invasive alien species; only
 it is captured.
 
+The owner then stressed that captivity enables much deeper, qualitative analyses. Added as a
+**captive lab** strand: clean reference wingbeat signatures for A0, controlled-condition
+robustness mapping and high-frame-rate flight footage for the vision model, and an optional
+off-season enclosure pre-test of the deterrence hypothesis with no bee exposed (it does not replace
+the field D0). Guard rails: stressed behaviour, so never in the frozen test set; *V. velutina*
+only; sting safety during handling.
+
 ### Q10 — Recording policy
 
 | Criterion (weight) | A. Continuous video + audio in daylight | B. Motion-triggered only | C. Continuous audio + video ring buffer saved before/after each motion |
