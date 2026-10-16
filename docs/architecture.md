@@ -81,11 +81,11 @@ Implémentations concrètes des ports. Tout ce qui touche au matériel ou
 à une lib externe vit ici. Sous-dossiers prévus :
 
 - `vision/` — OpenCV, YOLO (Torch/TensorFlow).
-- `audio/` — PyAudio, librosa.
+- `audio/` — PyAudio, librosa (extra retiré, ADR-0010 ; revient avec son adaptateur).
 - `distance/` — caméras stéréo, capteurs ToF.
 - `hardware/` — RPi.GPIO pour servos pan/tilt, pompe + solénoïde du jet
   d'eau, capteurs et panneau solaire.
-- `connectivity/` — paho-mqtt, LoRaWAN.
+- `connectivity/` — paho-mqtt, LoRaWAN (extra retiré, ADR-0010 ; revient avec son adaptateur).
 - `config/` — chargement YAML.
 
 Pour l'instant, aucun adaptateur n'est livré ; la stratégie est de

@@ -34,7 +34,7 @@ skip a gate because a change looks small.
   import (`evaluation/runner.py`).
 - A new port needs a present force (a second implementation, a test fake, an optional extra).
   No speculative ports.
-- Heavy dependencies go in an optional extra (`vision`, `audio`, …), never in the core
+- Heavy dependencies go in an optional extra (e.g. `vision`), never in the core
   `dependencies`.
 - VespAI weights are CC BY-NC-SA: load them from a path, never commit or vendor them.
 - Hand-written fakes at the ports; never mock the domain.
