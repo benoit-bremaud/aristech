@@ -39,6 +39,6 @@ jobs:
       # par tests/unit (qui mocke les ports) — donc on installe seulement
       # ce que les tests utilisent.
       - run: pip install -e . --no-deps
-      - run: pip install pytest pytest-cov pyyaml python-dotenv
+      - run: pip install pytest pytest-cov pyyaml python-dotenv opencv-python-headless numpy
       - name: Run tests (default selection, no hardware, no models)
         run: pytest -q --cov=aristech --cov-report=term-missing

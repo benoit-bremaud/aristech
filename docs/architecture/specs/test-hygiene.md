@@ -19,8 +19,8 @@ tests assert the behaviour precisely enough that a regression turns them red.
   the default selection, so `tests/config` YAML checks run in CI (S7).
 - **AC4** `VespAIDetector._load` / `detect` are unit-tested with hand-written fake `torch` and
   `cv2` modules (the boundary), including the restore of `torch.load` when loading fails (S5).
-- **AC5** The OpenCV source test asserts the exact frame count written (N3). It needs `cv2`, so
-  it runs locally with the `vision` extra and is skipped in CI.
+- **AC5** The OpenCV source test asserts the exact frame count written (N3). CI installs
+  `opencv-python-headless` so it runs on every PR.
 - **AC6** `select_operating_point` returns `bees_as_target == 0` on every scenario where it succeeds
   (parametrised invariant, N4).
 - **AC7** CLI: floor == confidence and floor == 0 are accepted and reach the detector; each wiring

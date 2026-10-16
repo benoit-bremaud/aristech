@@ -10,7 +10,7 @@
 
 | Step | Result |
 |---|---|
-| 1 Tests | ✅ root `pytest`: 118 passed, 7 skipped (tensorflow/cv2 absent), 5 deselected (integration), 0 collection errors · ruff, `ruff format --check`, mypy clean · actionlint clean |
+| 1 Tests | ✅ root `pytest`: 120 passed, 5 skipped (tensorflow absent), 5 deselected (integration), 0 collection errors · ruff, `ruff format --check`, mypy clean · actionlint clean |
 | 2 Coverage | tests 88 % (floor 80) · `vespai_detector.py` 100 % (was untested) · docs: no production code changed |
 | 3 SonarQube | ⚠️ Community Build analyses `main` only → run `make sonar` post-merge |
 | 4 Secrets | ✅ gitleaks clean on the staged diff · only `.env.example` tracked · diff read: nothing sensitive |
@@ -20,7 +20,7 @@
 _None._
 
 ## 🟡 Should Have
-- `tests/unit/infrastructure/test_opencv_video_source.py:21` `[tests]` · AC5 needs cv2, skipped in CI · **Fixed**: spec states AC5 is local-only (vision extra).
+- `tests/unit/infrastructure/test_opencv_video_source.py:21` `[tests]` · AC5 needs cv2, skipped in CI · **Fixed**: CI installs `opencv-python-headless` + `numpy` (owner choice A 440/500); test passes locally (2 passed).
 - `tests/unit/evaluation/test_operating_point.py` `[tests]` · invariant was near-tautological (selector filters on the same field) · **Fixed**: expected threshold per scenario + independent `evaluate` recount.
 - `pyproject.toml:107` `[docs]` · default `-m` also filters explicit paths · **Fixed**: spec section and Makefile comment (`pytest -m integration <path>`).
 - `Makefile` `[tests]` · `make sonar` covered `tests/unit` only while CI runs the default selection · **Fixed**: aligned to `pytest -q`.
