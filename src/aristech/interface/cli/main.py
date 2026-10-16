@@ -7,6 +7,9 @@ from typing import Any, cast
 
 import yaml
 
+# Detector floor: boxes between it and --confidence reach decide() as ABSTAIN (ADR-0009).
+_DEFAULT_DETECTOR_FLOOR = 0.1
+
 
 def _load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
@@ -54,7 +57,16 @@ def main(argv: list[str] | None = None) -> int:
         "--confidence",
         type=float,
         default=0.5,
-        help="Seuil de confiance des détections (0-1).",
+        help="Seuil opérationnel ACT/ABSTAIN (0-1), cf. ADR-0004.",
+    )
+    parser.add_argument(
+        "--detector-floor",
+        type=float,
+        default=None,
+        help=(
+            "Plancher de confiance du détecteur (0-1, <= --confidence). "
+            "Défaut : min(0.1, --confidence). Cf. ADR-0009."
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -100,6 +112,19 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         log.error("--confidence doit être dans [0, 1] (reçu %s).", args.confidence)
         return 2
 
+    floor = (
+        min(_DEFAULT_DETECTOR_FLOOR, args.confidence)
+        if args.detector_floor is None
+        else args.detector_floor
+    )
+    if not 0.0 <= floor <= args.confidence:
+        log.error(
+            "--detector-floor doit être dans [0, --confidence] (reçu %s, --confidence %s).",
+            floor,
+            args.confidence,
+        )
+        return 2
+
     # A bare digit with no matching file is a camera index; otherwise it is a
     # file path that must exist (a file literally named "0" stays a path).
     video_path = Path(args.video)
@@ -131,13 +156,17 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         detector=VespAIDetector(
             weights_path=args.weights,
             yolov5_dir=args.yolov5_dir,
-            confidence=args.confidence,
+            confidence=floor,
         ),
         notifier=LoggingNotifier(),
         config=DetectHornetVisualConfig(confidence_threshold=args.confidence),
     )
-    accepted = use_case.run()
-    log.info("Analyse terminée — %d menace(s) au-dessus du seuil.", len(accepted))
+    result = use_case.run()
+    log.info(
+        "Analyse terminée — %d menace(s), %d abstention(s) sous le seuil.",
+        result.threats,
+        result.abstentions,
+    )
     return 0
 
 

@@ -1,14 +1,16 @@
-# Sequence diagram — detection — UC1 live detection loop (as-built)
+# Sequence diagram — detection — UC1 live detection loop
 
 > **Feature**: detection v1
 > **Source**: `src/aristech/interface/cli/main.py`, `src/aristech/application/use_cases/detect_hornet_visual.py`,
 > `src/aristech/application/decision.py`
-> **Related ADRs**: ADR-0001, ADR-0003, ADR-0004
+> **Related ADRs**: ADR-0001, ADR-0003, ADR-0004, ADR-0009
+> **Spec**: `docs/architecture/specs/live-abstain.md`
 
 ## Context
 
-What happens in time when the operator runs UC1. Drawn as-built to make the double confidence
-filter visible (audit finding M3), which brick B4 fixes.
+What happens in time when the operator runs UC1. Since brick B4 (ADR-0009) the detector runs at a
+low floor `f` and only `decide()` applies the operating threshold `c`, so uncertain targets are
+reported as abstentions instead of vanishing (audit M3, now fixed).
 
 ## Diagram
 
@@ -22,40 +24,38 @@ sequenceDiagram
     participant DEC as decide()
     participant N as LoggingNotifier (Notifier)
 
-    Operator->>CLI: run with --video, --weights, --yolov5-dir, --confidence c
-    CLI->>CLI: validate arguments (exit 2 on error)
+    Operator->>CLI: run with --video, --weights, --yolov5-dir, --confidence c, --detector-floor f
+    CLI->>CLI: validate arguments, require 0 <= f <= c <= 1 (exit 2 on error)
     CLI->>VS: create(source — camera index or file path)
-    CLI->>DET: create with confidence = c
+    CLI->>DET: create with confidence = f
     CLI->>UC: create with confidence_threshold = c
     CLI->>UC: run()
     UC->>VS: frames()
     loop each VideoFrame yielded
         VS-->>UC: VideoFrame
         UC->>DET: detect(frame)
-        Note over DET: drops every box below c (first filter)
-        DET-->>UC: detections with confidence >= c
+        Note over DET: drops boxes below the floor f only
+        DET-->>UC: detections with confidence >= f
         loop each detection
             UC->>DEC: decide(detection, c)
-            Note over DEC: second filter at the same c — ABSTAIN is unreachable
             alt V. velutina and confidence >= c
                 DEC-->>UC: ACT
                 UC->>N: notify_detection(detection)
-            else V. velutina and confidence < c (unreachable today)
+            else V. velutina and f <= confidence < c
                 DEC-->>UC: ABSTAIN
+                UC->>N: notify_abstention(detection)
             else other species
                 DEC-->>UC: IGNORE
             end
         end
     end
     UC->>VS: close()
-    UC-->>CLI: accepted detections
-    CLI-->>Operator: log count, exit 0
+    UC-->>CLI: DetectionRun(threats, abstentions)
+    CLI-->>Operator: log both counts, exit 0
 ```
 
 ## Notes
 
-- The ABSTAIN branch of `decide()` exists and is unit-tested, but never fires in the live path
-  because the detector already dropped every box below `c` (audit M3, ADR-0004 consequences).
-- Fix direction for B4: the detector runs at a low floor and only `decide()` applies the
-  operating threshold, so uncertain targets are visible as ABSTAIN.
+- `--detector-floor` defaults to 0.1, lowered to `c` when `c < 0.1`.
+- Other species are never reported, neither as threat nor as abstention (legal floor, ADR-0003).
 - `close()` runs in a `finally`, also on detector errors.

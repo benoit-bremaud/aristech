@@ -16,3 +16,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0006](ADR-0006-observability-over-alerts.md) | Observability model instead of per-detection alerts | Accepted |
 | [ADR-0007](ADR-0007-security-and-quality-ci-baseline.md) | Security CI baseline and local SonarQube | Accepted |
 | [ADR-0008](ADR-0008-adopt-vsea-cubbies-method.md) | Adopt the V-SEA / cubbies working method | Accepted |
+| [ADR-0009](ADR-0009-detector-floor-and-abstention-reporting.md) | Separate detector floor from operating threshold; report abstentions | Accepted |

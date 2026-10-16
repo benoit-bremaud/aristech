@@ -69,6 +69,7 @@ classDiagram
     class Notifier {
         <<interface>>
         +notify_detection(detection Detection)
+        +notify_abstention(detection Detection)
     }
 
     Detection --> Species

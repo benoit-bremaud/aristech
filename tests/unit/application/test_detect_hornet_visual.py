@@ -3,7 +3,11 @@ from datetime import datetime
 
 import pytest
 
-from aristech.application.use_cases import DetectHornetVisual, DetectHornetVisualConfig
+from aristech.application.use_cases import (
+    DetectHornetVisual,
+    DetectHornetVisualConfig,
+    DetectionRun,
+)
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
 
 
@@ -30,9 +34,13 @@ class _ScriptedDetector:
 class _RecordingNotifier:
     def __init__(self) -> None:
         self.received: list[Detection] = []
+        self.abstained: list[Detection] = []
 
     def notify_detection(self, detection: Detection) -> None:
         self.received.append(detection)
+
+    def notify_abstention(self, detection: Detection) -> None:
+        self.abstained.append(detection)
 
 
 def _frame() -> VideoFrame:
@@ -48,7 +56,7 @@ def _det(species: Species, confidence: float) -> Detection:
     )
 
 
-def test_notifies_only_threats_above_threshold():
+def test_reports_threats_and_abstentions_never_other_species():
     high = _det(Species.VESPA_VELUTINA, 0.9)
     low = _det(Species.VESPA_VELUTINA, 0.3)
     crabro = _det(Species.VESPA_CRABRO, 0.95)
@@ -61,10 +69,26 @@ def test_notifies_only_threats_above_threshold():
         config=DetectHornetVisualConfig(confidence_threshold=0.5),
     )
 
-    accepted = use_case.run()
+    result = use_case.run()
 
-    assert accepted == [high]
+    assert result == DetectionRun(threats=1, abstentions=1)
     assert notifier.received == [high]
+    assert notifier.abstained == [low]
+
+
+def test_target_exactly_at_threshold_acts():
+    edge = _det(Species.VESPA_VELUTINA, 0.5)
+    notifier = _RecordingNotifier()
+    use_case = DetectHornetVisual(
+        video=_FakeVideoSource([_frame()]),
+        detector=_ScriptedDetector([[edge]]),
+        notifier=notifier,
+        config=DetectHornetVisualConfig(confidence_threshold=0.5),
+    )
+    result = use_case.run()
+    assert result == DetectionRun(threats=1, abstentions=0)
+    assert notifier.received == [edge]
+    assert notifier.abstained == []
 
 
 def test_returns_empty_when_no_frames():
@@ -74,7 +98,8 @@ def test_returns_empty_when_no_frames():
         detector=_ScriptedDetector([]),
         notifier=_RecordingNotifier(),
     )
-    assert use_case.run() == []
+    result = use_case.run()
+    assert result == DetectionRun()
     assert video.closed, "VideoSource.close() doit être appelée même sans frame"
 
 
