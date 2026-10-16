@@ -18,7 +18,7 @@ def test_reads_frames_from_a_generated_video(tmp_path):
     frames = list(source.frames())
     source.close()
 
-    assert len(frames) >= 1
+    assert len(frames) == 3
     assert frames[0].width == width
     assert frames[0].height == height
 

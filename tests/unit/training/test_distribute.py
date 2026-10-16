@@ -1,13 +1,10 @@
-"""Test d'intégration de la fonction de distribution (FS réel, en tmp)."""
+"""Unit tests of the file distribution helper (real FS, under tmp_path)."""
 
 from pathlib import Path
-
-import pytest
 
 from aristech.training.distribute import distribute_files
 
 
-@pytest.mark.integration
 def test_distribute_files_splits_70_20_10(tmp_path: Path):
     source = tmp_path / "source"
     train = tmp_path / "train"

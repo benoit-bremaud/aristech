@@ -2,6 +2,8 @@
 
 import pytest
 
+pytest.importorskip("tensorflow")
+
 from aristech.training.data_preparation import prepare_data
 
 

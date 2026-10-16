@@ -17,6 +17,7 @@ test:
 test-unit:
 	pytest tests/unit -q
 
+# The default addopts deselect integration/e2e; a later -m overrides it.
 test-integration:
 	pytest -m integration
 
@@ -35,7 +36,7 @@ type-check:
 SONAR_TOKEN_FILE ?= $(HOME)/.config/sonar-tokens/aristech
 
 sonar:
-	pytest tests/unit -q --cov=aristech --cov-report=xml
+	pytest -q --cov=aristech --cov-report=xml
 	SONAR_TOKEN="$$(cat $(SONAR_TOKEN_FILE) 2>/dev/null || printf '%s' "$$SONAR_TOKEN")" sonar-scanner
 
 run:
