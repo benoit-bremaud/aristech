@@ -1,6 +1,6 @@
 # ADR-0004: Operating point: lowest threshold with zero bees as target
 
-- Status: Accepted
+- Status: Superseded by ADR-0014 (its rule becomes the ACT point)
 - Date: 2026-05-21 (PR #11), implemented 2026-05-24 (PR #36)
 
 > Retroactive ADR (written 2026-10-16, brick B1). The decision predates the ADR practice;
