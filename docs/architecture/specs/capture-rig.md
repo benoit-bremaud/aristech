@@ -28,6 +28,12 @@ A **watchtower on a stake** ("mirador"), about 0.5–1 m from the entrance and s
   neighbouring hives (one camera + mic each) once the single-hive unit is validated;
 - the second (colony) microphone is cabled against or inside the hive;
 - a rigid, vibration-free stake.
+- form reference (owner idea, not frozen): a garden solar stake lamp — stake, small head with the
+  slits, a cap as the roof;
+- **power is remote** (owner decision 2026-10-16): the solar panel needed (estimate 20–50 W for a
+  ~5–10 W load, measured in the C1 brick) is far too large for the head, so it stands on its own
+  well-exposed stake and feeds the battery and electronics by cable; mains power first, solar
+  later. The cable run between the two stakes must stay out of the bees' flight path.
 
 A rotating 360° turret was rejected (motor noise in the wingbeat band, moving background,
 intermittent coverage of the entrance, moving parts outdoors); rotation belongs to v2 aiming.
