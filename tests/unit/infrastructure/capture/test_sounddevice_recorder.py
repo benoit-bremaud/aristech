@@ -1,5 +1,6 @@
 import sys
 import types
+from datetime import timedelta
 from typing import Any
 
 import numpy
@@ -69,9 +70,10 @@ def test_segment_receives_blocks_as_24_bit_flac(streams: list[_FakeStream]) -> N
 
     streams[0].callback(block, 4, None, None)
     file = recorder._file
-    written = recorder.stop_segment()
+    span = recorder.stop_segment()
 
-    assert written == 4 / 48_000
+    assert span is not None
+    assert span[1] - span[0] == timedelta(seconds=4 / 48_000)
     assert isinstance(file, _FakeSoundFile)
     assert file.blocks and file.closed
     assert file.args[3] == "PCM_24" and file.kwargs["format"] == "FLAC"

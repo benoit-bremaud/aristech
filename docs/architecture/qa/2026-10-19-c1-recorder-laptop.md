@@ -29,6 +29,13 @@ timeout -s INT 20 .venv/bin/aristech-record --rig-id qa-laptop --hive-id none --
 the audio segment as `end − written`. Re-run (`qa2`): file 19.584 s, sidecar 19.584 s, **0.0 ms**
 difference ✅. Unit tests 164 passed.
 
+## Second fix (external review) and re-run
+
+Anchoring the written duration on the tick's `now` could still drift if the tick or the drain is
+slow. `stop_segment()` now returns the UTC times of the first and last sample, stamped in the
+input callback. Re-run (`qa3`): file 19.637 s, sidecar 19.635 s, **−1.9 ms** (callback jitter,
+well under AC1's 33 ms) ✅.
+
 ## Not covered
 
 Camera path (Picamera2, ring flush, motion thread), real I²S levels, 7-day run, power draw.
