@@ -22,8 +22,8 @@ by one command** and **recorded in a committed report** with everything needed t
 1. The researcher installs the `vision` environment (`docs/INSTALL.md`) and obtains the VespAI
    weights, the pinned YOLOv5 commit and the Roboflow export, each from its documented source.
 2. The researcher runs `make m3-report WEIGHTS=… YOLOV5_DIR=… DATASET=…`.
-3. The command runs VespAI once (floor = lowest threshold) over the chosen splits and prints, for each reported confidence
-   threshold, a per-class table: TP, FP, FN, precision, recall, F1 (Markdown).
+3. The command runs VespAI once (floor = lowest threshold) over the chosen splits and prints,
+   for each reported confidence threshold, a per-class table: TP, FP, FN, precision, recall, F1 (Markdown).
 4. The researcher compares the output with `docs/research/m3-vespai-baseline.md`; the numbers
    match.
 

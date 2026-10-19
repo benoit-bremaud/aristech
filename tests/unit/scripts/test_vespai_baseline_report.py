@@ -83,16 +83,51 @@ def test_scores_each_threshold_from_one_detector_pass(
 
 @pytest.mark.parametrize(
     "extra",
-    [("--class-map", "0:not_a_species"), ("--class-map", "0"), ("--thresholds", "1.5")],
+    [
+        ("--class-map", "0:not_a_species"),
+        ("--class-map", "0"),
+        ("--thresholds", "1.5"),
+        ("--thresholds", "abc"),
+    ],
 )
 def test_bad_arguments_exit_2(dataset: Path, tmp_path: Path, extra: tuple[str, str]) -> None:
     assert _run(dataset, tmp_path, *extra)[0] == 2
 
 
-def test_missing_dataset_exits_2(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-    assert _run(tmp_path / "nope", tmp_path)[0] == 2
-    assert "Dataset not found" in caplog.text
+@pytest.mark.parametrize(
+    ("flag", "message"),
+    [
+        ("--dataset", "Dataset not found"),
+        ("--weights", "Weights not found"),
+        ("--yolov5-dir", "YOLOv5 directory not found"),
+    ],
+)
+def test_missing_path_exits_2(
+    dataset: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture, flag: str, message: str
+) -> None:
+    # argparse keeps the last occurrence, so this overrides the valid path.
+    code, fake = _run(dataset, tmp_path, flag, str(tmp_path / "nope"))
+    assert code == 2
+    assert message in caplog.text
+    assert fake.calls == 0
 
 
-def test_missing_split_exits_2(dataset: Path, tmp_path: Path) -> None:
-    assert _run(dataset, tmp_path, "--splits", "holdout")[0] == 2
+def test_missing_split_exits_2_before_running_detector(
+    dataset: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    code, fake = _run(dataset, tmp_path, "--splits", "holdout")
+    assert code == 2
+    assert "Split not found" in caplog.text
+    assert fake.floor == -1.0  # detector never built
+
+
+def test_defaults_score_all_splits_with_hornet_class_map(
+    dataset: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (dataset / "train" / "images" / "c.jpg").write_bytes(b"")
+    (dataset / "train" / "labels" / "c.txt").write_text("0 0.5 0.5 0.2 0.2\n")  # crabro
+    assert _run(dataset, tmp_path)[0] == 0
+    out = capsys.readouterr().out
+    assert "splits: train valid test" in out
+    assert "(IoU ≥ 0.50)" in out
+    assert "| vespa_crabro | 0 | 0 | 1 |" in out  # class 0 = crabro, missed

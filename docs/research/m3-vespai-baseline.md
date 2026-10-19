@@ -65,7 +65,7 @@ git clone https://github.com/ultralytics/yolov5.git
 git -C yolov5 checkout 23701eac7a7b160e478ba4bbef966d0af9348251
 sha256sum vespai/models/yolov5-params/yolov5s-all-data.pt   # expect 1fff0bde…3694
 
-# 2. Vision environment (CPU torch)
+# 2. Vision environment (CPU torch; the extra index serves torch only)
 uv venv -p 3.10 .venv
 VIRTUAL_ENV=.venv uv pip install --index-strategy unsafe-best-match \
   --extra-index-url https://download.pytorch.org/whl/cpu \
@@ -76,9 +76,9 @@ VIRTUAL_ENV=.venv uv pip install --index-strategy unsafe-best-match \
 #    (data/external/ is git-ignored).
 
 # 4. Recompute (from the aristech checkout)
-PATH=~/vespai-baseline/.venv/bin:$PATH make m3-report \
-  WEIGHTS=~/vespai-baseline/vespai/models/yolov5-params/yolov5s-all-data.pt \
-  YOLOV5_DIR=~/vespai-baseline/yolov5 \
+make m3-report PYTHON="$HOME/vespai-baseline/.venv/bin/python" \
+  WEIGHTS="$HOME/vespai-baseline/vespai/models/yolov5-params/yolov5s-all-data.pt" \
+  YOLOV5_DIR="$HOME/vespai-baseline/yolov5" \
   DATASET=data/external/vespa-crabro-velutina
 ```
 
@@ -90,8 +90,10 @@ The command prints the two tables above. Other thresholds, splits or IoU:
 - **No bee class** in this set: bees classified as the target cannot be measured here, so the
   legal floor (M4, ADR-0014) is not exercised by this baseline.
 - **Floor at the lowest threshold, not 0.** At floor 0, YOLOv5's CPU NMS exceeds its time limit
-  and silently drops boxes. A box below the lowest reported threshold can never count, so the
-  floor does not change the tables. Curves over the full range belong to
+  and drops boxes. YOLOv5 filters candidates by confidence before per-class NMS, and a box below
+  the floor can never suppress one above it, so the floor leaves the tables unchanged except for
+  boxes at exactly 0.500 (YOLOv5 keeps `> conf`, the harness counts `>= threshold`). The runs
+  logged no NMS time-limit warning at floor 0.5. Curves over the full range belong to
   `scripts/measure_operating_point.py`.
 - All splits are scored together: VespAI was not trained on this set, so train/valid/test are
   all unseen data for it. `--splits test` gives the 36-image test split alone.

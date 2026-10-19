@@ -1,9 +1,9 @@
 """Recompute the M3 VespAI baseline: per-class precision / recall on a YOLO set.
 
-Runs VespAI once over the given splits with its confidence floor at the
-lowest reported threshold, then scores the same
-samples at each reported confidence threshold with the M3 harness
-(`collect_samples` + `evaluate`) and prints one Markdown table per threshold.
+Runs VespAI once over the given splits, with its confidence floor at the lowest
+reported threshold, then scores the same samples at each threshold with the
+M3 harness (`collect_samples` + `evaluate`) and prints one Markdown table per
+threshold.
 The committed numbers live in ``docs/research/m3-vespai-baseline.md``; this
 script is the one command that recomputes them (``make m3-report``).
 
@@ -110,17 +110,17 @@ def main(argv: list[str] | None = None, detector_factory: DetectorFactory = _ves
             _log.error("%s not found: %s", label, path)
             return 2
 
+    dataset = Path(args.dataset)
+    for split in args.splits:
+        if not (dataset / split / "images").is_dir():
+            _log.error("Split not found: %s", dataset / split / "images")
+            return 2
+
     # Floor = lowest threshold, not 0: a box below it can never count, and at 0
     # YOLOv5's CPU NMS hits its time limit and silently drops boxes.
     detector = detector_factory(args.weights, args.yolov5_dir, min(thresholds))
-    try:
-        # One detector pass; every threshold is scored from these samples.
-        samples = list(
-            collect_samples(detector, Path(args.dataset), class_map, splits=tuple(args.splits))
-        )
-    except FileNotFoundError as exc:
-        _log.error("%s", exc)
-        return 2
+    # One detector pass; every threshold is scored from these samples.
+    samples = list(collect_samples(detector, dataset, class_map, splits=tuple(args.splits)))
 
     images = len(samples)
     truths = sum(len(t) for _p, t in samples)
