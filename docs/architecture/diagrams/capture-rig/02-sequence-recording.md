@@ -30,6 +30,9 @@ sequenceDiagram
         UC->>ST: append audio block
         alt 10-min boundary
             UC->>ST: close audio segment + sidecar
+            opt free space < 10 %
+                UC->>ST: delete oldest non-flagged
+            end
         end
         CA-->>UC: motion event (t_first)
         UC->>CA: save_clip(from t_first − 5 s)
@@ -48,4 +51,6 @@ sequenceDiagram
 
 ## Notes
 
+- The free-space check runs after every closed audio segment and every stored clip, so audio
+  alone (no motion) still triggers rotation (spec A1).
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).
