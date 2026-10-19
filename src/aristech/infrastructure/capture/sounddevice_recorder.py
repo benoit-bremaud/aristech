@@ -34,6 +34,7 @@ class SoundDeviceRecorder:
         self._writer: threading.Thread | None = None
         self.overflows = 0
         self._write_error: Exception | None = None
+        self._frames_written = 0
 
     def _callback(self, indata: Any, frames: int, time_info: Any, status: Any) -> None:
         self._last_block = time.monotonic()
@@ -48,6 +49,7 @@ class SoundDeviceRecorder:
                 return
             try:
                 self._file.write(block)
+                self._frames_written += len(block)
             except Exception as error:  # noqa: BLE001 — surfaced by healthy(), never swallowed
                 self._write_error = error
 
@@ -126,16 +128,20 @@ class SoundDeviceRecorder:
         )
         with self._lock:
             old, self._file = self._file, new_file
+            self._frames_written = 0
         if old is not None:
             old.close()
 
-    def stop_segment(self) -> None:
-        """Flush queued blocks, then close the open FLAC file."""
+    def stop_segment(self) -> float:
+        """Flush queued blocks, close the FLAC file, return the seconds written to it."""
         self.drain()
         with self._lock:
             old, self._file = self._file, None
+            written = self._frames_written / self._sample_rate
+            self._frames_written = 0
         if old is not None:
             old.close()
+        return written
 
     def settings(self) -> dict[str, str | int | float]:
         """Sample rate, bit depth and channel order."""

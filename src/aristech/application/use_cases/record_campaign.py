@@ -186,7 +186,9 @@ class RecordCampaign:
     def _close_audio(self, now: datetime) -> None:
         if self._audio_segment is None:
             return
-        self._audio.stop_segment()
+        written = self._audio.stop_segment()
+        if written > 0:
+            self._audio_segment.start = now - timedelta(seconds=written)
         self._write_sidecar(self._audio_segment, "audio", now, self._audio.settings())
         self._audio_segment = None
 

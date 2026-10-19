@@ -60,6 +60,7 @@ class _FakeAudio:
         self.segments: list[str] = []
         self.open_segment: str | None = None
         self.closed = False
+        self.written = 0.0
 
     def healthy(self) -> bool:
         return self.ok
@@ -71,8 +72,9 @@ class _FakeAudio:
         self.segments.append(path)
         self.open_segment = path
 
-    def stop_segment(self) -> None:
+    def stop_segment(self) -> float:
         self.open_segment = None
+        return self.written
 
     def settings(self) -> Mapping[str, str | int | float]:
         return {"sample_rate_hz": 48_000}
@@ -301,3 +303,15 @@ def test_input_lost_mid_segment_is_kept_in_the_sidecar() -> None:
     rig.campaign.close()
 
     assert rig.store.sidecars["audio-1"].missing_inputs == ("colony",)
+
+
+def test_audio_segment_is_dated_from_the_samples_written() -> None:
+    rig = _Rig()
+    rig.campaign.tick()
+    rig.clock.advance(20)
+    rig.audio.written = 19.5
+
+    rig.campaign.close()
+
+    sidecar = rig.store.sidecars["audio-1"]
+    assert sidecar.end_utc - sidecar.start_utc == timedelta(seconds=19.5)
