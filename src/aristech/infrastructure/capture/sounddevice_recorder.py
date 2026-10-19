@@ -10,6 +10,7 @@ import logging
 import queue
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 _log = logging.getLogger("aristech.capture")
@@ -34,39 +35,45 @@ class SoundDeviceRecorder:
         self._writer: threading.Thread | None = None
         self.overflows = 0
         self._write_error: Exception | None = None
+        self._span: tuple[datetime, datetime] | None = None
 
     def _callback(self, indata: Any, frames: int, time_info: Any, status: Any) -> None:
         self._last_block = time.monotonic()
         if status:
             self.overflows += 1
         self._peaks = [float(abs(indata[:, i]).max()) for i in range(len(_CHANNELS))]
-        self._blocks.put(indata.copy())
+        captured_end = datetime.now(timezone.utc)
+        captured_start = captured_end - timedelta(seconds=frames / self._sample_rate)
+        self._blocks.put((indata.copy(), captured_start, captured_end))
 
-    def _write(self, block: Any) -> None:
+    def _write(self, item: tuple[Any, datetime, datetime]) -> None:
+        block, captured_start, captured_end = item
         with self._lock:
             if self._file is None or self._write_error is not None:
                 return
             try:
                 self._file.write(block)
-            except Exception as error:  # noqa: BLE001 — surfaced by healthy(), never swallowed
+                first = self._span[0] if self._span is not None else captured_start
+                self._span = (first, captured_end)
+            except Exception as error:  # surfaced by healthy(), never swallowed
                 self._write_error = error
 
     def _write_blocks(self) -> None:
         while True:
-            block = self._blocks.get()
-            if block is None:
+            item = self._blocks.get()
+            if item is None:
                 return
-            self._write(block)
+            self._write(item)
 
     def drain(self) -> None:
         """Write every queued block now (used on stop and by tests)."""
         while True:
             try:
-                block = self._blocks.get_nowait()
+                item = self._blocks.get_nowait()
             except queue.Empty:
                 return
-            if block is not None:
-                self._write(block)
+            if item is not None:
+                self._write(item)
 
     def healthy(self) -> bool:
         """Open the stream on first call; healthy while blocks keep arriving.
@@ -83,7 +90,7 @@ class SoundDeviceRecorder:
             if broken is not None:
                 try:
                     broken.close()
-                except Exception:  # noqa: BLE001 — the file is already broken
+                except Exception:  # the file is already broken
                     _log.debug("closing the broken audio file failed", exc_info=True)
             return False
         if self._stream is not None and time.monotonic() - self._last_block >= _STALL_SECONDS:
@@ -106,7 +113,7 @@ class SoundDeviceRecorder:
                 if self._writer is None:
                     self._writer = threading.Thread(target=self._write_blocks, daemon=True)
                     self._writer.start()
-            except Exception:  # noqa: BLE001 — any device error means "not healthy", retried
+            except Exception:  # any device error means "not healthy", retried
                 _log.debug("audio stream unavailable", exc_info=True)
                 self._stream = None
                 return False
@@ -126,16 +133,23 @@ class SoundDeviceRecorder:
         )
         with self._lock:
             old, self._file = self._file, new_file
+            self._span = None
         if old is not None:
             old.close()
 
-    def stop_segment(self) -> None:
-        """Flush queued blocks, then close the open FLAC file."""
+    def stop_segment(self) -> tuple[datetime, datetime] | None:
+        """Flush queued blocks, close the FLAC file, return its first/last sample UTC times.
+
+        Each block is stamped in the input callback (end = callback time, start = end − block
+        length), so the span is that of the samples in the file, not of the caller's tick.
+        """
         self.drain()
         with self._lock:
             old, self._file = self._file, None
+            written, self._span = self._span, None
         if old is not None:
             old.close()
+        return written
 
     def settings(self) -> dict[str, str | int | float]:
         """Sample rate, bit depth and channel order."""

@@ -64,8 +64,12 @@ class AudioRecorder(Protocol):
         """Start writing samples to `path`."""
         ...
 
-    def stop_segment(self) -> None:
-        """Close the open segment; no-op if none."""
+    def stop_segment(self) -> tuple[datetime, datetime] | None:
+        """Close the open segment; return the UTC times of its first and last sample.
+
+        None if nothing was written. The use case dates the sidecar from this span, so it
+        matches the samples even when the stream starts late or the tick is slow (spec AC1).
+        """
         ...
 
     def settings(self) -> Settings:
