@@ -11,4 +11,4 @@
 
 ## Sign-off
 
-- Owner: Benoît Bremaud — ☐ approved (date: )
+- Owner: Benoît Bremaud — ☑ approved (date: 2026-10-19)
