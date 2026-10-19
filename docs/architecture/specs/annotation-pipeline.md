@@ -88,7 +88,8 @@ move that would leak near-duplicate frames across splits.
   source class maps are explicit and an unmapped class fails the import.
 - **AC4** The split is deterministic (same manifest + seed → same assignment) and **no group key
   appears in two splits** (unit-tested).
-- **AC5** The frozen test set file lists image and label hashes and carries its own hash; split and
+- **AC5** The frozen test set file lists image and label hashes, has a committed snapshot of its
+  labels, and carries its own hash; split and
   train commands refuse to run if a frozen image is missing from test or a frozen group appears in
   train (unit-tested).
 - **AC6** C1 sidecar metadata maps to a manifest row (group key `<hive_id>/<date>`, licence `own`)

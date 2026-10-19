@@ -26,8 +26,11 @@ Sensitivity: simplicity 30 → A 450; field relevance 40 → A 450. **Robust.**
 - Group key: public sets → the original photo stem (Roboflow: text before `_jpg.rf.`; others:
   the source's own scene/video id when given, else the file stem) — a weaker proxy for ADR-0015's day-and-hive rule, which public data cannot carry; C1 → `<hive_id>/<UTC date>`.
 - Split: deterministic, by group, seeded, ~70/15/15, stratified on class presence.
-- `data/registry/test-v1.csv` freezes image + label hashes and is never edited; a label fix in a
-  frozen image produces `test-v2`, never an in-place change. Split and training refuse to run if a
+- `data/registry/test-v1.csv` freezes image + label hashes and is never edited; its labels are
+  snapshotted verbatim in `data/registry/test-v1-labels/` (YOLO txt, text only, committed; CC BY
+  attribution in the register; own-capture labels hold no pixels), so an older version stays
+  re-scorable after a label is corrected. A label fix in a frozen image produces `test-v2`, never an
+  in-place change. Split and training refuse to run if a
   frozen image leaves test or a frozen group enters train.
 - Captive-lab images are never eligible for test (spec own-vision-model A4).
 - `test-v1` is **pre-field**: public data only; field groups enter in `test-v2` (2027).
@@ -35,4 +38,6 @@ Sensitivity: simplicity 30 → A 450; field relevance 40 → A 450. **Robust.**
 ## Consequences
 
 - Results are always quoted with their test-set id.
-- The M5 gate (beat VespAI on field data) is measured on `test-v2` or later.
+- The M5 gate (beat VespAI on field data) is measured on the **field rows only** (licence `own`,
+  non-captive) of `test-v2` or later; public-row and aggregate metrics are reported beside it but
+  cannot pass the gate.
