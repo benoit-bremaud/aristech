@@ -53,7 +53,8 @@ now on. The conclusion is unchanged, and stronger: recall stays far below any us
 
 Ubuntu 24.04.5 LTS, Linux 6.8, Intel Core i9-13900H, CPU only (no GPU). Python 3.10.20,
 torch 2.14.1+cpu, opencv 4.11.0, numpy 1.26.4, plus `setuptools<81` and YOLOv5's runtime
-packages (`docs/INSTALL.md`). Run time ≈ 3 min 15 s.
+packages; the full pinned set is
+[`m3-vespai-baseline-requirements.txt`](m3-vespai-baseline-requirements.txt). Run time ≈ 3 min 15 s.
 
 ## Reproduce
 
@@ -61,15 +62,17 @@ packages (`docs/INSTALL.md`). Run time ≈ 3 min 15 s.
 # 1. Inputs, outside the repo (weights are CC BY-NC-SA: never commit them)
 mkdir -p ~/vespai-baseline && cd ~/vespai-baseline
 git clone https://github.com/andrw3000/vespai.git
+git -C vespai checkout 004f3d8930d19affd04f5d112224107c5d81eec4
 git clone https://github.com/ultralytics/yolov5.git
 git -C yolov5 checkout 23701eac7a7b160e478ba4bbef966d0af9348251
 sha256sum vespai/models/yolov5-params/yolov5s-all-data.pt   # expect 1fff0bde…3694
 
-# 2. Vision environment (CPU torch; the extra index serves torch only)
+# 2. Vision environment pinned to the measured run (CPU torch; the extra index serves torch only)
 uv venv -p 3.10 .venv
 VIRTUAL_ENV=.venv uv pip install --index-strategy unsafe-best-match \
   --extra-index-url https://download.pytorch.org/whl/cpu \
-  -e "<aristech checkout>[vision]" "setuptools<81" matplotlib scipy seaborn tqdm requests psutil pandas
+  -r "<aristech checkout>/docs/research/m3-vespai-baseline-requirements.txt"
+VIRTUAL_ENV=.venv uv pip install --no-deps -e "<aristech checkout>"
 
 # 3. Dataset: sign in to Roboflow, download version 1 as "YOLOv5 PyTorch" (zip) from the URL
 #    above, then unzip it into <aristech checkout>/data/external/vespa-crabro-velutina/
