@@ -5,5 +5,12 @@ from aristech.application.use_cases.detect_hornet_visual import (
     DetectHornetVisualConfig,
     DetectionRun,
 )
+from aristech.application.use_cases.record_campaign import CampaignConfig, RecordCampaign
 
-__all__ = ["DetectHornetVisual", "DetectHornetVisualConfig", "DetectionRun"]
+__all__ = [
+    "CampaignConfig",
+    "DetectHornetVisual",
+    "DetectHornetVisualConfig",
+    "DetectionRun",
+    "RecordCampaign",
+]

@@ -1,6 +1,6 @@
 # Spec — C1: synchronised audio+video capture rig
 
-> **Status**: Refined (brick C1, 2026-10-19), awaiting the conception gate · **Milestone**: C1,
+> **Status**: Gate signed 2026-10-19; recording code in `src/aristech/` (extra `capture`) · **Milestone**: C1,
 > ready by July 2027 · **Related**: ADR-0017 (hardware), ADR-0015, ADR-0016, ADR-0001, UC7 ·
 > **UML**: [diagrams/capture-rig/](../diagrams/capture-rig/)
 
@@ -79,7 +79,8 @@ rotation), software version (git SHA). Weather is added offline from a public so
   line is logged; below 2 % free, recording stops and the rig enters *Fault*.
 - **A2 A microphone fails** (no samples or flat signal for 10 s) → video and the other channel go
   on; the gap is logged and written in the sidecars.
-- **A3 Camera fails** → audio goes on; fault logged; the rig retries the camera every minute.
+- **A3 Camera fails** (at start or mid-run) → audio goes on; fault logged; the rig retries the
+  camera at every self-check tick (1 s).
 - **A4 Clock unsynchronised** (no NTP, RTC not set) → recording goes on, sidecars carry
   `clock_source: unsynced`; the Researcher fixes it at the next visit.
 - **A5 Power loss** → on restart the rig resumes the campaign by itself; at most the open segment
