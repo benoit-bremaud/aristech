@@ -1,6 +1,6 @@
 # ADR-0018: X-AnyLabeling as annotation tool, YOLO txt as canonical label format
 
-- Status: Proposed
+- Status: Accepted (owner, 2026-10-19)
 - Date: 2026-10-19 (issue #95, spec annotation-pipeline)
 
 ## Context
@@ -27,7 +27,7 @@ is the contract, not the tool.
 ## Decision
 
 - Canonical labels: **YOLO txt**, one file per image, class ids fixed:
-  `0 vespa_velutina, 1 vespa_crabro, 2 apis_mellifera, 3 other`. Source class ids are remapped at
+  `0 vespa_velutina, 1 vespa_crabro, 2 apis_mellifera, 3 other` (label name `other` = `Species.UNKNOWN`). Source class ids are remapped at
   import (explicit map, unmapped class = error).
 - Tool: **X-AnyLabeling** (local, ONNX pre-annotation with our own model once trained). The tool's
   GPL applies to the tool only, not to the data or the model. CVAT stays the fallback.

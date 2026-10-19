@@ -4,7 +4,7 @@
 |---|---|---|
 | Spec complete, testable acceptance criteria | ✅ | `specs/annotation-pipeline.md` (AC1–AC9, A1–A7) |
 | UML updated | ✅ | `diagrams/annotation-pipeline/` (use-case, sequence, class, data-flow) |
-| ADRs with scripted MCDA | ⏳ owner | ADR-0018 to ADR-0022, `decisions/mcda/adr_0018_0022_annotation_pipeline.py` |
+| ADRs with scripted MCDA | ✅ | ADR-0018 to ADR-0022, `decisions/mcda/adr_0018_0022_annotation_pipeline.py` |
 | Dependency rule kept | ✅ | Stdlib-only `datasets/` module (no port, ADR-0010); training in `scripts/` + optional extra `train` |
 | Licences recorded | ✅ by design | Licence register + allow-list enforced at import (AC1) |
 | Test strategy | ✅ | Unit (stdlib, CI): register allow-list, class map, group keys (Roboflow stem, C1 sidecar), deterministic group split, frozen-set violations. Real import/training/report run locally, recorded in the report (data and weights not in CI). |
@@ -13,10 +13,10 @@
 ## Delivery staircase
 
 1. PR 1 — this dossier.
-2. PR 2 — `datasets/` registry, import, group split, freeze + CLI script; Roboflow + Sledevic imported.
+2. PR 2 — `.gitignore` whitelist for `data/registry/`, `datasets/` registry, import, group split, freeze + CLI script; Roboflow + Sledevic imported.
 3. PR 3 — iNaturalist increment, annotation, `test-v1` frozen.
 4. PR 4 — RF-DETR training script (`train` extra) + first-model report vs VespAI on `test-v1`.
 
 ## Sign-off
 
-- Owner: Benoît Bremaud — ☐ approved (date: )
+- Owner: Benoît Bremaud — ☑ approved (date: 2026-10-19)

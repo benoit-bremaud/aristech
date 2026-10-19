@@ -1,6 +1,6 @@
 # ADR-0019: Committed manifest and licence register; pixels stay git-ignored
 
-- Status: Proposed
+- Status: Accepted (owner, 2026-10-19)
 - Date: 2026-10-19 (issue #95, spec annotation-pipeline AC1, AC2)
 
 ## Context
@@ -28,7 +28,7 @@ DVC can be added on top of A without changing the manifest.
 - `licences.csv` (one row per source: id, name, URL, version, SPDX licence,
   attribution, retrieval date, captive flag) and `manifest.csv` (one row per image:
   SHA-256, source id, source path, group key, label SHA-256, classes, split) live in the repository
-  under `data/registry/` (whitelisted in `.gitignore`).
+  under `data/registry/` (to be whitelisted in `.gitignore` by PR 2).
 - Allow-list: `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC0-1.0`, `own`. Anything else is refused at import.
 - Pixels stay under `data/external/<source>/` (third party) and `data/own/` (C1), git-ignored.
 

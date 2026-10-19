@@ -1,6 +1,6 @@
 # ADR-0022: RF-DETR (Apache-2.0 sizes) as the base detector of the own model
 
-- Status: Proposed
+- Status: Accepted (owner, 2026-10-19)
 - Date: 2026-10-19 (issue #95; the "dedicated M5 ADR" announced by ADR-0015)
 
 ## Context
@@ -17,7 +17,7 @@ Hailo NPU, whose support for DETR-type models is **unverified** (estimate).
 
 Script: [`mcda/adr_0018_0022_annotation_pipeline.py`](mcda/adr_0018_0022_annotation_pipeline.py). Scores 0–5, weights /100, totals /500; scores are estimates unless marked verified.
 
-| Option | Licence 30 | Small-data accuracy 25 | Hailo path 20 | Training effort 15 | Maturity 10 | Total |
+| Option | Licence 30 | Small-data accuracy 25 | Hailo path 20 (estimate) | Training effort 15 | Maturity 10 | Total |
 |---|---|---|---|---|---|---|
 | A. RF-DETR Small/Medium | 5 | 5 | 2 | 4 | 4 | **415** |
 | B. YOLOX-S | 4 | 3 | 5 | 3 | 3 | 370 |

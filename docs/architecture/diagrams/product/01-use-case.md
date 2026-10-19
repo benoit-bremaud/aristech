@@ -26,7 +26,7 @@ flowchart LR
         end
         subgraph Data
             UC7(["UC7 Record synchronised field footage (planned, C1)"])
-            UC8(["UC8 Annotate field recordings (planned, M5)"])
+            UC8(["UC8 Annotate images for the database (planned)"])
         end
         subgraph Calibration
             UC3(["UC3 Measure the detector on an annotated set"])

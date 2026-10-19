@@ -1,6 +1,6 @@
 # Spec — annotation pipeline and first pre-field model
 
-> **Status**: Proposed · **Brick**: annotation pipeline (winter 2026–27, issue #95) ·
+> **Status**: Accepted (gate signed 2026-10-19) · **Brick**: annotation pipeline (winter 2026–27, issue #95) ·
 > **Roadmap gate**: frozen test set defined, licences recorded ·
 > **Related**: ADR-0015 (own model, permissive base), ADR-0014 (two operating points),
 > ADR-0003 (legal floor), ADR-0018 to ADR-0022 (this brick), specs
@@ -67,7 +67,7 @@ move that would leak near-duplicate frames across splits.
   older results stay comparable.
 - **A2 Licence unclear or NC.** Import refuses the source (exit 2, message); nothing is written.
 - **A3 Duplicate image** (same SHA-256 in two sources, or re-import). One manifest row; the image
-  keeps the group it was first given; a duplicate across groups is reported.
+  keeps the group it was first given; a duplicate across groups **merges** those groups, so a frozen test image can never reappear in train.
 - **A4 Unknown source class.** Import fails with the list of unmapped classes; the researcher
   extends the class map explicitly (no silent `other`).
 - **A5 Frozen-set violation.** Split exits 2 naming the offending images; the frozen file is never

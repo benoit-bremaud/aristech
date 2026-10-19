@@ -1,6 +1,6 @@
 # ADR-0021: Public datasets for the pre-field model
 
-- Status: Proposed
+- Status: Accepted (owner, 2026-10-19)
 - Date: 2026-10-19 (issue #95, spec annotation-pipeline A7)
 
 ## Context
