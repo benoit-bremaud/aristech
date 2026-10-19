@@ -25,3 +25,8 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0015](ADR-0015-own-vision-model-on-permissive-base.md) | Own vision model on a permissively licensed pre-trained base | Accepted |
 | [ADR-0016](ADR-0016-acoustic-axis-collect-then-gate.md) | Acoustic axis: collect synchronised audio first, decide its role on data | Accepted |
 | [ADR-0017](ADR-0017-capture-rig-hardware.md) | Capture-rig hardware: Pi 5, Camera Module 3, 2 × ICS-43434, NVMe, PVC watchtower | Accepted |
+| [ADR-0018](ADR-0018-annotation-tool-and-label-format.md) | X-AnyLabeling as annotation tool, YOLO txt as canonical label format | Accepted |
+| [ADR-0019](ADR-0019-dataset-storage-and-licence-register.md) | Committed manifest and licence register; pixels stay git-ignored | Accepted |
+| [ADR-0020](ADR-0020-frozen-test-set-policy.md) | Frozen test set — group-keyed, hash-listed, versioned and append-only | Accepted |
+| [ADR-0021](ADR-0021-public-datasets-for-the-pre-field-model.md) | Public datasets for the pre-field model | Accepted |
+| [ADR-0022](ADR-0022-base-detector-rf-detr.md) | RF-DETR (Apache-2.0 sizes) as the base detector of the own model | Accepted |
