@@ -156,3 +156,6 @@ data/**
 # SonarQube scan artefacts
 coverage.xml
 .scannerwork/
+
+# Third-party datasets (downloaded locally, never committed)
+data/external/

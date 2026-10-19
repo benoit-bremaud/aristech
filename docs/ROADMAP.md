@@ -29,7 +29,7 @@ Q6). Order:
 
 | When | Brick | Gate |
 |---|---|---|
-| Winter 2026–27 | **M3 report** — reproducible VespAI baseline on the Roboflow set (one command, committed numbers) | per-class P/R recomputable on demand |
+| Winter 2026–27 | **M3 report** — reproducible VespAI baseline on the Roboflow set (one command, committed numbers; [report](research/m3-vespai-baseline.md)) | per-class P/R recomputable on demand |
 | Winter 2026–27 | **C1 neutral collector** — fixed watchtower, camera + 2 mics on one clock, unattended recording ([spec](architecture/specs/capture-rig.md)) | a week unattended, drift ≤ 1 frame |
 | Winter 2026–27 | **Annotation pipeline** + first model on public CC BY data ("pre-field") | frozen test set defined, licences recorded |
 | Whenever hornets can be caught | **Captive lab** (optional) — reference wingbeat signatures (A0), robustness map (M5), enclosure deterrence pre-test (D0) | data never in the frozen test set |

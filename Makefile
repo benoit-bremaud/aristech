@@ -1,4 +1,4 @@
-.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run sonar
+.PHONY: install install-dev lock test test-unit test-integration lint format type-check clean run sonar m3-report
 
 install:
 	pip install -e .
@@ -39,6 +39,14 @@ SONAR_TOKEN_FILE ?= $(HOME)/.config/sonar-tokens/aristech
 sonar:
 	pytest -q --cov=aristech --cov-report=xml
 	SONAR_TOKEN="$$(cat $(SONAR_TOKEN_FILE) 2>/dev/null || printf '%s' "$$SONAR_TOKEN")" sonar-scanner
+
+# M3 baseline: recompute VespAI per-class P/R (docs/research/m3-vespai-baseline.md).
+# Needs the vision environment and three operator-supplied paths (never committed).
+m3-report:
+	@test -n "$(WEIGHTS)" -a -n "$(YOLOV5_DIR)" -a -n "$(DATASET)" || \
+		{ echo "usage: make m3-report WEIGHTS=… YOLOV5_DIR=… DATASET=…"; exit 2; }
+	python scripts/vespai_baseline_report.py --weights "$(WEIGHTS)" \
+		--yolov5-dir "$(YOLOV5_DIR)" --dataset "$(DATASET)"
 
 run:
 	python -m aristech --config config/config.yaml
