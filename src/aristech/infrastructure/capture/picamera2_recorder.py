@@ -72,7 +72,7 @@ class Picamera2Recorder:
             camera.configure(config)
             circular = CircularOutput2(buffer_duration_ms=int(self._pre_roll_seconds * 1000))
             camera.start_recording(H264Encoder(), circular)
-        except Exception:  # noqa: BLE001 — any camera error means "not healthy", retried
+        except Exception:  # any camera error means "not healthy", retried
             _log.debug("camera unavailable", exc_info=True)
             return False
         self._camera, self._circular = camera, circular
@@ -86,7 +86,7 @@ class Picamera2Recorder:
         while not self._stop.is_set():
             try:
                 luma = self._luma(camera)
-            except Exception:  # noqa: BLE001 — a camera lost mid-run: flag it, healthy() reports
+            except Exception:  # a camera lost mid-run: flag it, healthy() reports
                 _log.warning("camera lost while capturing", exc_info=True)
                 self._lost = True
                 return
@@ -151,7 +151,7 @@ class Picamera2Recorder:
         if self._camera is not None:
             try:
                 metadata = self._camera.capture_metadata()
-            except Exception:  # noqa: BLE001 — settings are best effort; the sidecar still goes out
+            except Exception:  # settings are best effort; the sidecar still goes out
                 _log.debug("camera metadata unavailable", exc_info=True)
                 return values
             for key in ("ExposureTime", "AnalogueGain", "Lux"):
@@ -179,5 +179,5 @@ class Picamera2Recorder:
             try:
                 camera.stop_recording()
                 camera.close()
-            except Exception:  # noqa: BLE001 — releasing a dead camera; nothing else to do
+            except Exception:  # releasing a dead camera; nothing else to do
                 _log.debug("camera release failed", exc_info=True)

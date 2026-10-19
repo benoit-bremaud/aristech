@@ -55,7 +55,7 @@ class SoundDeviceRecorder:
                 self._file.write(block)
                 first = self._span[0] if self._span is not None else captured_start
                 self._span = (first, captured_end)
-            except Exception as error:  # noqa: BLE001 — surfaced by healthy(), never swallowed
+            except Exception as error:  # surfaced by healthy(), never swallowed
                 self._write_error = error
 
     def _write_blocks(self) -> None:
@@ -90,7 +90,7 @@ class SoundDeviceRecorder:
             if broken is not None:
                 try:
                     broken.close()
-                except Exception:  # noqa: BLE001 — the file is already broken
+                except Exception:  # the file is already broken
                     _log.debug("closing the broken audio file failed", exc_info=True)
             return False
         if self._stream is not None and time.monotonic() - self._last_block >= _STALL_SECONDS:
@@ -113,7 +113,7 @@ class SoundDeviceRecorder:
                 if self._writer is None:
                     self._writer = threading.Thread(target=self._write_blocks, daemon=True)
                     self._writer.start()
-            except Exception:  # noqa: BLE001 — any device error means "not healthy", retried
+            except Exception:  # any device error means "not healthy", retried
                 _log.debug("audio stream unavailable", exc_info=True)
                 self._stream = None
                 return False
