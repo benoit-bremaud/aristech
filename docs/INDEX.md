@@ -57,6 +57,7 @@ the full authoring rules.
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [docs/research/state-of-the-art.md](research/state-of-the-art.md)        | **Literature / prior-art survey** — Kaggle, GitHub, academic papers, HuggingFace, auto-aim turret prior art, EU/FR legal framework. Authority on _what's been done_. |
 | [docs/research/prototype-foundations.md](research/prototype-foundations.md) | **Applied engineering inputs** — behavioural biology at the hive entrance, Éric Darrouzet synthesis, hive geometry and sensor mounting, hardware BOM and energy autonomy. Authority on _what aristech will build with_. |
+| [docs/research/m3-vespai-baseline.md](research/m3-vespai-baseline.md)    | **M3 report** — reproducible VespAI per-class P/R on the Roboflow set (`make m3-report`); the baseline M5 must beat. |
 | [docs/research/references.md](research/references.md)                    | **Centralised bibliography** — every URL cited in the survey + foundations docs, grouped by domain. Authority on _where the citations live_.              |
 
 ## How to choose where to write new content
