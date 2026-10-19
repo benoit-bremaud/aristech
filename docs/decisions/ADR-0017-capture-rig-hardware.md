@@ -1,6 +1,6 @@
 # ADR-0017: Capture-rig hardware — compute board, camera, microphones, storage, enclosure
 
-- Status: Proposed (owner validation of weights and BOM pending)
+- Status: Accepted (owner validated weights and BOM, 2026-10-19)
 - Date: 2026-10-19 (brick C1)
 
 ## Context
@@ -85,7 +85,7 @@ Garden-solar-lamp form: a ~110 mm PVC pipe head on a galvanised stake, a flared 
 acrylic camera window with drip visor, open mic slit with fur windscreen, M12 cable glands,
 stainless insect mesh vents, the Pi on a printed internal frame. Moving parts: none.
 
-## Decision (proposed)
+## Decision
 
 A Pi 5 8 GB · Camera Module 3 · 2 × ICS-43434 · NVMe 1 TB on M.2 HAT+ · PVC watchtower.
 Software: Picamera2 (`CircularOutput`, software H.264), ALSA I²S overlay + `sounddevice` →

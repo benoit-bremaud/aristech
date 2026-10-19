@@ -24,4 +24,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0014](ADR-0014-two-operating-points-act-and-count.md) | Two operating points: zero-bee to act, high precision to count | Accepted |
 | [ADR-0015](ADR-0015-own-vision-model-on-permissive-base.md) | Own vision model on a permissively licensed pre-trained base | Accepted |
 | [ADR-0016](ADR-0016-acoustic-axis-collect-then-gate.md) | Acoustic axis: collect synchronised audio first, decide its role on data | Accepted |
-| [ADR-0017](ADR-0017-capture-rig-hardware.md) | Capture-rig hardware: Pi 5, Camera Module 3, 2 × ICS-43434, NVMe, PVC watchtower | Proposed |
+| [ADR-0017](ADR-0017-capture-rig-hardware.md) | Capture-rig hardware: Pi 5, Camera Module 3, 2 × ICS-43434, NVMe, PVC watchtower | Accepted |
