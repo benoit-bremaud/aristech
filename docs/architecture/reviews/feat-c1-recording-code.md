@@ -43,3 +43,16 @@
 ## Not verifiable here
 
 - Field ACs AC1 (clap sync), AC2 (7 days), AC6 (ruler), AC9 (power) need the hardware.
+
+## External review round (PR #86)
+
+- Fixed: frame rate set through `controls={"FrameRate": fps}` (works on every Picamera2 version).
+- Fixed: `CircularOutput2` delays frames by the buffer length → the ring now equals the pre-roll
+  (5 s) and a clip closes one pre-roll after the stop request; a new clip during that wait closes
+  the old output at once (its unsent frames are the new clip's pre-roll).
+- Fixed: motion sampled at 1 Hz by the tick → a background thread checks the lores stream at
+  10 Hz and latches motion until the next tick.
+- Fixed: rotation could delete the segment being written → paths handed out by `path_for` are
+  excluded until their sidecar is written.
+- Fixed: a writer-thread I/O error was silent → stored and reported by `healthy()`, which drops
+  the broken file so the next tick opens a new segment.

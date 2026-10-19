@@ -129,3 +129,23 @@ def test_overflow_status_is_counted(streams: list[_FakeStream]) -> None:
 
     assert recorder.overflows == 1
     recorder.close()
+
+
+def test_write_failure_drops_the_file_and_reports_unhealthy(streams: list[_FakeStream]) -> None:
+    recorder = SoundDeviceRecorder()
+    recorder.healthy()
+    recorder.start_segment("a.flac")
+    file = recorder._file
+    assert isinstance(file, _FakeSoundFile)
+
+    def broken(block: Any) -> None:
+        raise OSError("SSD I/O error")
+
+    file.write = broken  # type: ignore[method-assign]
+    streams[0].callback(numpy.zeros((4, 2), dtype="float32"), 4, None, None)
+    recorder.drain()
+
+    assert recorder.healthy() is False
+    assert file.closed and recorder._file is None
+    assert recorder.healthy() is True
+    recorder.close()

@@ -77,9 +77,10 @@ def test_free_fraction_is_a_fraction(tmp_path: Path) -> None:
 
 
 def test_orphan_segment_without_sidecar_is_rotated(tmp_path: Path) -> None:
-    store = FileSegmentStore(tmp_path)
-    orphan = Path(store.path_for("video", datetime(2026, 8, 15, 7, tzinfo=timezone.utc)))
+    crashed_run = FileSegmentStore(tmp_path)
+    orphan = Path(crashed_run.path_for("video", datetime(2026, 8, 15, 7, tzinfo=timezone.utc)))
     orphan.write_bytes(b"x")
+    store = FileSegmentStore(tmp_path)
     os.utime(orphan, (0, 0))
     newer = _segment(store, 9)
 
@@ -104,3 +105,12 @@ def test_nothing_to_rotate_is_cached_until_next_sidecar(tmp_path: Path) -> None:
     _segment(store, 9)
 
     assert store.delete_oldest_unflagged() is True
+
+
+def test_segment_being_written_is_never_rotated(tmp_path: Path) -> None:
+    store = FileSegmentStore(tmp_path)
+    active = Path(store.path_for("audio", datetime(2026, 8, 15, 7, tzinfo=timezone.utc)))
+    active.write_bytes(b"x")
+
+    assert store.delete_oldest_unflagged() is False
+    assert active.exists()

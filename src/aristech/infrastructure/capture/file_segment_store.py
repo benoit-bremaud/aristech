@@ -20,6 +20,7 @@ class FileSegmentStore:
         """`root` is created if missing."""
         self._root = root
         self._nothing_to_rotate = False
+        self._active: set[Path] = set()
         root.mkdir(parents=True, exist_ok=True)
 
     def path_for(self, kind: str, start: datetime) -> str:
@@ -29,11 +30,14 @@ class FileSegmentStore:
         folder = self._root / kind / start.strftime("%Y-%m-%d")
         folder.mkdir(parents=True, exist_ok=True)
         stamp = start.strftime("%Y%m%dT%H%M%S%fZ")
-        return str(folder / f"{kind}_{stamp}.{_EXTENSIONS[kind]}")
+        path = folder / f"{kind}_{stamp}.{_EXTENSIONS[kind]}"
+        self._active.add(path)
+        return str(path)
 
     def write_sidecar(self, path: str, metadata: SegmentMetadata) -> None:
         """Write `<path>.json` next to the segment."""
         self._nothing_to_rotate = False
+        self._active.discard(Path(path))
         Path(path + _SIDECAR).write_text(json.dumps(metadata.to_dict(), indent=2), "utf-8")
 
     def free_fraction(self) -> float:
@@ -45,14 +49,17 @@ class FileSegmentStore:
         """Delete the oldest non-flagged segment, sidecar start first, else file time.
 
         A segment without a readable sidecar (power cut, corrupt JSON) is dated by its file
-        time and is never flagged, so orphans are rotated too. The "nothing left" answer is
-        cached until the next sidecar, so a full disk is not rescanned every tick.
+        time and is never flagged, so orphans are rotated too. Segments still being written
+        (handed out by `path_for`, no sidecar yet) are never candidates. The "nothing left"
+        answer is cached until the next sidecar, so a full disk is not rescanned every tick.
         """
         if self._nothing_to_rotate:
             return False
         candidates: list[tuple[datetime, Path]] = []
         for extension in _EXTENSIONS.values():
             for media in self._root.rglob("*." + extension):
+                if media in self._active:
+                    continue
                 start = self._unflagged_start(media)
                 if start is not None:
                     candidates.append((start, media))

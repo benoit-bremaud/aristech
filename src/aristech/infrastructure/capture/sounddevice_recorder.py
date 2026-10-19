@@ -33,6 +33,7 @@ class SoundDeviceRecorder:
         self._blocks: queue.Queue[Any] = queue.Queue()
         self._writer: threading.Thread | None = None
         self.overflows = 0
+        self._write_error: Exception | None = None
 
     def _callback(self, indata: Any, frames: int, time_info: Any, status: Any) -> None:
         self._last_block = time.monotonic()
@@ -41,14 +42,21 @@ class SoundDeviceRecorder:
         self._peaks = [float(abs(indata[:, i]).max()) for i in range(len(_CHANNELS))]
         self._blocks.put(indata.copy())
 
+    def _write(self, block: Any) -> None:
+        with self._lock:
+            if self._file is None or self._write_error is not None:
+                return
+            try:
+                self._file.write(block)
+            except Exception as error:  # noqa: BLE001 — surfaced by healthy(), never swallowed
+                self._write_error = error
+
     def _write_blocks(self) -> None:
         while True:
             block = self._blocks.get()
             if block is None:
                 return
-            with self._lock:
-                if self._file is not None:
-                    self._file.write(block)
+            self._write(block)
 
     def drain(self) -> None:
         """Write every queued block now (used on stop and by tests)."""
@@ -57,17 +65,27 @@ class SoundDeviceRecorder:
                 block = self._blocks.get_nowait()
             except queue.Empty:
                 return
-            if block is None:
-                continue
-            with self._lock:
-                if self._file is not None:
-                    self._file.write(block)
+            if block is not None:
+                self._write(block)
 
     def healthy(self) -> bool:
         """Open the stream on first call; healthy while blocks keep arriving.
 
-        A stalled stream is closed so that the next call reopens it.
+        A stalled stream is closed so that the next call reopens it. A failed write (e.g. SSD
+        I/O error) drops the open file and answers False, so the use case closes the segment and
+        opens a new one on the next tick.
         """
+        if self._write_error is not None:
+            _log.warning("audio write failed: %s", self._write_error)
+            with self._lock:
+                broken, self._file = self._file, None
+                self._write_error = None
+            if broken is not None:
+                try:
+                    broken.close()
+                except Exception:  # noqa: BLE001 — the file is already broken
+                    _log.debug("closing the broken audio file failed", exc_info=True)
+            return False
         if self._stream is not None and time.monotonic() - self._last_block >= _STALL_SECONDS:
             _log.warning("audio stream stalled; reopening (overflows so far: %d)", self.overflows)
             self._close_stream()
