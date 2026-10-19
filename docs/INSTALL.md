@@ -53,6 +53,21 @@ The checkpoint is a pickle: torch ≥ 2.6 refuses it by default, and `VespAIDete
 `weights_only=False` because it comes from a trusted path. Never point `--weights` at an untrusted
 file.
 
+## Capture rig (C1, Raspberry Pi 5)
+
+On Raspberry Pi OS (Bookworm or later), with the I²S overlay for the two ICS-43434 enabled in
+`/boot/firmware/config.txt` (ADR-0017):
+
+```bash
+sudo apt install python3-picamera2 libportaudio2 libsndfile1
+python3 -m venv --system-site-packages .venv
+.venv/bin/pip install -e ".[capture]"
+.venv/bin/aristech-record --rig-id rig-1 --hive-id hive-a --site home \
+  --latitude 48.85 --longitude 2.35 --output /mnt/ssd/segments --software-version "$(git rev-parse --short HEAD)"
+```
+
+Picamera2 comes from apt (it needs the system libcamera), hence `--system-site-packages`.
+
 ## Configuration
 
 Two YAML files drive the application:

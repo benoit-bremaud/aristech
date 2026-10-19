@@ -50,6 +50,13 @@ vision = [
     "numpy>=1.26,<2",
     "Pillow>=12.3,<13",
 ]
+# Capture rig (C1, ADR-0017): I²S audio + Picamera2. On Raspberry Pi OS install picamera2 from
+# apt (python3-picamera2, needs libcamera) and create the venv with --system-site-packages.
+capture = [
+    "sounddevice>=0.5,<1",
+    "soundfile>=0.13,<1",
+    "numpy>=1.26,<2",
+]
 dev = [
     "pytest>=7",
     "pytest-cov",
@@ -68,6 +75,7 @@ gpu = [
 
 [project.scripts]
 aristech = "aristech.interface.cli.main:main"
+aristech-record = "aristech.interface.cli.record:main"
 
 [project.urls]
 Homepage = "https://github.com/benoit-bremaud/aristech"
@@ -102,6 +110,9 @@ explicit_package_bases = true
 # Libraries without (complete) stubs, tolerated so strict mypy stays usable.
 module = [
     "cv2",
+    "picamera2.*",
+    "sounddevice",
+    "soundfile",
     "dotenv",
     "numpy.*",
     "pandas.*",
