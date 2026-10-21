@@ -71,7 +71,7 @@ nvidia-nvtx==13.0.85
     # via cuda-toolkit
 opencv-python==4.9.0.80
     # via -r requirements.in
-pandas==2.2.2
+pandas==2.3.3
     # via -r requirements.in
 pillow==12.3.0
     # via
@@ -83,10 +83,8 @@ python-dotenv==1.2.4
     # via -r requirements.in
 pytz==2024.1
     # via pandas
-pyyaml==6.0.1
+pyyaml==6.0.3
     # via -r requirements.in
-setuptools==84.0.0
-    # via torch
 six==1.16.0
     # via python-dateutil
 sympy==1.14.0
