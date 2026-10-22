@@ -1,1 +1,1 @@
-"""Dataset preparation helpers (stdlib only): random train/validation/test split."""
+"""Dataset tooling (stdlib only): licence register, manifest, group split, frozen test sets."""

@@ -17,6 +17,14 @@
 3. PR 3 — iNaturalist increment, annotation, `test-v1` frozen.
 4. PR 4 — RF-DETR training script (`train` extra) + first-model report vs VespAI on `test-v1`.
 
+## Deviations during delivery
+
+- PR 2 (2026-10-22): the Sledevic bee set moves to PR 3. Its Mendeley download needs the owner's
+  login; the register gets its row only once the files are retrieved (a row without data would
+  record an unverified licence). The design is unchanged.
+- PR 2: class and sequence diagrams redrawn as built (register as functions plus `LicenceError`,
+  `group_rule`, `FrozenRow`, label snapshot, every frozen set auto-discovered by `split`).
+
 ## Sign-off
 
 - Owner: Benoît Bremaud — ☑ approved (date: 2026-10-19)

@@ -10,10 +10,12 @@ flowchart LR
     Frames -.-> Imp
     Reg["licences.csv<br/>(committed)"] --> Imp
     Imp --> Man["manifest.csv<br/>(committed, no pixels)"]
+    Imp --> Store[("data/dataset/<br/>images + canonical labels<br/>by sha256 (git-ignored)")]
     Tool["annotation tool<br/>(pre-label + fix)"] <--> Man
     Man --> Split["split by group"]
     Split --> Train["train / valid"]
-    Split --> Frozen["frozen test-vN<br/>(committed)"]
+    Split --> Frozen["frozen test-vN.csv + .sha256<br/>+ label snapshot (committed)"]
+    Store -- "labels copied at freeze" --> Frozen
     Train --> Fit["fine-tune base<br/>(outside package)"]
     Fit --> Model[("weights<br/>(git-ignored)")]
     Model --> Score["UC3 harness"]

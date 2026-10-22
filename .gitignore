@@ -152,6 +152,8 @@ models/*.pt
 data/**
 !data/**/
 !data/**/.gitkeep
+# Committed dataset registry (ADR-0019): licences, manifest, frozen test sets — text, no pixels.
+!data/registry/**
 
 # SonarQube scan artefacts
 coverage.xml

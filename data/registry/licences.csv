@@ -1,0 +1,2 @@
+id,name,url,version,licence,attribution,retrieved,group_rule,captive
+roboflow-hornet-behavior-v1,[Original] Vespa crabro and Vespa Velutina,https://universe.roboflow.com/hornet-behavior/-original-vespa-crabro-and-vespa-velutina/dataset/1,1 (export 2024-05-30),CC-BY-4.0,"""[Original] Vespa crabro and Vespa Velutina"" by hornet-behavior (Roboflow Universe), CC BY 4.0",2026-05-23,video,false

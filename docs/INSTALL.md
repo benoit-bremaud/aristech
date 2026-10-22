@@ -68,6 +68,26 @@ python3 -m venv --system-site-packages .venv
 
 Picamera2 comes from apt (it needs the system libcamera), hence `--system-site-packages`.
 
+## Dataset registry (annotation pipeline)
+
+Stdlib only, no extra needed (spec `docs/architecture/specs/annotation-pipeline.md`,
+ADR-0018 to ADR-0020). `data/registry/` (licence register, manifest, frozen test sets) is
+committed; images and canonical labels go to the git-ignored `data/dataset/`.
+
+```bash
+# 1. Add the source to data/registry/licences.csv (allowed: CC-BY-4.0, CC-BY-SA-4.0, CC0-1.0, own).
+# 2. Download its YOLO export under data/external/<source>/, then import with a class map
+#    (source id:canonical id; canonical 0 velutina, 1 crabro, 2 apis_mellifera, 3 other):
+python scripts/dataset.py import --source roboflow-hornet-behavior-v1 \
+    --dir data/external/vespa-crabro-velutina --class-map 0:1,1:0
+# 3. Split by group (deterministic; every frozen data/registry/test-v*.csv is enforced):
+python scripts/dataset.py split --seed 0
+# 4. Freeze the test rows once (never rewritten; a label fix means a new version):
+python scripts/dataset.py freeze --id test-v1
+```
+
+Exit code 2: licence not allowed, unmapped class, frozen-set violation, version already frozen.
+
 ## Configuration
 
 Two YAML files drive the application:
