@@ -67,8 +67,9 @@ def test_seed_changes_assignment() -> None:
 
 @pytest.mark.parametrize("ratios", [(0.9, 0.2), (-0.1, 0.5)])
 def test_bad_ratios_raise(ratios: tuple[float, float]) -> None:
+    rows = _rows()
     with pytest.raises(ValueError, match="ratios"):
-        split_by_group(_rows(), seed=0, ratios=ratios)
+        split_by_group(rows, seed=0, ratios=ratios)
 
 
 def test_captive_groups_never_go_to_test_but_others_do() -> None:
@@ -110,8 +111,9 @@ def test_freeze_writes_csv_digest_and_label_snapshot(
 
 
 def test_freeze_without_test_rows_raises(tmp_path: Path) -> None:
+    rows = _rows()
     with pytest.raises(ValueError, match="run split first"):
-        freeze("test-v1", _rows(), tmp_path, tmp_path)
+        freeze("test-v1", rows, tmp_path, tmp_path)
 
 
 def test_freeze_with_stale_store_writes_nothing(tmp_path: Path) -> None:
@@ -179,7 +181,8 @@ def test_violation_image_left_test(
     problems = _violations(
         frozen, [replace(r, split=Split.TRAIN) if r.image_sha256 == sha else r for r in rows]
     )
-    assert len(problems) == 1 and "left test" in problems[0]
+    assert len(problems) == 1
+    assert "left test" in problems[0]
 
 
 def test_violation_label_changed(
@@ -190,7 +193,8 @@ def test_violation_label_changed(
     problems = _violations(
         frozen, [replace(r, label_sha256="x") if r.image_sha256 == sha else r for r in rows]
     )
-    assert len(problems) == 1 and "label changed" in problems[0]
+    assert len(problems) == 1
+    assert "label changed" in problems[0]
 
 
 def test_violation_image_missing(
@@ -199,7 +203,8 @@ def test_violation_image_missing(
     rows, _, frozen = frozen_setup
     sha = frozen.rows[0].image_sha256
     problems = _violations(frozen, [r for r in rows if r.image_sha256 != sha])
-    assert len(problems) == 1 and "missing" in problems[0]
+    assert len(problems) == 1
+    assert "missing" in problems[0]
 
 
 def test_violation_new_image_of_frozen_group_in_train(
@@ -208,7 +213,8 @@ def test_violation_new_image_of_frozen_group_in_train(
     rows, _, frozen = frozen_setup
     intruder = ManifestRow("zz", "s", "p", frozen.rows[0].group, "l", _CLASSES[0], Split.TRAIN)
     problems = _violations(frozen, [*rows, intruder])
-    assert len(problems) == 1 and "frozen group" in problems[0]
+    assert len(problems) == 1
+    assert "frozen group" in problems[0]
 
 
 def test_split_refuses_a_broken_frozen_set(
@@ -223,8 +229,9 @@ def test_split_refuses_a_broken_frozen_set(
 
 @pytest.mark.parametrize("set_id", ["foo", "test-v0", "test-v1/../x", "test-v1x"])
 def test_freeze_refuses_ids_split_would_not_discover(tmp_path: Path, set_id: str) -> None:
+    rows = _rows()
     with pytest.raises(ValueError, match="test-v1"):
-        freeze(set_id, _rows(), tmp_path, tmp_path)
+        freeze(set_id, rows, tmp_path, tmp_path)
     assert list(tmp_path.iterdir()) == []
 
 

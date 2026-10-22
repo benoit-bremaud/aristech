@@ -75,8 +75,10 @@ def test_segment_receives_blocks_as_24_bit_flac(streams: list[_FakeStream]) -> N
     assert span is not None
     assert span[1] - span[0] == timedelta(seconds=4 / 48_000)
     assert isinstance(file, _FakeSoundFile)
-    assert file.blocks and file.closed
-    assert file.args[3] == "PCM_24" and file.kwargs["format"] == "FLAC"
+    assert file.blocks
+    assert file.closed
+    assert file.args[3] == "PCM_24"
+    assert file.kwargs["format"] == "FLAC"
 
 
 def test_flat_channel_is_reported_missing(streams: list[_FakeStream]) -> None:
@@ -149,6 +151,7 @@ def test_write_failure_drops_the_file_and_reports_unhealthy(streams: list[_FakeS
     recorder.drain()
 
     assert recorder.healthy() is False
-    assert file.closed and recorder._file is None
+    assert file.closed
+    assert recorder._file is None
     assert recorder.healthy() is True
     recorder.close()

@@ -11,7 +11,8 @@ from aristech.domain import BoundingBox, Detection, Species, VideoFrame
 
 _SCRIPT = Path(__file__).parents[3] / "scripts" / "vespai_baseline_report.py"
 _spec = importlib.util.spec_from_file_location("vespai_baseline_report", _SCRIPT)
-assert _spec and _spec.loader
+assert _spec
+assert _spec.loader
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 

@@ -41,8 +41,9 @@ def test_path_is_dated_and_typed(tmp_path: Path) -> None:
 
 
 def test_unknown_kind_is_rejected(tmp_path: Path) -> None:
+    store, now = FileSegmentStore(tmp_path), datetime.now(timezone.utc)
     with pytest.raises(ValueError, match="unknown segment kind"):
-        FileSegmentStore(tmp_path).path_for("photo", datetime.now(timezone.utc))
+        store.path_for("photo", now)
 
 
 def test_sidecar_is_json_next_to_segment(tmp_path: Path) -> None:
@@ -61,8 +62,10 @@ def test_rotation_deletes_oldest_unflagged_first(tmp_path: Path) -> None:
 
     assert store.delete_oldest_unflagged() is True
 
-    assert flagged.exists() and newest.exists()
-    assert not oldest.exists() and not Path(str(oldest) + ".json").exists()
+    assert flagged.exists()
+    assert newest.exists()
+    assert not oldest.exists()
+    assert not Path(str(oldest) + ".json").exists()
 
 
 def test_rotation_with_nothing_unflagged_returns_false(tmp_path: Path) -> None:
@@ -86,7 +89,8 @@ def test_orphan_segment_without_sidecar_is_rotated(tmp_path: Path) -> None:
 
     assert store.delete_oldest_unflagged() is True
 
-    assert not orphan.exists() and newer.exists()
+    assert not orphan.exists()
+    assert newer.exists()
 
 
 def test_corrupt_sidecar_does_not_break_rotation(tmp_path: Path) -> None:

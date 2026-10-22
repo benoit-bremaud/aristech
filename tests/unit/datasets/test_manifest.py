@@ -124,7 +124,8 @@ def test_duplicate_inside_one_import_joins_both_groups(tmp_path: Path) -> None:
         },
     )
     rows = merge_rows([], import_yolo_source(_ROBO, root, {0: 0}, tmp_path / "store"))
-    assert len(rows) == 2 and len({r.group for r in rows}) == 1
+    assert len(rows) == 2
+    assert len({r.group for r in rows}) == 1
 
 
 def test_merge_joins_every_group_sharing_an_image() -> None:
@@ -156,7 +157,8 @@ def test_merge_keeps_known_split_and_joins_overlapping_groups() -> None:
     existing = [_row("a", "s1/g1", Split.TEST)]
     incoming = [_row("a", "s2/x", label="new"), _row("b", "s2/x"), _row("c", "s2/y")]
     merged = {r.image_sha256: r for r in merge_rows(existing, incoming)}
-    assert merged["a"].split is Split.TEST and merged["a"].group == "s1/g1"
+    assert merged["a"].split is Split.TEST
+    assert merged["a"].group == "s1/g1"
     assert merged["a"].label_sha256 == "new"
     assert merged["b"].group == "s1/g1"
     assert merged["c"].group == "s2/y"

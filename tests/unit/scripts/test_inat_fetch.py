@@ -11,7 +11,8 @@ import pytest
 
 _SCRIPT = Path(__file__).parents[3] / "scripts" / "inat_fetch.py"
 _spec = importlib.util.spec_from_file_location("inat_fetch", _SCRIPT)
-assert _spec and _spec.loader
+assert _spec
+assert _spec.loader
 _mod = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = _mod  # dataclasses resolve their module by name
 _spec.loader.exec_module(_mod)
@@ -53,8 +54,10 @@ def test_observation_without_photos_yields_nothing() -> None:
 
 def test_page_url_filters_research_grade_and_licences() -> None:
     url = _mod.page_url(119019, 42)
-    assert "taxon_id=119019" in url and "quality_grade=research" in url
-    assert "photo_license=cc-by%2Ccc0" in url and "id_above=42" in url
+    assert "taxon_id=119019" in url
+    assert "quality_grade=research" in url
+    assert "photo_license=cc-by%2Ccc0" in url
+    assert "id_above=42" in url
 
 
 def test_attribution_round_trip_is_sorted(tmp_path: Path) -> None:

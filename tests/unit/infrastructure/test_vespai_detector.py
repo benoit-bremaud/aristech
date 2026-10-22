@@ -106,8 +106,9 @@ def test_load_restores_torch_load_when_hub_load_fails(monkeypatch):
     torch = _install_torch(monkeypatch, boom)
     original = torch.load
 
+    detector = VespAIDetector("w.pt", "yolov5")
     with pytest.raises(RuntimeError, match="bad checkpoint"):
-        VespAIDetector("w.pt", "yolov5")._load()
+        detector._load()
 
     assert torch.load == original
 

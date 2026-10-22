@@ -32,7 +32,8 @@ def test_run_ticks_then_closes() -> None:
 
     record.run(campaign, sleep=lambda _: None, max_ticks=3)  # type: ignore[arg-type]
 
-    assert campaign.ticks == 3 and campaign.closed
+    assert campaign.ticks == 3
+    assert campaign.closed
 
 
 def test_interrupt_still_closes() -> None:
@@ -40,7 +41,8 @@ def test_interrupt_still_closes() -> None:
 
     record.run(campaign, sleep=lambda _: None)  # type: ignore[arg-type]
 
-    assert campaign.ticks == 2 and campaign.closed
+    assert campaign.ticks == 2
+    assert campaign.closed
 
 
 def test_main_parses_arguments_and_runs(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -52,7 +54,8 @@ def test_main_parses_arguments_and_runs(monkeypatch: pytest.MonkeyPatch) -> None
         return campaign
 
     assert record.main(_ARGS, build=build) == 0  # type: ignore[arg-type]
-    assert seen[0].hive_id == "hive-a" and seen[0].longitude == 2.35
+    assert seen[0].hive_id == "hive-a"
+    assert seen[0].longitude == 2.35
     assert campaign.closed
 
 
