@@ -61,7 +61,7 @@ def load_register(path: Path) -> dict[str, Source]:
                 raise ValueError(f"duplicate source id {row['id']!r}")
             sources[row["id"]] = Source(
                 **{k: row[k] for k in _FIELDS if k != "captive"},
-                captive=row["captive"].strip().lower() == "true",
+                captive=(row.get("captive") or "").strip().lower() == "true",
             )
     return sources
 

@@ -29,7 +29,7 @@ from aristech.datasets.manifest import (
     write_manifest,
 )
 from aristech.datasets.registry import LicenceError, load_register, require
-from aristech.datasets.split import FrozenSetViolation, freeze, load_frozen, split_by_group
+from aristech.datasets.split import FrozenSetViolation, discover_frozen, freeze, split_by_group
 
 _log = logging.getLogger("aristech.dataset")
 
@@ -37,7 +37,10 @@ _log = logging.getLogger("aristech.dataset")
 def _class_map(text: str) -> dict[int, int]:
     try:
         pairs = (item.split(":") for item in text.split(",") if item)
-        return {int(src): int(dst) for src, dst in pairs}
+        mapping = {int(src): int(dst) for src, dst in pairs}
+        if not mapping:
+            raise ValueError("empty")
+        return mapping
     except ValueError as exc:
         raise argparse.ArgumentTypeError(
             f"--class-map must look like 0:1,1:0, got {text!r}"
@@ -55,9 +58,10 @@ def _parser() -> argparse.ArgumentParser:
     imp.add_argument("--source", required=True)
     imp.add_argument("--dir", type=Path, required=True)
     imp.add_argument("--class-map", type=_class_map, required=True, help="source id:canonical id,…")
-    spl = commands.add_parser("split", help="assign train/validation/test by group")
+    spl = commands.add_parser(
+        "split", help="assign train/validation/test by group (respects every frozen test-v*)"
+    )
     spl.add_argument("--seed", type=int, default=0)
-    spl.add_argument("--frozen", type=Path, help="frozen test set to respect (test-vN.csv)")
     frz = commands.add_parser("freeze", help="freeze the current test rows as a new version")
     frz.add_argument("--id", required=True, help="e.g. test-v1")
     return parser
@@ -83,7 +87,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             write_manifest(manifest_path, rows)
             print(f"imported {len(incoming)} images from {source.id}; manifest has {len(rows)}")
         elif args.command == "split":
-            frozen = load_frozen(args.frozen) if args.frozen else None
+            frozen = discover_frozen(args.registry)
             captive = frozenset(s.id for s in sources.values() if s.captive)
             rows = split_by_group(
                 read_manifest(manifest_path), seed=args.seed, frozen=frozen, captive_sources=captive

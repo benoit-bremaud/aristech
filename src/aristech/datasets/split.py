@@ -75,14 +75,21 @@ class FrozenTestSet:
                 found.append(f"{frozen.image_sha256[:12]} left test ({row.split.value})")
             elif row.label_sha256 != frozen.label_sha256:
                 found.append(f"{frozen.image_sha256[:12]} label changed: freeze a new version")
+        frozen_groups = self.groups_in(by_sha.values())
         frozen_shas = {r.image_sha256 for r in self.rows}
-        for row in by_sha.values():
-            if row.group in self.groups and row.split in (Split.TRAIN, Split.VALIDATION):
-                if row.image_sha256 not in frozen_shas:
-                    found.append(
-                        f"{row.image_sha256[:12]} of frozen group {row.group} in {row.split.value}"
-                    )
+        found += [
+            f"{row.image_sha256[:12]} of frozen group {row.group} in {row.split.value}"
+            for row in by_sha.values()
+            if row.group in frozen_groups
+            and row.split in (Split.TRAIN, Split.VALIDATION)
+            and row.image_sha256 not in frozen_shas
+        ]
         return found
+
+    def groups_in(self, rows: Iterable[ManifestRow]) -> frozenset[str]:
+        """Frozen group names plus the current group of every frozen image (groups may merge)."""
+        shas = {r.image_sha256 for r in self.rows}
+        return self.groups | {row.group for row in rows if row.image_sha256 in shas}
 
 
 def split_by_group(
@@ -90,10 +97,10 @@ def split_by_group(
     *,
     seed: int,
     ratios: tuple[float, float] = (0.70, 0.15),
-    frozen: FrozenTestSet | None = None,
+    frozen: Sequence[FrozenTestSet] = (),
     captive_sources: frozenset[str] = frozenset(),
 ) -> list[ManifestRow]:
-    """Assign every row a split by group; raise `FrozenSetViolation` if `frozen` is broken.
+    """Assign every row a split by group; raise `FrozenSetViolation` if any `frozen` set breaks.
 
     `ratios` are (train, validation); test takes the rest. Within each stratum (groups sharing
     the same set of classes), groups are shuffled with `seed` and each goes to the split furthest
@@ -105,7 +112,7 @@ def split_by_group(
     groups: dict[str, list[ManifestRow]] = defaultdict(list)
     for row in rows:
         groups[row.group].append(row)
-    frozen_groups = frozen.groups if frozen else frozenset()
+    frozen_groups = frozenset().union(*(f.groups_in(rows) for f in frozen))
     assignment = {g: Split.TEST for g in groups if g in frozen_groups}
 
     strata: dict[frozenset[str], list[str]] = defaultdict(list)
@@ -128,10 +135,9 @@ def split_by_group(
             filled[split] += len(groups[name])
 
     result = [replace(row, split=assignment[row.group]) for row in rows]
-    if frozen is not None:
-        problems = frozen.violations(result)
-        if problems:
-            raise FrozenSetViolation(problems)
+    problems = [p for f in frozen for p in f.violations(result)]
+    if problems:
+        raise FrozenSetViolation(problems)
     return result
 
 
@@ -155,11 +161,18 @@ def freeze(
             FrozenRow(r.image_sha256, r.label_sha256, r.group, r.source_id) for r in test_rows
         ),
     )
-    labels_dir.mkdir(parents=True)
+    for row in test_rows:
+        label = store / "labels" / f"{row.image_sha256}.txt"
+        if _sha256(label) != row.label_sha256:
+            raise ValueError(f"{label} is missing or stale: re-import before freezing")
+    staging = registry_dir / f".{set_id}-labels.tmp"
+    shutil.rmtree(staging, ignore_errors=True)
+    staging.mkdir(parents=True)
     for row in test_rows:
         shutil.copyfile(
-            store / "labels" / f"{row.image_sha256}.txt", labels_dir / f"{row.image_sha256}.txt"
+            store / "labels" / f"{row.image_sha256}.txt", staging / f"{row.image_sha256}.txt"
         )
+    staging.rename(labels_dir)
     target.write_text(frozen.csv_text(), encoding="utf-8")
     (registry_dir / f"{set_id}.sha256").write_text(
         f"{frozen.digest()}  {set_id}.csv\n", encoding="utf-8"
@@ -167,15 +180,30 @@ def freeze(
     return frozen
 
 
+def _sha256(path: Path) -> str | None:
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
+
+def discover_frozen(registry_dir: Path) -> list[FrozenTestSet]:
+    """Load every `test-v*.csv` of the registry: a split must respect all of them, always."""
+    return [load_frozen(path) for path in sorted(registry_dir.glob("test-v*.csv"))]
+
+
 def load_frozen(path: Path) -> FrozenTestSet:
-    """Read a frozen set and check it against its recorded digest (`ValueError` if tampered)."""
+    """Read a frozen set; `ValueError` if the CSV, its digest file or its label snapshot changed."""
     with path.open(newline="", encoding="utf-8") as handle:
         try:
             rows = tuple(FrozenRow(**{k: r[k] for k in _FIELDS}) for r in csv.DictReader(handle))
         except KeyError as exc:
             raise ValueError(f"{path} lacks column {exc}: it was edited") from exc
     frozen = FrozenTestSet(id=path.stem, rows=rows)
-    recorded = path.with_suffix(".sha256").read_text(encoding="utf-8").split()[0]
-    if recorded != frozen.digest():
+    digest_file = path.with_suffix(".sha256")
+    if not digest_file.is_file():
+        raise ValueError(f"{digest_file} is missing: {path} cannot be trusted")
+    if digest_file.read_text(encoding="utf-8").split()[0] != frozen.digest():
         raise ValueError(f"{path} does not match its recorded digest: it was edited")
+    labels_dir = path.with_name(f"{path.stem}-labels")
+    for row in rows:
+        if _sha256(labels_dir / f"{row.image_sha256}.txt") != row.label_sha256:
+            raise ValueError(f"label snapshot of {row.image_sha256[:12]} in {labels_dir} changed")
     return frozen

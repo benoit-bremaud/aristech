@@ -80,8 +80,8 @@ committed; images and canonical labels go to the git-ignored `data/dataset/`.
 #    (source id:canonical id; canonical 0 velutina, 1 crabro, 2 apis_mellifera, 3 other):
 python scripts/dataset.py import --source roboflow-hornet-behavior-v1 \
     --dir data/external/vespa-crabro-velutina --class-map 0:1,1:0
-# 3. Split by group (deterministic); respect an existing frozen set with --frozen:
-python scripts/dataset.py split --seed 0 [--frozen data/registry/test-v1.csv]
+# 3. Split by group (deterministic; every frozen data/registry/test-v*.csv is enforced):
+python scripts/dataset.py split --seed 0
 # 4. Freeze the test rows once (never rewritten; a label fix means a new version):
 python scripts/dataset.py freeze --id test-v1
 ```

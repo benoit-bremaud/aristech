@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from aristech.datasets.manifest import (
+    CANONICAL_CLASSES,
     ManifestRow,
     Split,
     group_for_capture,
@@ -71,6 +72,18 @@ def test_remap_labels_swaps_ids_and_rejects_unmapped() -> None:
         remap_labels(["7 0.5 0.5 0.1 0.1"], {0: 1})
     with pytest.raises(ValueError, match="outside"):
         remap_labels(["0 0.5 0.5 0.1 0.1"], {0: 9})
+    with pytest.raises(ValueError, match="malformed"):
+        remap_labels(["0.0 0.5 0.5 0.1 0.1"], {0: 1})
+
+
+def test_canonical_class_order_is_fixed() -> None:
+    assert CANONICAL_CLASSES == ("vespa_velutina", "vespa_crabro", "apis_mellifera", "other")
+
+
+def test_import_error_names_the_label_file(tmp_path: Path) -> None:
+    root = _export(tmp_path / "export", {"train/a.jpg": (b"a", "5 0.5 0.5 0.1 0.1\n")})
+    with pytest.raises(ValueError, match=r"a\.txt: unmapped"):
+        import_yolo_source(_ROBO, root, {0: 1}, tmp_path / "store")
 
 
 def test_import_hashes_remaps_and_dedups(tmp_path: Path) -> None:
@@ -84,7 +97,7 @@ def test_import_hashes_remaps_and_dedups(tmp_path: Path) -> None:
         },
     )
     store = tmp_path / "store"
-    rows = import_yolo_source(_ROBO, root, {0: 1, 1: 0}, store)
+    rows = merge_rows([], import_yolo_source(_ROBO, root, {0: 1, 1: 0}, store))
     assert len(rows) == 2
     assert {r.group for r in rows} == {"robo/MAH1"}
     labelled = next(r for r in rows if r.classes)
@@ -98,6 +111,44 @@ def _row(sha: str, group: str, split: Split = Split.UNASSIGNED, label: str = "l"
     return ManifestRow(
         sha, group.split("/")[0], f"{sha}.jpg", group, label, ("vespa_velutina",), split
     )
+
+
+def test_duplicate_inside_one_import_joins_both_groups(tmp_path: Path) -> None:
+    root = _export(
+        tmp_path / "export",
+        {
+            "train/A_000001.jpg": (b"same", None),
+            "train/B_000001.jpg": (b"same", None),
+            "train/B_000002.jpg": (b"b2", None),
+        },
+    )
+    rows = merge_rows([], import_yolo_source(_ROBO, root, {0: 0}, tmp_path / "store"))
+    assert len(rows) == 2 and len({r.group for r in rows}) == 1
+
+
+def test_merge_joins_every_group_sharing_an_image() -> None:
+    existing = [_row("a", "s1/g1", Split.TEST), _row("b", "s1/g2", Split.TRAIN)]
+    incoming = [_row("a", "s2/x"), _row("b", "s2/x"), _row("c", "s2/x")]
+    groups = {r.group for r in merge_rows(existing, incoming)}
+    assert groups == {"s1/g1"}
+
+
+def test_capture_frame_goes_through_the_same_manifest_path(tmp_path: Path) -> None:
+    meta = SegmentMetadata(
+        rig_id="c1",
+        hive_id="hive-1",
+        site="home",
+        kind="video",
+        trigger="motion",
+        start_utc=datetime(2027, 8, 14, 23, 59, tzinfo=timezone.utc),
+        end_utc=datetime(2027, 8, 15, 0, 1, tzinfo=timezone.utc),
+        clock_source="ntp",
+        software_version="0.1.0",
+    )
+    frame = ManifestRow("f1", "own-c1", "clip.mp4#0", group_for_capture(meta), "l", ())
+    path = tmp_path / "manifest.csv"
+    write_manifest(path, merge_rows([], [frame]))
+    assert read_manifest(path)[0].group == "own/hive-1/2027-08-14"
 
 
 def test_merge_keeps_known_split_and_joins_overlapping_groups() -> None:

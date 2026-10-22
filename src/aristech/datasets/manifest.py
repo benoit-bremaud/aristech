@@ -76,7 +76,10 @@ def remap_labels(lines: Iterable[str], class_map: Mapping[int, int]) -> list[str
         parts = raw.split()
         if not parts:
             continue
-        class_id = int(parts[0])
+        try:
+            class_id = int(parts[0])
+        except ValueError as exc:
+            raise ValueError(f"malformed label line {raw!r}") from exc
         if class_id not in class_map:
             unmapped.add(class_id)
             continue
@@ -94,12 +97,16 @@ def import_yolo_source(
 ) -> list[ManifestRow]:
     """Import every `<split>/images/<name>` (with `<split>/labels/<stem>.txt`) under `root`.
 
-    An image without a label file has no object (empty label). Rows come back sorted by hash.
+    An image without a label file has no object (empty label). A file seen twice (same hash,
+    other name) yields one row per copy so `merge_rows` can join their groups; the first copy's
+    label is stored. Rows come back sorted by hash then path. Evaluation on a frozen version
+    reads its committed label snapshot, never this store (ADR-0020).
     """
     images_dir, labels_dir = store / "images", store / "labels"
     images_dir.mkdir(parents=True, exist_ok=True)
     labels_dir.mkdir(parents=True, exist_ok=True)
-    rows: dict[str, ManifestRow] = {}
+    rows: list[ManifestRow] = []
+    stored_shas: set[str] = set()
     for image in sorted(root.rglob("*")):
         if image.suffix.lower() not in IMAGE_EXTENSIONS or image.parent.name != "images":
             continue
@@ -107,24 +114,30 @@ def import_yolo_source(
         source_lines = (
             label_file.read_text(encoding="utf-8").splitlines() if label_file.exists() else []
         )
-        label_text = "".join(f"{line}\n" for line in remap_labels(source_lines, class_map))
+        try:
+            remapped = remap_labels(source_lines, class_map)
+        except ValueError as exc:
+            raise ValueError(f"{label_file}: {exc}") from exc
+        label_text = "".join(f"{line}\n" for line in remapped)
         image_sha = hashlib.sha256(image.read_bytes()).hexdigest()
-        if image_sha in rows:
-            continue
-        stored = images_dir / f"{image_sha}{image.suffix.lower()}"
-        if not stored.exists():
-            shutil.copyfile(image, stored)
-        (labels_dir / f"{image_sha}.txt").write_text(label_text, encoding="utf-8")
+        if image_sha not in stored_shas:
+            stored_shas.add(image_sha)
+            stored = images_dir / f"{image_sha}{image.suffix.lower()}"
+            if not stored.exists():
+                shutil.copyfile(image, stored)
+            (labels_dir / f"{image_sha}.txt").write_text(label_text, encoding="utf-8")
         ids = {int(line.split()[0]) for line in label_text.splitlines()}
-        rows[image_sha] = ManifestRow(
-            image_sha256=image_sha,
-            source_id=source.id,
-            source_path=image.relative_to(root).as_posix(),
-            group=group_key(source, image.stem),
-            label_sha256=hashlib.sha256(label_text.encode()).hexdigest(),
-            classes=tuple(CANONICAL_CLASSES[i] for i in sorted(ids)),
+        rows.append(
+            ManifestRow(
+                image_sha256=image_sha,
+                source_id=source.id,
+                source_path=image.relative_to(root).as_posix(),
+                group=group_key(source, image.stem),
+                label_sha256=hashlib.sha256(label_text.encode()).hexdigest(),
+                classes=tuple(CANONICAL_CLASSES[i] for i in sorted(ids)),
+            )
         )
-    return sorted(rows.values(), key=lambda r: r.image_sha256)
+    return sorted(rows, key=lambda r: (r.image_sha256, r.source_path))
 
 
 def merge_rows(
@@ -132,26 +145,37 @@ def merge_rows(
 ) -> list[ManifestRow]:
     """Add `incoming` to `existing`, one row per image hash (spec A3).
 
-    A known image keeps its group and split (its label hash is refreshed). When an incoming group
-    shares an image with an existing group, the whole incoming group joins the existing one, so
-    no copy of a frozen image can land in train under another name.
+    A known image keeps its row (label hash refreshed by a later copy). Groups that share any
+    image are joined (union-find, the first-seen group name wins), so no copy or neighbouring
+    frame of a test image can land in train under another group name.
     """
-    by_sha = {row.image_sha256: row for row in existing}
-    incoming = list(incoming)
-    joins = {
-        row.group: by_sha[row.image_sha256].group
-        for row in incoming
-        if row.image_sha256 in by_sha and by_sha[row.image_sha256].group != row.group
-    }
-    for row in incoming:
-        known = by_sha.get(row.image_sha256)
-        if known is not None:
-            by_sha[row.image_sha256] = replace(
-                known, label_sha256=row.label_sha256, classes=row.classes
-            )
-        else:
-            by_sha[row.image_sha256] = replace(row, group=joins.get(row.group, row.group))
-    return sorted(by_sha.values(), key=lambda r: r.image_sha256)
+    parent: dict[str, str] = {}
+    seen: dict[str, int] = {}
+
+    def find(group: str) -> str:
+        seen.setdefault(group, len(seen))
+        parent.setdefault(group, group)
+        while parent[group] != group:
+            parent[group] = parent[parent[group]]
+            group = parent[group]
+        return group
+
+    kept: dict[str, ManifestRow] = {}
+    for row in [*existing, *incoming]:
+        find(row.group)
+        known = kept.get(row.image_sha256)
+        if known is None:
+            kept[row.image_sha256] = row
+            continue
+        root_known, root_new = find(known.group), find(row.group)
+        if root_known != root_new:
+            first, later = sorted((root_known, root_new), key=seen.__getitem__)
+            parent[later] = first
+        kept[row.image_sha256] = replace(known, label_sha256=row.label_sha256, classes=row.classes)
+    return sorted(
+        (replace(row, group=find(row.group)) for row in kept.values()),
+        key=lambda r: r.image_sha256,
+    )
 
 
 def read_manifest(path: Path) -> list[ManifestRow]:

@@ -51,5 +51,7 @@ def test_malformed_register_raises(tmp_path: Path, rows: tuple[str, ...]) -> Non
 
 def test_committed_register_is_all_allowed() -> None:
     path = Path(__file__).parents[3] / "data" / "registry" / "licences.csv"
-    for source_id in load_register(path):
-        require(load_register(path), source_id)
+    sources = load_register(path)
+    assert sources
+    for source_id in sources:
+        require(sources, source_id)

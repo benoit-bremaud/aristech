@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from aristech.datasets.manifest import Split, read_manifest, write_manifest
+
 _SCRIPT = Path(__file__).parents[3] / "scripts" / "dataset.py"
 _spec = importlib.util.spec_from_file_location("dataset_cli", _SCRIPT)
 assert _spec and _spec.loader
@@ -55,8 +57,7 @@ def test_import_split_freeze_happy_path(
     assert _run(workspace, "freeze", "--id", "test-v1") == 0
     out = capsys.readouterr().out
     assert "imported 30 images" in out and "froze test-v1" in out
-    frozen = workspace / "registry" / "test-v1.csv"
-    assert _run(workspace, "split", "--seed", "7", "--frozen", str(frozen)) == 0
+    assert _run(workspace, "split", "--seed", "7") == 0
 
 
 def test_refused_licence_exits_2_and_writes_nothing(
@@ -65,6 +66,7 @@ def test_refused_licence_exits_2_and_writes_nothing(
     assert _import(workspace, source="nc") == 2
     assert "allowed" in capsys.readouterr().err
     assert not (workspace / "registry" / "manifest.csv").exists()
+    assert not (workspace / "store").exists()
 
 
 def test_unmapped_class_exits_2(workspace: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -97,13 +99,13 @@ def test_missing_dir_exits_2(workspace: Path) -> None:
 def test_refreeze_and_frozen_violation_exit_2(
     workspace: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    _import(workspace)
-    _run(workspace, "split", "--seed", "0")
-    _run(workspace, "freeze", "--id", "test-v1")
+    assert _import(workspace) == 0
+    assert _run(workspace, "split", "--seed", "0") == 0
+    assert _run(workspace, "freeze", "--id", "test-v1") == 0
     assert _run(workspace, "freeze", "--id", "test-v1") == 2
     manifest = workspace / "registry" / "manifest.csv"
-    lines = manifest.read_text().splitlines()
-    first_test = next(line for line in lines if line.endswith(",test"))
-    manifest.write_text("\n".join(line for line in lines if line != first_test) + "\n")
-    assert _run(workspace, "split", "--frozen", str(workspace / "registry" / "test-v1.csv")) == 2
+    rows = read_manifest(manifest)
+    first_test = next(r for r in rows if r.split is Split.TEST)
+    write_manifest(manifest, [r for r in rows if r is not first_test])
+    assert _run(workspace, "split", "--seed", "0") == 2
     assert "violation:" in capsys.readouterr().err
