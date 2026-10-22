@@ -20,7 +20,7 @@ from pathlib import Path
 
 from aristech.datasets.manifest import ManifestRow, Split
 
-_SET_ID = re.compile(r"test-v[1-9][0-9]*")
+_SET_ID = re.compile(r"test-v[1-9]\d*")
 _FIELDS = ("image_sha256", "label_sha256", "group", "source_id")
 
 

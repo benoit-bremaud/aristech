@@ -93,6 +93,26 @@ def remap_labels(lines: Iterable[str], class_map: Mapping[int, int]) -> list[str
     return remapped
 
 
+def _remapped_label(label_file: Path, class_map: Mapping[int, int]) -> str:
+    """Canonical label text of `label_file` (empty when the file is missing)."""
+    lines = label_file.read_text(encoding="utf-8").splitlines() if label_file.exists() else []
+    try:
+        remapped = remap_labels(lines, class_map)
+    except ValueError as exc:
+        raise ValueError(f"{label_file}: {exc}") from exc
+    return "".join(f"{line}\n" for line in remapped)
+
+
+def _store(
+    image: Path, image_sha: str, label_text: str, images_dir: Path, labels_dir: Path
+) -> None:
+    """Copy the image under its hash (once) and write its canonical label."""
+    stored = images_dir / f"{image_sha}{image.suffix.lower()}"
+    if not stored.exists():
+        shutil.copyfile(image, stored)
+    (labels_dir / f"{image_sha}.txt").write_text(label_text, encoding="utf-8")
+
+
 def import_yolo_source(
     source: Source, root: Path, class_map: Mapping[int, int], store: Path
 ) -> list[ManifestRow]:
@@ -113,24 +133,14 @@ def import_yolo_source(
         if image.suffix.lower() not in IMAGE_EXTENSIONS or image.parent.name != "images":
             continue
         label_file = image.parent.parent / "labels" / f"{image.stem}.txt"
-        source_lines = (
-            label_file.read_text(encoding="utf-8").splitlines() if label_file.exists() else []
-        )
-        try:
-            remapped = remap_labels(source_lines, class_map)
-        except ValueError as exc:
-            raise ValueError(f"{label_file}: {exc}") from exc
-        label_text = "".join(f"{line}\n" for line in remapped)
+        label_text = _remapped_label(label_file, class_map)
         image_sha = hashlib.sha256(image.read_bytes()).hexdigest()
         if image_sha in stored_labels:
             if stored_labels[image_sha] != label_text:
                 raise ValueError(f"{label_file}: same image as another copy, different labels")
         else:
             stored_labels[image_sha] = label_text
-            stored = images_dir / f"{image_sha}{image.suffix.lower()}"
-            if not stored.exists():
-                shutil.copyfile(image, stored)
-            (labels_dir / f"{image_sha}.txt").write_text(label_text, encoding="utf-8")
+            _store(image, image_sha, label_text, images_dir, labels_dir)
         ids = {int(line.split()[0]) for line in label_text.splitlines()}
         rows.append(
             ManifestRow(
