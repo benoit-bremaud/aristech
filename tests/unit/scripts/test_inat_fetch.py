@@ -72,8 +72,9 @@ def _api(pages: dict[int, list[dict[str, object]]], fail: set[int] | None = None
     """Fake `_get`: API pages keyed by `id_above`; photo URLs in `fail` raise URLError."""
 
     def fake_get(url: str) -> bytes:
-        if "api.inaturalist.org" in url:
-            id_above = int(urllib.parse.parse_qs(urllib.parse.urlparse(url).query)["id_above"][0])
+        parsed = urllib.parse.urlparse(url)
+        if parsed.hostname == "api.inaturalist.org":
+            id_above = int(urllib.parse.parse_qs(parsed.query)["id_above"][0])
             return json.dumps({"results": pages.get(id_above, [])}).encode()
         if fail and any(f"/{p}/" in url for p in fail):
             raise urllib.error.URLError("boom")
