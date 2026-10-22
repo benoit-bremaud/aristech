@@ -173,7 +173,9 @@ def main(argv: list[str] | None = None) -> int:
         chosen.target.recall,
         chosen.bees_as_target,
     )
-    _log.info("Pass it to the CLI as --confidence (DetectHornetVisualConfig.confidence_threshold).")
+    _log.info(
+        "Pass it to the CLI as --confidence (DetectHornetVisualConfig.confidence_threshold)."
+    )
     return 0
 
 

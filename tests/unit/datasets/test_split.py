@@ -154,6 +154,19 @@ def test_resplit_keeps_frozen_test_and_assigns_new_groups(
     assert all(r.split is not Split.UNASSIGNED for r in resplit.values())
 
 
+def test_resplit_with_a_frozen_set_keeps_test_equal_to_it(
+    frozen_setup: tuple[list[ManifestRow], Path, FrozenTestSet],
+) -> None:
+    rows, _, frozen = frozen_setup
+    grown = rows + _rows(groups=10, source="new")
+    tests = {
+        r.image_sha256
+        for r in split_by_group(grown, seed=99, frozen=[frozen])
+        if r.split is Split.TEST
+    }
+    assert tests == {f.image_sha256 for f in frozen.rows}
+
+
 def _violations(frozen: FrozenTestSet, rows: list[ManifestRow]) -> list[str]:
     return frozen.violations(rows)
 
@@ -213,3 +226,11 @@ def test_freeze_refuses_ids_split_would_not_discover(tmp_path: Path, set_id: str
     with pytest.raises(ValueError, match="test-v1"):
         freeze(set_id, _rows(), tmp_path, tmp_path)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_zero_train_and_validation_ratios_with_a_frozen_set_raise(
+    frozen_setup: tuple[list[ManifestRow], Path, FrozenTestSet],
+) -> None:
+    rows, _, frozen = frozen_setup
+    with pytest.raises(ValueError, match="frozen"):
+        split_by_group(rows, seed=0, ratios=(0.0, 0.0), frozen=[frozen])

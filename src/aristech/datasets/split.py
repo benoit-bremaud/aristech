@@ -107,6 +107,8 @@ def split_by_group(
     `ratios` are (train, validation); test takes the rest. Within each stratum (groups sharing
     the same set of classes), groups are shuffled with `seed` and each goes to the split furthest
     below its target image share. Frozen groups go to test; captive groups never do (spec A6).
+    Once a frozen set exists, the other groups go to train or validation only (ratios
+    renormalised): the test split stays the frozen set, and new test images need a new version.
     """
     train_ratio, validation_ratio = ratios
     if train_ratio < 0 or validation_ratio < 0 or train_ratio + validation_ratio > 1:
@@ -123,6 +125,11 @@ def split_by_group(
             strata[frozenset(c for r in members for c in r.classes)].append(name)
     targets = {Split.TRAIN: train_ratio, Split.VALIDATION: validation_ratio}
     targets[Split.TEST] = 1 - train_ratio - validation_ratio
+    if frozen_groups:
+        kept = train_ratio + validation_ratio
+        if kept == 0:
+            raise ValueError("ratios must leave room for train or validation once a set is frozen")
+        targets = {Split.TRAIN: train_ratio / kept, Split.VALIDATION: validation_ratio / kept}
     rng = random.Random(seed)
     for stratum in sorted(strata, key=sorted):
         names = sorted(strata[stratum])

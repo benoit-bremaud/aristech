@@ -15,6 +15,7 @@ import argparse
 import csv
 import json
 import logging
+import os
 import sys
 import time
 import urllib.parse
@@ -25,9 +26,10 @@ from pathlib import Path
 
 API = "https://api.inaturalist.org/v1/observations"
 USER_AGENT = "aristech-dataset/0.1 (https://github.com/benoit-bremaud/aristech)"
-# iNaturalist licence code → (register source id, directory under data/external/).
+# iNaturalist licence code → register source id (also its directory under data/external/).
 LICENCES = {"cc-by": "inat-cc-by", "cc0": "inat-cc0"}
 PAUSE_SECONDS = 1.0
+PER_PAGE = 200
 
 log = logging.getLogger("inat_fetch")
 
@@ -73,14 +75,17 @@ def photo_rows(observations: Iterable[dict[str, object]]) -> Iterator[PhotoRow]:
             )
 
 
-def page_url(taxon_id: int, page: int) -> str:
-    """Observations API query: research grade, CC BY / CC0 photos, oldest id first."""
+def page_url(taxon_id: int, id_above: int) -> str:
+    """Observations API query: research grade, CC BY / CC0 photos, ids above `id_above`, ascending.
+
+    Keyset paging (`id_above`) avoids the API's 10,000-result page limit and shifting pages.
+    """
     query = {
         "taxon_id": taxon_id,
         "quality_grade": "research",
         "photo_license": ",".join(LICENCES),
-        "per_page": 200,
-        "page": page,
+        "per_page": PER_PAGE,
+        "id_above": id_above,
         "order_by": "id",
         "order": "asc",
     }
@@ -122,27 +127,45 @@ def _get(url: str) -> bytes:
     return body
 
 
+def _download(row: PhotoRow, external: Path) -> bool:
+    """Write one photo atomically; log and skip it when the download fails."""
+    target = external / row.source / "train" / "images" / row.file_name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        body = _get(row.url)
+    except OSError as error:  # URLError, HTTPError and timeouts are all OSError
+        log.warning("photo %d skipped: %s", row.photo_id, error)
+        return False
+    partial = target.with_suffix(".part")
+    partial.write_bytes(body)
+    os.replace(partial, target)
+    return True
+
+
 def fetch(taxon_id: int, limit: int, external: Path, attribution: Path) -> int:
-    """Download up to `limit` new photos of `taxon_id`; return how many were added."""
+    """Download up to `limit` new photos of `taxon_id`; return how many were added.
+
+    The attribution file is written even if the run stops early, so every photo on disk keeps
+    its row (AC10) and a re-run skips it.
+    """
     known = read_attribution(attribution)
     seen = {r.photo_id for r in known}
     added: list[PhotoRow] = []
-    page = 1
-    while len(added) < limit:
-        payload = json.loads(_get(page_url(taxon_id, page)))
-        results = payload.get("results", [])
-        if not results:
-            break
-        for row in photo_rows(results):
-            if row.photo_id in seen or len(added) >= limit:
-                continue
-            target = external / row.source / "train" / "images" / row.file_name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(_get(row.url))
-            seen.add(row.photo_id)
-            added.append(row)
-        page += 1
-    write_attribution(attribution, [*known, *added])
+    last_id = 0
+    try:
+        while len(added) < limit:
+            results = json.loads(_get(page_url(taxon_id, last_id))).get("results", [])
+            for row in photo_rows(results):
+                if len(added) >= limit:
+                    break
+                if row.photo_id not in seen and _download(row, external):
+                    seen.add(row.photo_id)
+                    added.append(row)
+            if len(results) < PER_PAGE:
+                break
+            last_id = int(results[-1]["id"])
+    finally:
+        write_attribution(attribution, [*known, *added])
     return len(added)
 
 

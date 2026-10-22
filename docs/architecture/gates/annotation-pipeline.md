@@ -28,7 +28,16 @@
 - PR 3 (2026-10-22): how iNaturalist photos are fetched was not designed. Added ADR-0023
   (stdlib `scripts/inat_fetch.py`, per-photo attribution file, group rule `observation`),
   spec AC10 and A8, and the fetch step in the sequence diagram. Sledevic is imported as a capped
-  sample of 1,500 frames (ADR-0021 step 1). Owner approved 2026-10-22.
+  sample of 1,453 frames (ADR-0021 step 1). Owner approved 2026-10-22.
+- PR 3: Sledevic frames are renamed `<hive session>_<frame>` so the existing `video` group rule keeps
+  one landing board per group (8 groups; no board in two splits). The files came from Mendeley's
+  public API with each file's SHA-256 checked; no login was needed after all.
+- PR 3: the owner delegated the box correction (ADR-0018) to the agent. Boxes come from Grounding
+  DINO tiny zero-shot; the agent reviewed every overlay and kept only images with one correct
+  box (282 of 450). Details and the exclusion reasons: `qa/2026-10-22-annotation-pipeline-pr3.md`.
+- PR 3: `split_by_group` fix. Once a frozen set exists, the other groups go to train or
+  validation only; before, each re-split sent 15 % of them to `test`, so the test split grew
+  beyond the frozen set (288 → 556). Spec AC5 unchanged; a future `test-v2` needs its own option.
 
 ## Sign-off
 
