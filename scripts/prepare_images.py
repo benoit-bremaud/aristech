@@ -1,6 +1,8 @@
 import os
+
 import cv2
 from dotenv import load_dotenv
+
 
 def prepare_images(directory, target_size=(150, 150)):
     for subdir, _, files in os.walk(directory):
@@ -17,11 +19,12 @@ def prepare_images(directory, target_size=(150, 150)):
             except Exception as e:
                 print(f"Error processing {filepath}: {e}")
 
+
 if __name__ == "__main__":
     load_dotenv()
-    train_dir = os.getenv('TRAIN_FOLDER')
-    validation_dir = os.getenv('VALIDATION_FOLDER')
-    test_dir = os.getenv('TEST_FOLDER')
+    train_dir = os.getenv("TRAIN_FOLDER")
+    validation_dir = os.getenv("VALIDATION_FOLDER")
+    test_dir = os.getenv("TEST_FOLDER")
 
     prepare_images(train_dir)
     prepare_images(validation_dir)

@@ -1,7 +1,7 @@
 # Sequence diagram — import, split, freeze
 
 > **Feature**: annotation-pipeline · **Spec**: [annotation-pipeline](../../specs/annotation-pipeline.md)
-> (main scenario steps 1–5, A2, A3, A4, A5) · as built in PR 2 (`scripts/dataset.py`)
+> (main scenario steps 1–5, A2, A3, A4, A5, A8) · as built in PR 2, fetch added in PR 3 (`scripts/dataset.py`)
 
 ```mermaid
 sequenceDiagram
@@ -12,7 +12,12 @@ sequenceDiagram
     participant Man as manifest (merge_rows, CSV)
     participant Spl as split_by_group
     participant Frz as frozen sets (test-v*)
+    participant Inat as inat_fetch (scripts/)
 
+    R->>Inat: --taxon <id> --limit 150 (ADR-0023)
+    Inat->>Inat: keep research grade, licence cc-by / cc0 only (A8)
+    Inat-->>R: images in data/external/inat-<licence>/ + rows in inat-attribution.csv (AC10)
+    R->>R: pre-annotate and correct boxes in X-AnyLabeling (ADR-0018)
     R->>CLI: import --source roboflow-hornet-behavior-v1 --dir data/external/... --class-map 0:1,1:0
     CLI->>Reg: require(sources, source)
     alt unknown source or licence not in allow-list (A2)

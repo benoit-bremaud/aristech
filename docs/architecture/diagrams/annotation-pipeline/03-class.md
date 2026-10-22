@@ -73,7 +73,7 @@ classDiagram
 
 - As built (PR 2, 2026-10-22). The register is `load_register(path) -> dict[str, Source]` plus
   `require(sources, id)` raising `LicenceError`; the licence is an SPDX string checked against
-  `ALLOWED_LICENCES` (no enum class: one allow-list, KISS). `group_rule` (`stem` | `video`) says
+  `ALLOWED_LICENCES` (no enum class: one allow-list, KISS). `group_rule` (`stem` | `video` | `observation`) says
   how `group_key` derives an image's group.
 - `classes` holds canonical class names (`CANONICAL_CLASSES`, ADR-0018), `other` =
   `Species.UNKNOWN`.

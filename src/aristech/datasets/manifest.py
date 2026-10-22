@@ -55,10 +55,11 @@ def group_key(source: Source, file_stem: str) -> str:
     """Group of an image: frames of one photo or video must never be split across sets.
 
     `stem` drops a Roboflow export suffix (`<orig>_jpg.rf.<hash>`), so augmented copies stay
-    together; `video` also drops a trailing frame index (`MAH00001_000003` → `MAH00001`).
+    together; `video` also drops a trailing frame index (`MAH00001_000003` → `MAH00001`) and
+    `observation` a trailing photo id (iNaturalist `<observation>_<photo>`, ADR-0023).
     """
     stem = _ROBOFLOW_SUFFIX.sub("", file_stem)
-    if source.group_rule == "video":
+    if source.group_rule in ("video", "observation"):
         stem = _FRAME_INDEX.sub("", stem)
     return f"{source.id}/{stem}"
 

@@ -76,6 +76,9 @@ move that would leak near-duplicate frames across splits.
   for any test set.
 - **A7 Not enough bee or "other" images in public CC BY data.** The gap is recorded in the
   dataset report; the first model is still trained, with its class coverage stated.
+- **A8 iNaturalist photo with an NC, ND or unknown licence** (ADR-0023). The fetch
+  skips it before download; only CC BY 4.0 and CC0 photos reach the disk, each with its
+  attribution row.
 
 ## Acceptance criteria
 
@@ -100,6 +103,9 @@ move that would leak near-duplicate frames across splits.
   the same set beside it; dataset manifest hash, frozen-set id and model hash are recorded.
 - **AC9** Domain/application code keeps the dependency rule; the pipeline core is stdlib only and
   runs in CI without images.
+- **AC10** Every iNaturalist image has one row in `data/registry/inat-attribution.csv` (photo id,
+  observation id, taxon, licence, attribution, URL) and its licence matches its register source;
+  photos of one observation share one group key (ADR-0023).
 
 ## Out of scope
 

@@ -41,6 +41,7 @@ def _export(root: Path, files: dict[str, tuple[bytes, str | None]]) -> Path:
         ("video", "MAH00001_000003_jpg.rf.3d6d622e", "robo/MAH00001"),
         ("video", "Vespa-crabro-Germany-4_12_png.rf.abc", "robo/Vespa-crabro-Germany-4"),
         ("stem", "plain_photo", "robo/plain_photo"),
+        ("observation", "123456_7890", "robo/123456"),
     ],
 )
 def test_group_key(rule: str, stem: str, expected: str) -> None:

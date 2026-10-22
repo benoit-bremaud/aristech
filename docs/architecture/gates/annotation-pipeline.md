@@ -25,6 +25,11 @@
 - PR 2: class and sequence diagrams redrawn as built (register as functions plus `LicenceError`,
   `group_rule`, `FrozenRow`, label snapshot, every frozen set auto-discovered by `split`).
 
+- PR 3 (2026-10-22): how iNaturalist photos are fetched was not designed. Added ADR-0023
+  (stdlib `scripts/inat_fetch.py`, per-photo attribution file, group rule `observation`),
+  spec AC10 and A8, and the fetch step in the sequence diagram. Sledevic is imported as a capped
+  sample of 1,500 frames (ADR-0021 step 1). Owner approved 2026-10-22.
+
 ## Sign-off
 
 - Owner: Benoît Bremaud — ☑ approved (date: 2026-10-19)
