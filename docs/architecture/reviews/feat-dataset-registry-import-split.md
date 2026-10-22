@@ -1,32 +1,51 @@
-# Pre-push review — feat/dataset-registry-import-split (issue #95, PR 2)
+# Pre-push review — `feat/dataset-registry-import-split`
 
-Scope: `aristech.datasets` registry, manifest, split, freeze; `scripts/dataset.py`; committed
-`data/registry/` (licence register + 364-row Roboflow manifest); INSTALL section; traceability UC8.
+> **Scope**: PR 2 of issue #95, after the signed gate `annotation-pipeline`: stdlib module
+> `aristech.datasets` (`registry.py`, `manifest.py`, `split.py`), CLI `scripts/dataset.py`
+> (`import`, `split`, `freeze`), committed `data/registry/` (licence register + 364-row Roboflow
+> manifest), `.gitignore` whitelist, INSTALL section, as-built class / sequence / data-flow
+> diagrams, gate deviations, traceability UC8.
 
-| Check | Result |
-|---|---|
-| Code review (correctness, dependency rule, KISS) | 2 Must, 4 Should — all fixed |
-| Test audit | weak violation tests rewritten (exact counts, tamper parametrize, stale store, captive control) |
-| Unit tests (`make test-unit`) | 222 passed, 2 skipped; datasets coverage 98–100 % |
-| ruff check, ruff format --check, mypy | clean |
-| Secrets scan (gitleaks, branch commits) | no leaks |
-| QA on the real export | `docs/architecture/qa/2026-10-22-dataset-registry.md` — all steps as expected |
-| Dependency rule | `datasets/` imports stdlib + `domain.capture` only; no new port, no new dependency |
+## Checks
 
-## Must — fixed
+- `ruff check`, `ruff format --check` (src, tests), strict `mypy`: clean.
+- Unit tests: 222 passed, 2 skipped (OpenCV absent locally); coverage of the new modules: 100 %
+  `manifest.py`, 100 % `registry.py`, 98 % `split.py`.
+- Dependency rule: `datasets/` imports the stdlib and `domain.capture` only; no new port (ADR-0010),
+  no new dependency.
+- Licences: the only registered source is CC-BY-4.0 with its attribution; no pixels committed
+  (`data/registry/` holds CSV only).
+- QA on the real export: [qa/2026-10-22-dataset-registry.md](../qa/2026-10-22-dataset-registry.md).
+- Secrets scan: gitleaks on the branch commits and the touched folders, no leaks.
 
-1. `split` without `--frozen` could reassign a frozen test set: every `test-v*.csv` is now
-   auto-discovered and enforced; frozen groups are found by image membership, not name.
-2. Group join kept a single target: replaced by union-find, first-seen group name wins.
+## 🔴 Must Have (all fixed)
 
-## Should — fixed
+- `split` without `--frozen` could reassign a frozen test set → `split` now discovers and enforces
+  every `test-v*.csv`; frozen groups are found by image membership, not by name.
+- The group join kept a single target, so a third group sharing an image escaped it → union-find,
+  first-seen group name wins.
 
-1. Duplicate image inside one import now yields one row per copy, so their groups join.
-2. `freeze` is atomic (staged snapshot, then rename) and refuses a missing or stale store label.
-3. `load_frozen` verifies each label-snapshot hash, the digest file and the columns.
-4. Errors name the label file; an empty `--class-map` is refused; `captive` is optional.
+## 🟡 Should Have (all fixed)
 
-## Nice — kept for later
+- A duplicate image inside one import produced one row → one row per copy, so their groups join.
+- `freeze` could leave a half-written snapshot or copy a stale store label → staged snapshot then
+  rename; every store label hash checked first.
+- `load_frozen` trusted the snapshot → it verifies the columns, the digest file and each label hash.
+- Errors did not name the label file; an empty `--class-map` passed; `captive` was mandatory →
+  fixed.
+- Violation tests asserted "some violation" → exact counts, tamper cases parametrized, captive
+  control case.
 
-Sledevic row added only once downloaded (needs owner login); `freeze` leaves a stale `.tmp` on a
-crash between copy and rename (re-run cleans it); no CLI `verify` subcommand (split already checks).
+## 🔵 Nice to Have (deferred)
+
+- A crash between snapshot copy and rename leaves `.test-vN-labels.tmp`; the next `freeze` removes it.
+- No `verify` subcommand: `split` already verifies every frozen set.
+
+## Disagree
+
+- None.
+
+## Not verifiable here
+
+- Sledevic import (owner login on Mendeley) → PR 3, recorded in the gate deviations.
+- AC7–AC8 (first model, report) → PR 4.
