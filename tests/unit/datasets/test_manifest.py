@@ -170,3 +170,15 @@ def test_manifest_round_trip_and_missing_file(tmp_path: Path) -> None:
     ]
     write_manifest(path, rows)
     assert read_manifest(path) == sorted(rows, key=lambda r: r.image_sha256)
+
+
+def test_duplicate_image_with_conflicting_labels_is_refused(tmp_path: Path) -> None:
+    root = _export(
+        tmp_path / "export",
+        {
+            "train/A_1.jpg": (b"same", "0 0.5 0.5 0.1 0.1\n"),
+            "train/B_1.jpg": (b"same", "1 0.5 0.5 0.1 0.1\n"),
+        },
+    )
+    with pytest.raises(ValueError, match="different labels"):
+        import_yolo_source(_ROBO, root, {0: 0, 1: 1}, tmp_path / "store")

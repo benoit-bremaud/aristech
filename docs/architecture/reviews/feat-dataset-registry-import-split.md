@@ -49,3 +49,12 @@
 
 - Sledevic import (owner login on Mendeley) → PR 3, recorded in the gate deviations.
 - AC7–AC8 (first model, report) → PR 4.
+
+## External review round (PR #99)
+
+- Fixed: `split` and `freeze` did not re-check licences → every manifest source must still pass
+  `require` (a revoked or NC licence exits 2).
+- Fixed: `freeze --id foo` wrote a set `split` never discovers → ids must match `test-v<N>`
+  (also blocks path separators).
+- Fixed: duplicate images with different labels left the store out of step with the manifest →
+  the import refuses them.

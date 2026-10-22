@@ -28,7 +28,7 @@ from aristech.datasets.manifest import (
     read_manifest,
     write_manifest,
 )
-from aristech.datasets.registry import LicenceError, load_register, require
+from aristech.datasets.registry import LicenceError, Source, load_register, require
 from aristech.datasets.split import FrozenSetViolation, discover_frozen, freeze, split_by_group
 
 _log = logging.getLogger("aristech.dataset")
@@ -72,6 +72,12 @@ def _summary(rows: Sequence[ManifestRow]) -> str:
     return ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))
 
 
+def _require_all(sources: dict[str, Source], rows: Sequence[ManifestRow]) -> None:
+    """Refuse to split or freeze if any manifest source lost its allowed licence (AC1)."""
+    for source_id in sorted({r.source_id for r in rows}):
+        require(sources, source_id)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run one subcommand; return the process exit code."""
     args = _parser().parse_args(argv)
@@ -87,6 +93,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             write_manifest(manifest_path, rows)
             print(f"imported {len(incoming)} images from {source.id}; manifest has {len(rows)}")
         elif args.command == "split":
+            _require_all(sources, read_manifest(manifest_path))
             frozen = discover_frozen(args.registry)
             captive = frozenset(s.id for s in sources.values() if s.captive)
             rows = split_by_group(
@@ -95,6 +102,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             write_manifest(manifest_path, rows)
             print(f"split (seed {args.seed}): {_summary(rows)}")
         else:
+            _require_all(sources, read_manifest(manifest_path))
             frozen_set = freeze(args.id, read_manifest(manifest_path), args.registry, args.store)
             print(
                 f"froze {frozen_set.id}: {len(frozen_set.rows)} images, "

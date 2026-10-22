@@ -206,3 +206,10 @@ def test_split_refuses_a_broken_frozen_set(
     with pytest.raises(FrozenSetViolation) as info:
         split_by_group(remaining, seed=0, frozen=[frozen])
     assert len(info.value.violations) == 1
+
+
+@pytest.mark.parametrize("set_id", ["foo", "test-v0", "test-v1/../x", "test-v1x"])
+def test_freeze_refuses_ids_split_would_not_discover(tmp_path: Path, set_id: str) -> None:
+    with pytest.raises(ValueError, match="test-v1"):
+        freeze(set_id, _rows(), tmp_path, tmp_path)
+    assert list(tmp_path.iterdir()) == []

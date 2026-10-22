@@ -109,3 +109,17 @@ def test_refreeze_and_frozen_violation_exit_2(
     write_manifest(manifest, [r for r in rows if r is not first_test])
     assert _run(workspace, "split", "--seed", "0") == 2
     assert "violation:" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("command", [["split", "--seed", "0"], ["freeze", "--id", "test-v1"]])
+def test_split_and_freeze_refuse_a_source_whose_licence_was_revoked(
+    workspace: Path, capsys: pytest.CaptureFixture[str], command: list[str]
+) -> None:
+    assert _import(workspace) == 0
+    assert _run(workspace, "split", "--seed", "0") == 0
+    licences = workspace / "registry" / "licences.csv"
+    licences.write_text(
+        licences.read_text().replace("ok,OK,u,1,CC-BY-4.0", "ok,OK,u,1,CC-BY-NC-4.0")
+    )
+    assert _run(workspace, *command) == 2
+    assert "licence 'CC-BY-NC-4.0'" in capsys.readouterr().err

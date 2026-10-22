@@ -11,6 +11,7 @@ import csv
 import hashlib
 import io
 import random
+import re
 import shutil
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
@@ -19,6 +20,7 @@ from pathlib import Path
 
 from aristech.datasets.manifest import ManifestRow, Split
 
+_SET_ID = re.compile(r"test-v[1-9][0-9]*")
 _FIELDS = ("image_sha256", "label_sha256", "group", "source_id")
 
 
@@ -146,8 +148,11 @@ def freeze(
 ) -> FrozenTestSet:
     """Freeze the test rows as `<registry_dir>/<set_id>.csv` + a label snapshot + its digest.
 
-    Raises `FileExistsError` if that version exists: a frozen set is never rewritten.
+    Raises `FileExistsError` if that version exists: a frozen set is never rewritten, and
+    `ValueError` if `set_id` is not `test-v<N>` (only those are discovered and enforced by split).
     """
+    if not _SET_ID.fullmatch(set_id):
+        raise ValueError(f"frozen set id must look like test-v1, got {set_id!r}")
     target = registry_dir / f"{set_id}.csv"
     labels_dir = registry_dir / f"{set_id}-labels"
     if target.exists() or labels_dir.exists():

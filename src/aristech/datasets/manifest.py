@@ -98,15 +98,16 @@ def import_yolo_source(
     """Import every `<split>/images/<name>` (with `<split>/labels/<stem>.txt`) under `root`.
 
     An image without a label file has no object (empty label). A file seen twice (same hash,
-    other name) yields one row per copy so `merge_rows` can join their groups; the first copy's
-    label is stored. Rows come back sorted by hash then path. Evaluation on a frozen version
+    other name) yields one row per copy so `merge_rows` can join their groups; copies with
+    different labels are refused (`ValueError`), so the store always matches the manifest.
+    Rows come back sorted by hash then path. Evaluation on a frozen version
     reads its committed label snapshot, never this store (ADR-0020).
     """
     images_dir, labels_dir = store / "images", store / "labels"
     images_dir.mkdir(parents=True, exist_ok=True)
     labels_dir.mkdir(parents=True, exist_ok=True)
     rows: list[ManifestRow] = []
-    stored_shas: set[str] = set()
+    stored_labels: dict[str, str] = {}
     for image in sorted(root.rglob("*")):
         if image.suffix.lower() not in IMAGE_EXTENSIONS or image.parent.name != "images":
             continue
@@ -120,8 +121,11 @@ def import_yolo_source(
             raise ValueError(f"{label_file}: {exc}") from exc
         label_text = "".join(f"{line}\n" for line in remapped)
         image_sha = hashlib.sha256(image.read_bytes()).hexdigest()
-        if image_sha not in stored_shas:
-            stored_shas.add(image_sha)
+        if image_sha in stored_labels:
+            if stored_labels[image_sha] != label_text:
+                raise ValueError(f"{label_file}: same image as another copy, different labels")
+        else:
+            stored_labels[image_sha] = label_text
             stored = images_dir / f"{image_sha}{image.suffix.lower()}"
             if not stored.exists():
                 shutil.copyfile(image, stored)
