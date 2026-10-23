@@ -62,7 +62,9 @@ def main() -> None:
         writer = csv.writer(f)
         writer.writerow(["index", "image_sha256", "source_id", "source_path", "classes"])
         for i, r in enumerate(picked):
-            writer.writerow([i + 1, r["image_sha256"], r["source_id"], r["source_path"], r["classes"]])
+            writer.writerow(
+                [i + 1, r["image_sha256"], r["source_id"], r["source_path"], r["classes"]]
+            )
 
 
 if __name__ == "__main__":

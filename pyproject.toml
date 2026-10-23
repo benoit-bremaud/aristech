@@ -50,6 +50,11 @@ vision = [
     "numpy>=1.26,<2",
     "Pillow>=12.3,<13",
 ]
+# Pre-field model training and scoring (ADR-0022, ADR-0024): RF-DETR, Apache-2.0 code and
+# Nano-Large weights (only Small is used). Checkpoints stay git-ignored, loaded from a path.
+train = [
+    "rfdetr[train]==1.11.2",
+]
 # Capture rig (C1, ADR-0017): I²S audio + Picamera2. On Raspberry Pi OS install picamera2 from
 # apt (python3-picamera2, needs libcamera) and create the venv with --system-site-packages.
 capture = [
@@ -117,6 +122,7 @@ module = [
     "numpy.*",
     "pandas.*",
     "PIL.*",
+    "rfdetr",
     "torch.*",
     "yaml",
 ]
