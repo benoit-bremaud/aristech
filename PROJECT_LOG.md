@@ -329,3 +329,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
     - The boxes were not reviewed by a human; a human spot check before training is advised.
     - `scripts/` is not linted by CI.
   - **Next**: PR 4, the first pre-field model.
+
+- **PR #103 merged** (`a178c83`) — `feat(model): first pre-field RF-DETR model scored on test-v1`. Issue #95, PR 4 of 4.
+  - **Decisions** (ADR-0024): RF-DETR Small (Apache-2.0; owner choice, tied with Nano at 410/500), scoring through a `RFDETRDetector` adapter and the UC3 harness, and a 30-image owner spot check of the iNaturalist boxes before training (all accepted). Spec AC11, sequence diagram 05.
+  - **Code**: `dataset.py export` writes a YOLO view (train / valid / one folder per frozen set, snapshot labels, exit 2 on a frozen-set violation); optional extra `train` (`rfdetr[train]==1.11.2`); `scripts/train_rfdetr.py` and `scripts/prefield_report.py`.
+  - **Run**: 32 epochs on a laptop GPU, best epoch 21 (validation mAP 0.557). Weights and pixels stay git-ignored; hashes are in the report.
+  - **Results on test-v1 at conf ≥ 0.5**: velutina P 0.571 / R 0.480 (VespAI 0 / 0), crabro 0.885 / 0.719, bees 0.964 / 0.860, other 0.545 / 0.667; no bee predicted as a hornet. At 0.8 velutina recall falls to 0.010. Velutina errors come mostly from the crowded Roboflow apiary frames.
+  - **Review cycle**: local report, Must 2 fixed (the export no longer replaces a directory that is not a view; diagram 05 matched to the scripts), Should 9 fixed (missing label, shared file hash, class map from the canonical list, stale-view check in the report, docs and tests). CI dependency review flagged pillow 12.3.0 in the environment record; the record was renamed so it is not read as an install manifest and now warns to upgrade pillow. CI green, quality gate OK (new-code coverage 98.3 %).
+  - **Open**: pre-field only, the M5 gate needs field rows (`test-v2`); velutina recall is the first number to improve (more hive-entrance velutina images, larger resolution or Medium size, per-class thresholds); the local training environment still has pillow 12.3.0.
