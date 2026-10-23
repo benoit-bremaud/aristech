@@ -307,3 +307,25 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Review cycle** — local report: Must 2 fixed (`split` now enforces every frozen set found in the registry; groups sharing an image are all joined), Should 5 fixed (duplicates inside one import, atomic freeze, snapshot verification, error messages, stricter tests). External review, 3 fixed: licences re-checked on split and freeze, freeze ids restricted to `test-v<N>`, duplicate images with conflicting labels refused. QA on the real export (freeze, re-split, re-freeze and tamper refusals). CI green, quality gate OK (new-code coverage 97.5 %).
   - **Deviation** — Sledevic bee set moved to PR 3 (download needs the owner's Mendeley login), recorded in the gate.
   - **Next** — PR 3: Sledevic + iNaturalist CC BY / CC0 import, annotation, freeze `test-v1`.
+
+## 2026-10-23
+
+- **PR #101 merged** (`04d5647`) — `feat(dataset): Sledevic and iNaturalist import, frozen test-v1`. Branch `feat/95-sledevic-inat-test-v1`, squash-merged. Issue #95, PR 3 of 4.
+  - **Sledevic**: 1,453-frame sample of the Sledevic bee set (CC BY 4.0) from 8 landing boards.
+    - Fetched through the Mendeley public API with SHA-256 checks; no login was needed after all.
+    - One group per board.
+  - **iNaturalist**: research-grade CC BY / CC0 photos.
+    - Fetched by `scripts/inat_fetch.py` (ADR-0023), with one attribution row per photo and the new group rule `observation`.
+    - Boxes pre-annotated zero-shot, then reviewed: 282 of 450 kept (one correct box only).
+  - **test-v1 frozen**: 288 images, digest `6d4f5dc5…`. Every class is present in train, validation and test.
+  - **Fix**: `split_by_group` sends non-frozen groups to train/validation only once a set is frozen. A re-split had grown test from 288 to 556.
+  - **Review cycle**:
+    - Local report: Must 1 fixed (attribution rows survive a failed run) and Should 3 fixed (keyset paging, failure tests, split fix).
+    - External finding fixed: a URL substring check in a test.
+    - A server upgrade enabled new rules on test code. 30 findings were fixed, a cognitive-complexity refactor of `import_yolo_source` was done, and two seeded-shuffle hotspots were reviewed as safe.
+    - CI green, quality gate OK (new-code coverage 98.1 %).
+  - **Open**:
+    - test-v1's bee frames come from a single board.
+    - The boxes were not reviewed by a human; a human spot check before training is advised.
+    - `scripts/` is not linted by CI.
+  - **Next**: PR 4, the first pre-field model.
