@@ -9,7 +9,8 @@ from aristech.datasets.manifest import Split, read_manifest, write_manifest
 
 _SCRIPT = Path(__file__).parents[3] / "scripts" / "dataset.py"
 _spec = importlib.util.spec_from_file_location("dataset_cli", _SCRIPT)
-assert _spec and _spec.loader
+assert _spec
+assert _spec.loader
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
@@ -56,7 +57,8 @@ def test_import_split_freeze_happy_path(
     assert _run(workspace, "split", "--seed", "0") == 0
     assert _run(workspace, "freeze", "--id", "test-v1") == 0
     out = capsys.readouterr().out
-    assert "imported 30 images" in out and "froze test-v1" in out
+    assert "imported 30 images" in out
+    assert "froze test-v1" in out
     assert _run(workspace, "split", "--seed", "7") == 0
 
 

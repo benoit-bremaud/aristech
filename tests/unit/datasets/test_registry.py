@@ -28,13 +28,15 @@ def test_non_allowed_licence_is_refused(tmp_path: Path, licence: str) -> None:
 
 
 def test_unknown_source_is_refused(tmp_path: Path) -> None:
+    register = load_register(_register(tmp_path))
     with pytest.raises(LicenceError, match="not in the licence register"):
-        require(load_register(_register(tmp_path)), "nope")
+        require(register, "nope")
 
 
 def test_captive_flag_and_group_rule(tmp_path: Path) -> None:
     sources = load_register(_register(tmp_path, "lab,L,u,1,own,us,2026-10-19,video,TRUE"))
-    assert sources["lab"].captive and sources["lab"].group_rule == "video"
+    assert sources["lab"].captive
+    assert sources["lab"].group_rule == "video"
 
 
 @pytest.mark.parametrize(
@@ -45,8 +47,9 @@ def test_captive_flag_and_group_rule(tmp_path: Path) -> None:
     ],
 )
 def test_malformed_register_raises(tmp_path: Path, rows: tuple[str, ...]) -> None:
+    path = _register(tmp_path, *rows)
     with pytest.raises(ValueError):
-        load_register(_register(tmp_path, *rows))
+        load_register(path)
 
 
 def test_committed_register_is_all_allowed() -> None:

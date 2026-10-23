@@ -30,3 +30,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0020](ADR-0020-frozen-test-set-policy.md) | Frozen test set — group-keyed, hash-listed, versioned and append-only | Accepted |
 | [ADR-0021](ADR-0021-public-datasets-for-the-pre-field-model.md) | Public datasets for the pre-field model | Accepted |
 | [ADR-0022](ADR-0022-base-detector-rf-detr.md) | RF-DETR (Apache-2.0 sizes) as the base detector of the own model | Accepted |
+| [ADR-0023](ADR-0023-inaturalist-fetch-script.md) | Fetch iNaturalist photos with a stdlib script and per-photo attribution | Accepted |

@@ -9,7 +9,8 @@ from aristech.domain import Species
 
 _SCRIPT = Path(__file__).parents[3] / "scripts" / "measure_operating_point.py"
 _spec = importlib.util.spec_from_file_location("measure_operating_point", _SCRIPT)
-assert _spec and _spec.loader
+assert _spec
+assert _spec.loader
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 

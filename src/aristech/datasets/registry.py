@@ -13,7 +13,7 @@ from pathlib import Path
 ALLOWED_LICENCES = frozenset({"CC-BY-4.0", "CC-BY-SA-4.0", "CC0-1.0", "own"})
 """SPDX ids (plus `own` for our captures) allowed into the database; never NC."""
 
-GROUP_RULES = frozenset({"stem", "video"})
+GROUP_RULES = frozenset({"observation", "stem", "video"})
 """How an image's group key is derived from its file name (see `manifest.group_key`)."""
 
 _FIELDS = (

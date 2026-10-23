@@ -253,7 +253,8 @@ def test_close_releases_devices_and_closes_segments() -> None:
 
     rig.campaign.close()
 
-    assert rig.camera.closed and rig.audio.closed
+    assert rig.camera.closed
+    assert rig.audio.closed
     assert "audio-1" in rig.store.sidecars
 
 
