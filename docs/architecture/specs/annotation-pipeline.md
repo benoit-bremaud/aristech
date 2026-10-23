@@ -109,8 +109,8 @@ move that would leak near-duplicate frames across splits.
 - **AC10** Every iNaturalist image has one row in `data/registry/inat-attribution.csv` (photo id,
   observation id, taxon, licence, attribution, URL) and its licence matches its register source;
   photos of one observation share one group key (ADR-0023).
-- **AC11** The export writes `train/`, `valid/` and `test/` plus `data.yaml` with the four
-  classes in canonical order; `test/` labels are the committed snapshot; any frozen-set violation
+- **AC11** The export writes `train/`, `valid/`, one folder per frozen set (`test-v1/`…) and a
+  `data.yaml` with the four classes in canonical order; frozen-set labels are the committed snapshot; any frozen-set violation
   refuses the export with exit 2 and writes nothing (unit-tested, ADR-0024).
 
 ## Out of scope

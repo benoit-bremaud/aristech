@@ -59,8 +59,8 @@ Sensitivity: trust 60 → A 400, C 390; owner time 50 → A 400, B 380. **Robust
 - **Size**: RF-DETR **Small**, fine-tuned from its COCO checkpoint. Extra `train` pins
   `rfdetr[train]==1.11.2`; nothing enters the core `dependencies`.
 - **Training view**: `scripts/dataset.py export` writes a YOLO view of the manifest under a
-  git-ignored directory: `train/` and `valid/` link the stored images and labels, `test/` holds
-  every frozen set's images with the **committed label snapshot** (the yardstick, ADR-0020).
+  git-ignored directory: `train/` and `valid/` link the stored images and labels, and each frozen set gets its own
+  folder (`test-v1/`…) with the **committed label snapshot** (the yardstick, ADR-0020).
   Export runs the frozen-set checks first and refuses (exit 2) on any violation (AC5).
 - **Scoring**: `infrastructure/vision/rfdetr_detector.py` (lazy import) maps the model's class
   names to `Species`; `scripts/prefield_report.py` scores RF-DETR and VespAI on `test-v1` with the
