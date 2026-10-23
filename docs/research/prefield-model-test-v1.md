@@ -17,7 +17,7 @@
 - **Baseline**: VespAI `yolov5s-all-data.pt` (sha256 `1fff0bde…3694`, CC BY-NC-SA,
   comparison only). It runs on the same images through the same UC3 harness.
 - **Reproduce**: `make prefield-train STORE=…`, then `make prefield-report VESPAI_WEIGHTS=…
-  YOLOV5_DIR=…`. Environment: [prefield-model-requirements.txt](prefield-model-requirements.txt).
+  YOLOV5_DIR=…`. Environment: [prefield-model-environment.txt](prefield-model-environment.txt).
 
 ## Results at conf ≥ 0.5 (IoU ≥ 0.5)
 

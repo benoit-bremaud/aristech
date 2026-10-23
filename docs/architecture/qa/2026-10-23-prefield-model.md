@@ -24,7 +24,7 @@ produce. Pixels and weights stay git-ignored under `data/`; nothing but text is 
 ## Training (AC7)
 
 - Environment: a dedicated venv with `rfdetr[train]==1.11.2`, torch 2.14.1+cu130 and an
-  RTX 4070 Laptop; frozen in `docs/research/prefield-model-requirements.txt`.
+  RTX 4070 Laptop; frozen in `docs/research/prefield-model-environment.txt`.
 - A 1-epoch smoke run first confirmed the pipeline end to end. The model's class names are the
   canonical four, in order, at 512 px.
 - `make prefield-train` ran 32 epochs in about 49 min. The auto-batch probe chose 4 × 4
