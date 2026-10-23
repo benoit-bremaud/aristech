@@ -79,4 +79,7 @@ classDiagram
   `Species.UNKNOWN`.
 - Functions, not classes (KISS): `import_yolo_source`, `merge_rows` (union-find group join),
   `group_key`, `group_for_capture`, `read_manifest` / `write_manifest`, `split_by_group`,
-  `freeze`, `load_frozen`, `discover_frozen`.
+  `freeze`, `load_frozen`, `discover_frozen`, `export_yolo_view` (PR 4, AC11).
+- PR 4 adds `RFDETRDetector` in `infrastructure/vision/`, the second `HornetDetector` adapter
+  (ADR-0024). It lives outside this module: `detect(frame) -> Sequence[Detection]`, the model's
+  class names mapped to `Species`.

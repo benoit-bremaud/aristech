@@ -38,6 +38,9 @@
 - PR 3: `split_by_group` fix. Once a frozen set exists, the other groups go to train or
   validation only; before, each re-split sent 15 % of them to `test`, so the test split grew
   beyond the frozen set (288 → 556). Spec AC5 unchanged; a future `test-v2` needs its own option.
+- PR 4 (2026-10-23): size, scoring path and the human box check were not designed. Added
+  ADR-0024 (RF-DETR Small, `RFDETRDetector` + UC3 harness, 30-image contact sheet), spec AC11 and
+  main step 6, sequence `05-sequence-train-score.md`. Owner approved 2026-10-23.
 
 ## Sign-off
 

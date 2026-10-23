@@ -3,7 +3,7 @@
 > **Status**: Accepted (gate signed 2026-10-19) · **Brick**: annotation pipeline (winter 2026–27, issue #95) ·
 > **Roadmap gate**: frozen test set defined, licences recorded ·
 > **Related**: ADR-0015 (own model, permissive base), ADR-0014 (two operating points),
-> ADR-0003 (legal floor), ADR-0018 to ADR-0022 (this brick), specs
+> ADR-0003 (legal floor), ADR-0018 to ADR-0024 (this brick), specs
 > [own-vision-model](own-vision-model.md), [capture-rig](capture-rig.md),
 > [m3-report](m3-report.md) · **Use cases**: UC8, UC9, UC3
 
@@ -55,9 +55,12 @@ move that would leak near-duplicate frames across splits.
    written to a frozen test-set file with an id (`test-v1`) and its own hash, committed.
    From then on, any later split that would move a frozen image out of test, or put an image
    whose group is in the frozen set into train, fails.
-6. The researcher trains the first model on the training split (UC9) and runs the harness (UC3)
-   on the frozen set; the report records the dataset manifest hash, the frozen-set id, the base
-   model and its licence, and per-class P/R next to VespAI's.
+6. The researcher checks a contact sheet of iNaturalist boxes, runs the **export** command
+   (a YOLO view of train / validation, and of every frozen set with its label snapshot; refused
+   on any frozen-set violation), trains the first model on train and validation (UC9) and runs
+   the harness (UC3) on the frozen set; the report records the dataset manifest hash, the
+   frozen-set id, the base model, its weights hash and licence, and per-class P/R next to
+   VespAI's (ADR-0024).
 
 ## Alternative scenarios
 
@@ -106,6 +109,9 @@ move that would leak near-duplicate frames across splits.
 - **AC10** Every iNaturalist image has one row in `data/registry/inat-attribution.csv` (photo id,
   observation id, taxon, licence, attribution, URL) and its licence matches its register source;
   photos of one observation share one group key (ADR-0023).
+- **AC11** The export writes `train/`, `valid/` and `test/` plus `data.yaml` with the four
+  classes in canonical order; `test/` labels are the committed snapshot; any frozen-set violation
+  refuses the export with exit 2 and writes nothing (unit-tested, ADR-0024).
 
 ## Out of scope
 
