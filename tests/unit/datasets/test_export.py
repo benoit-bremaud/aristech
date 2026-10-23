@@ -53,7 +53,8 @@ def test_export_links_splits_and_uses_the_label_snapshot(store: Path, tmp_path: 
 
     assert counts == {"train": 1, "valid": 1, "test-v1": 1}
     image = out / "train" / "images" / f"{train.image_sha256}.jpg"
-    assert image.is_symlink() and image.read_bytes() == b"a"
+    assert image.is_symlink()
+    assert image.read_bytes() == b"a"
     assert (out / "valid" / "labels" / f"{valid.image_sha256}.txt").exists()
     snapshot = out / "test-v1" / "labels" / f"{test.image_sha256}.txt"
     assert snapshot.read_text() == "1 0.5 0.5 0.2 0.2\n"
@@ -65,7 +66,8 @@ def test_data_yaml_lists_the_four_classes_in_canonical_order(tmp_path: Path) -> 
     text = data_yaml(tmp_path)
     assert "nc: 4" in text
     assert text.index("0: vespa_velutina") < text.index("3: other")
-    assert "train: train/images" in text and "val: valid/images" in text
+    assert "train: train/images" in text
+    assert "val: valid/images" in text
 
 
 def test_frozen_violation_refuses_and_leaves_out_untouched(store: Path, tmp_path: Path) -> None:

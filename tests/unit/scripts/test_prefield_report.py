@@ -127,7 +127,9 @@ def test_a_stale_view_exits_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]
 
     assert _mod.main(args, factories={}) == 2
     err = capsys.readouterr().err
-    assert "stale" in err and "not in test-v1" in err and "label differs" in err
+    assert "stale" in err
+    assert "not in test-v1" in err
+    assert "label differs" in err
 
 
 def test_missing_report_directory_exits_2(

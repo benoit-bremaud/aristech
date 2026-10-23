@@ -69,5 +69,6 @@ def test_detect_loads_once_converts_bgr_and_maps(monkeypatch: pytest.MonkeyPatch
     assert loads == ["best.pth"]
     image, threshold = model.seen[0]
     assert threshold == 0.3
-    assert image[0, 0, 2] == 255 and image[0, 0, 0] == 0
+    assert image[0, 0, 2] == 255
+    assert image[0, 0, 0] == 0
     assert first[0].species is Species.VESPA_CRABRO
