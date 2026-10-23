@@ -1,4 +1,4 @@
-"""Dataset CLI: import a licensed source, split by group, freeze a test-set version.
+"""Dataset CLI: import a licensed source, split by group, freeze a test set, export a YOLO view.
 
 Spec ``docs/architecture/specs/annotation-pipeline.md``; ADR-0018 to ADR-0020. The registry
 (``data/registry/``: licences, manifest, frozen sets) is committed; the image store
@@ -10,6 +10,7 @@ Example:
         --dir data/external/vespa-crabro-velutina --class-map 0:1,1:0
     python scripts/dataset.py split --seed 0
     python scripts/dataset.py freeze --id test-v1
+    python scripts/dataset.py export --out data/views/prefield
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 
+from aristech.datasets.export import export_yolo_view
 from aristech.datasets.manifest import (
     ManifestRow,
     import_yolo_source,
@@ -64,6 +66,10 @@ def _parser() -> argparse.ArgumentParser:
     spl.add_argument("--seed", type=int, default=0)
     frz = commands.add_parser("freeze", help="freeze the current test rows as a new version")
     frz.add_argument("--id", required=True, help="e.g. test-v1")
+    exp = commands.add_parser(
+        "export", help="write a YOLO view (train, valid, one folder per frozen set) for training"
+    )
+    exp.add_argument("--out", type=Path, required=True, help="git-ignored directory, replaced")
     return parser
 
 
@@ -101,6 +107,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             write_manifest(manifest_path, rows)
             print(f"split (seed {args.seed}): {_summary(rows)}")
+        elif args.command == "export":
+            rows = read_manifest(manifest_path)
+            _require_all(sources, rows)
+            frozen = discover_frozen(args.registry)
+            counts = export_yolo_view(rows, frozen, args.store, args.registry, args.out)
+            print(f"exported to {args.out}: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
         else:
             _require_all(sources, read_manifest(manifest_path))
             frozen_set = freeze(args.id, read_manifest(manifest_path), args.registry, args.store)

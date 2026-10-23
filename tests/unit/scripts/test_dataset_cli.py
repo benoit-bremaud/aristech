@@ -125,3 +125,21 @@ def test_split_and_freeze_refuse_a_source_whose_licence_was_revoked(
     )
     assert _run(workspace, *command) == 2
     assert "licence 'CC-BY-NC-4.0'" in capsys.readouterr().err
+
+
+def test_export_writes_the_view_and_refuses_a_frozen_violation(
+    workspace: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert _import(workspace) == 0
+    assert _run(workspace, "split", "--seed", "0") == 0
+    assert _run(workspace, "freeze", "--id", "test-v1") == 0
+    view = workspace / "view"
+    assert _run(workspace, "export", "--out", str(view)) == 0
+    assert "exported to" in capsys.readouterr().out
+    assert (view / "data.yaml").is_file()
+    assert any((view / "test-v1" / "images").iterdir())
+    manifest = workspace / "registry" / "manifest.csv"
+    rows = read_manifest(manifest)
+    write_manifest(manifest, [r for r in rows if r.split is not Split.TEST])
+    assert _run(workspace, "export", "--out", str(view)) == 2
+    assert "violation:" in capsys.readouterr().err

@@ -51,6 +51,15 @@ class ManifestRow:
     split: Split = Split.UNASSIGNED
 
 
+def file_sha256(path: Path) -> str:
+    """Hex SHA-256 of a file, read in 1 MiB chunks (images, checkpoints)."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def group_key(source: Source, file_stem: str) -> str:
     """Group of an image: frames of one photo or video must never be split across sets.
 
