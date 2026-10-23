@@ -1,12 +1,12 @@
 """Build a contact sheet of iNaturalist boxes for a human spot check (issue #95, PR 4).
 
 Picks ``--per-class`` images per class among the iNaturalist manifest rows (seeded),
-draws each box with its class name and writes one JPEG grid plus the list of sampled
+draws each box labelled with its class name and writes one JPEG grid plus the list of sampled
 image hashes. The sheet holds third-party pixels: write it outside the repository.
 
 Example:
     python docs/architecture/qa/tools/box_spot_check.py \\
-        --dataset ../bold-blackwell-988e7c/data/dataset --out /tmp/spot
+        --dataset data/dataset --out /tmp/spot
 """
 
 import argparse
@@ -43,7 +43,9 @@ def main() -> None:
     sheet = Image.new("RGB", (cols * TILE, -(-len(picked) // cols) * TILE), "white")
     for i, row in enumerate(picked):
         sha = row["image_sha256"]
-        image = next((dataset / "images").glob(f"{sha}.*"))
+        image = next((dataset / "images").glob(f"{sha}.*"), None)
+        if image is None:
+            raise SystemExit(f"image {sha[:12]} not found in {dataset}/images")
         tile = Image.open(image).convert("RGB")
         draw = ImageDraw.Draw(tile)
         w, h = tile.size
@@ -52,6 +54,7 @@ def main() -> None:
             x0, y0 = (float(cx) - float(bw) / 2) * w, (float(cy) - float(bh) / 2) * h
             box = [x0, y0, x0 + float(bw) * w, y0 + float(bh) * h]
             draw.rectangle(box, outline="red", width=max(2, w // 150))
+            draw.text((box[0] + 2, box[1] + 2), CLASSES[int(c)], fill="red")
         tile.thumbnail((TILE - 8, TILE - 24))
         cell = Image.new("RGB", (TILE, TILE), "white")
         cell.paste(tile, (4, 20))

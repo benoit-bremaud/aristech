@@ -24,11 +24,13 @@ sequenceDiagram
     end
     CLI->>Exp: rows, store, frozen sets
     Exp-->>R: data.yaml + train/ valid/ (links to the store) + test-v1/ (frozen images, snapshot labels)
-    R->>Tr: --view data/views/prefield --size small --epochs N
+    R->>Tr: --store … --view data/views/prefield --output data/runs/… --epochs N
+    Tr->>Exp: re-export the view (same frozen-set checks, exit 2 on violation)
     Tr->>Tr: RFDETRSmall().train(dataset_dir=view) on train + valid only
     Tr-->>R: checkpoint (git-ignored) + its SHA-256
     R->>Rep: --view … --rfdetr-weights … --vespai-weights … --yolov5-dir …
     Rep->>Frz: load test-v1, its digest
+    Rep->>Rep: view images and labels match test-v1 (else exit 2: stale view)
     Rep->>RF: detect(frame) per test image
     Rep->>VA: detect(frame) per test image
     Rep->>H: samples of each detector, thresholds 0.5 and 0.8

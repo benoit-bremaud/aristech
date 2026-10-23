@@ -18,7 +18,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from aristech.datasets.manifest import ManifestRow, Split
+from aristech.datasets.manifest import ManifestRow, Split, file_sha256
 
 _SET_ID = re.compile(r"test-v[1-9]\d*")
 _FIELDS = ("image_sha256", "label_sha256", "group", "source_id")
@@ -193,7 +193,7 @@ def freeze(
 
 
 def _sha256(path: Path) -> str | None:
-    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+    return file_sha256(path) if path.is_file() else None
 
 
 def discover_frozen(registry_dir: Path) -> list[FrozenTestSet]:

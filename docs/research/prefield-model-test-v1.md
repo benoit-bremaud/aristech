@@ -34,6 +34,9 @@ operating point for the target class.
 
 ## Reading
 
+The per-source and confusion counts below come from the local run (one-off breakdown of the
+same samples); they are not in the generated tables.
+
 - **The own model beats VespAI on every class of test-v1.** On this set VespAI finds no
   velutina at all (0/202), in line with the M3 finding that it does not transfer.
 - **Zero bees are called hornets**: no bee box was predicted as velutina or crabro at 0.5.

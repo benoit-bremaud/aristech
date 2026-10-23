@@ -117,3 +117,23 @@ def test_missing_weights_exit_2(tmp_path: Path, capsys: pytest.CaptureFixture[st
     (tmp_path / "rf.pth").unlink()
     assert _mod.main(args, factories={}) == 2
     assert "RF-DETR weights" in capsys.readouterr().err
+
+
+def test_a_stale_view_exits_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    args = _workspace(tmp_path)
+    label = next((tmp_path / "view" / "test-v1" / "labels").iterdir())
+    label.write_text("1 0.5 0.5 0.5 0.5\n")
+    (tmp_path / "view" / "test-v1" / "images" / "extra.jpg").write_bytes(b"x")
+
+    assert _mod.main(args, factories={}) == 2
+    err = capsys.readouterr().err
+    assert "stale" in err and "not in test-v1" in err and "label differs" in err
+
+
+def test_missing_report_directory_exits_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _workspace(tmp_path)
+    args[-1] = str(tmp_path / "nowhere" / "report.md")
+    assert _mod.main(args, factories={}) == 2
+    assert "report directory" in capsys.readouterr().err

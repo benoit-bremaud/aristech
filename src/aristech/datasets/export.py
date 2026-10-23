@@ -25,6 +25,12 @@ def _stored_image(store: Path, image_sha: str) -> Path:
     return matches[0]
 
 
+def _existing(path: Path) -> Path:
+    if not path.is_file():
+        raise FileNotFoundError(f"label {path.name} is not in {path.parent}")
+    return path
+
+
 def _link(target: Path, link: Path) -> None:
     link.parent.mkdir(parents=True, exist_ok=True)
     link.symlink_to(target.resolve())
@@ -46,10 +52,13 @@ def export_yolo_view(
     registry: Path,
     out: Path,
 ) -> dict[str, int]:
-    """Write the view under `out` (replaced if it exists); return the image count per folder.
+    """Write the view under `out`; return the image count per folder.
 
-    Raises `FrozenSetViolation` if `rows` break any frozen set and `FileNotFoundError` if a
-    stored image is missing; in both cases `out` is left untouched.
+    `out` must be absent, empty or an earlier view (it holds a `data.yaml`): only then is it
+    replaced, so a mistyped path never deletes the registry or the store. Raises
+    `FrozenSetViolation` if `rows` break any frozen set, `FileNotFoundError` if a stored image
+    or label is missing and `FileExistsError` if `out` is something else; in every case `out`
+    is left untouched.
     """
     violations = [f"{f.id}: {v}" for f in frozen for v in f.violations(rows)]
     if violations:
@@ -63,7 +72,7 @@ def export_yolo_view(
         image = _stored_image(store, row.image_sha256)
         plan.append((image, Path(folder, "images", image.name)))
         label = f"{row.image_sha256}.txt"
-        plan.append((store / "labels" / label, Path(folder, "labels", label)))
+        plan.append((_existing(store / "labels" / label), Path(folder, "labels", label)))
         counts[folder] = counts.get(folder, 0) + 1
     for frozen_set in frozen:
         snapshot = registry / f"{frozen_set.id}-labels"
@@ -71,12 +80,17 @@ def export_yolo_view(
             image = _stored_image(store, frozen_row.image_sha256)
             plan.append((image, Path(frozen_set.id, "images", image.name)))
             label = f"{frozen_row.image_sha256}.txt"
-            plan.append((snapshot / label, Path(frozen_set.id, "labels", label)))
+            plan.append((_existing(snapshot / label), Path(frozen_set.id, "labels", label)))
         counts[frozen_set.id] = len(frozen_set.rows)
     if out.exists():
+        if any(out.iterdir()) and not (out / "data.yaml").is_file():
+            raise FileExistsError(
+                f"{out} is not a YOLO view (no data.yaml): refusing to replace it"
+            )
         shutil.rmtree(out)
+    # data.yaml first: an interrupted export still reads as a view and is replaced next time.
+    out.mkdir(parents=True)
+    (out / "data.yaml").write_text(data_yaml(out), encoding="utf-8")
     for target, relative in plan:
         _link(target, out / relative)
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "data.yaml").write_text(data_yaml(out), encoding="utf-8")
     return counts

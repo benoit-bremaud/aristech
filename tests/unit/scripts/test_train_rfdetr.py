@@ -90,3 +90,10 @@ def test_frozen_image_in_train_exits_2_without_training(
 
     assert _mod.main(args, trainer=lambda view, output, epochs: None) == 2
     assert "left test" in capsys.readouterr().err
+
+
+def test_zero_epochs_exits_2_without_training(tmp_path: Path) -> None:
+    def trainer(view: Path, output: Path, epochs: int) -> None:
+        raise AssertionError("must not train")
+
+    assert _mod.main([*_workspace(tmp_path), "--epochs", "0"], trainer=trainer) == 2

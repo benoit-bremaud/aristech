@@ -18,14 +18,14 @@ Example:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import logging
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 
 from aristech.application.ports import HornetDetector
-from aristech.datasets.split import load_frozen
+from aristech.datasets.manifest import CANONICAL_CLASSES, file_sha256
+from aristech.datasets.split import FrozenTestSet, load_frozen
 from aristech.domain import Species
 from aristech.evaluation import EvaluationReport, collect_samples, evaluate
 
@@ -33,10 +33,8 @@ _log = logging.getLogger("aristech.prefield_report")
 
 # Canonical YOLO ids of the frozen-set labels (ADR-0018); "other" is Species.UNKNOWN.
 CLASS_MAP: dict[int, Species] = {
-    0: Species.VESPA_VELUTINA,
-    1: Species.VESPA_CRABRO,
-    2: Species.APIS_MELLIFERA,
-    3: Species.UNKNOWN,
+    i: Species(name) if name in Species._value2member_map_ else Species.UNKNOWN
+    for i, name in enumerate(CANONICAL_CLASSES)
 }
 LICENCES = {
     "RF-DETR Small (own fine-tune)": "code and base weights Apache-2.0 (rfdetr 1.11.2)",
@@ -46,13 +44,17 @@ LICENCES = {
 DetectorFactories = Mapping[str, Callable[[float], HornetDetector]]
 
 
-def sha256_of(path: Path) -> str:
-    """Hex SHA-256 of a file, read in chunks."""
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def view_mismatches(frozen: FrozenTestSet, test_dir: Path) -> list[str]:
+    """Images or labels of the exported folder that differ from the frozen set (empty = same)."""
+    expected = {r.image_sha256: r.label_sha256 for r in frozen.rows}
+    found = {p.stem for p in (test_dir / "images").iterdir()}
+    problems = [f"{s[:12]} not in {frozen.id}" for s in sorted(found - expected.keys())]
+    problems += [f"{s[:12]} missing from the view" for s in sorted(expected.keys() - found)]
+    for sha in sorted(found & expected.keys()):
+        label = test_dir / "labels" / f"{sha}.txt"
+        if not label.is_file() or file_sha256(label) != expected[sha]:
+            problems.append(f"{sha[:12]} label differs from the snapshot")
+    return problems
 
 
 def side_by_side(reports: Mapping[str, EvaluationReport]) -> str:
@@ -154,6 +156,11 @@ def main(argv: Sequence[str] | None = None, factories: DetectorFactories | None 
         ):
             if not path.exists():
                 raise FileNotFoundError(f"{label} not found: {path}")
+        if not args.out.parent.is_dir():
+            raise FileNotFoundError(f"report directory not found: {args.out.parent}")
+        mismatches = view_mismatches(frozen, test_dir)
+        if mismatches:
+            raise ValueError(f"{test_dir} is stale, re-run export: " + "; ".join(mismatches[:5]))
     except (ValueError, FileNotFoundError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -163,9 +170,9 @@ def main(argv: Sequence[str] | None = None, factories: DetectorFactories | None 
     }
     provenance = [
         ("frozen set", f"{frozen.id} ({len(frozen.rows)} images), sha256 {frozen.digest()}"),
-        ("manifest sha256", sha256_of(args.registry / "manifest.csv")),
-        ("RF-DETR weights sha256", sha256_of(args.rfdetr_weights)),
-        ("VespAI weights sha256", sha256_of(args.vespai_weights)),
+        ("manifest sha256", file_sha256(args.registry / "manifest.csv")),
+        ("RF-DETR weights sha256", file_sha256(args.rfdetr_weights)),
+        ("VespAI weights sha256", file_sha256(args.vespai_weights)),
         *LICENCES.items(),
     ]
     text = build_report(chosen, test_dir, thresholds, args.iou, provenance)

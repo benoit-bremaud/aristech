@@ -58,7 +58,7 @@ def test_export_links_splits_and_uses_the_label_snapshot(store: Path, tmp_path: 
     snapshot = out / "test-v1" / "labels" / f"{test.image_sha256}.txt"
     assert snapshot.read_text() == "1 0.5 0.5 0.2 0.2\n"
     assert not (out / "train" / "images" / f"{test.image_sha256}.jpg").exists()
-    assert (out / "data.yaml").read_text() == data_yaml(out)
+    assert f"path: {out.resolve()}" in (out / "data.yaml").read_text()
 
 
 def test_data_yaml_lists_the_four_classes_in_canonical_order(tmp_path: Path) -> None:
@@ -95,7 +95,29 @@ def test_unassigned_rows_are_skipped_and_old_view_replaced(store: Path, tmp_path
     out = tmp_path / "view"
     (out / "train").mkdir(parents=True)
     (out / "train" / "stale").write_text("x")
+    (out / "data.yaml").write_text("old view\n")
     row = _row(store, "a", Split.UNASSIGNED, "g1")
 
     assert export_yolo_view([row], [], store, tmp_path / "registry", out) == {}
     assert not (out / "train").exists()
+
+
+def test_missing_label_raises_before_writing(store: Path, tmp_path: Path) -> None:
+    row = _row(store, "a", Split.TRAIN, "g1")
+    (store / "labels" / f"{row.image_sha256}.txt").unlink()
+    out = tmp_path / "view"
+
+    with pytest.raises(FileNotFoundError, match="label"):
+        export_yolo_view([row], [], store, tmp_path / "registry", out)
+    assert not out.exists()
+
+
+def test_a_non_view_out_is_never_replaced(store: Path, tmp_path: Path) -> None:
+    out = tmp_path / "home"
+    out.mkdir()
+    (out / "notes.txt").write_text("precious")
+    row = _row(store, "a", Split.TRAIN, "g1")
+
+    with pytest.raises(FileExistsError, match="not a YOLO view"):
+        export_yolo_view([row], [], store, tmp_path / "registry", out)
+    assert (out / "notes.txt").read_text() == "precious"
