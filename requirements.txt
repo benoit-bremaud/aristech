@@ -85,8 +85,6 @@ pytz==2024.1
     # via pandas
 pyyaml==6.0.1
     # via -r requirements.in
-setuptools==84.0.0
-    # via torch
 six==1.16.0
     # via python-dateutil
 sympy==1.14.0
