@@ -113,7 +113,7 @@ class EvaluationReport:
 
     def all_class_metrics(self) -> list[ClassMetrics]:
         """Metrics for every species that appears as truth or prediction."""
-        seen = {t for t, _ in self.confusion} | {p for _, p in self.confusion}
+        seen = {label for pair in self.confusion for label in pair}
         species = [s for s in Species if s.value in seen]
         return [self.class_metrics(s) for s in species]
 
