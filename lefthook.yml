@@ -1,0 +1,24 @@
+# Git hooks (ADR-0027): L0 on commit, L1 on push. Install: `mise install && mise x -- lefthook install`.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: secrets
+      run: mise x -- gitleaks git --staged --redact --no-banner .
+    - name: ruff
+      run: mise x -- ruff check {staged_files} && mise x -- ruff format --check {staged_files}
+      glob: "{src,tests}/**/*.py"
+    - name: typos
+      run: mise x -- typos --force-exclude {staged_files}
+    - name: actionlint
+      run: mise x -- actionlint {staged_files}
+      glob: ".github/workflows/*.{yml,yaml}"
+
+commit-msg:
+  jobs:
+    - name: conventional commit subject
+      run: sh scripts/check-commit-msg.sh {1}
+
+pre-push:
+  jobs:
+    - name: just check (L1)
+      run: mise x -- just check

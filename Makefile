@@ -5,7 +5,8 @@ install:
 
 install-dev:
 	pip install -e ".[dev]"
-	pre-commit install
+	mise install
+	mise x -- lefthook install
 
 # Regenerate requirements.txt from requirements.in, for the lowest supported Python (ADR-0026).
 lock:

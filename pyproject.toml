@@ -67,7 +67,6 @@ dev = [
     "ruff",
     "mypy",
     "types-PyYAML",
-    "pre-commit",
     "pip-tools",
 ]
 # GPU extra isolated: NVIDIA wheels exist for Linux x86_64 only. The PEP 508
