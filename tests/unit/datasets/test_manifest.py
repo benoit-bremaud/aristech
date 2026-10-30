@@ -1,6 +1,6 @@
 """Manifest import, group keys, merge, CSV round-trip (spec annotation-pipeline AC2–4, AC6, A3)."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -56,8 +56,8 @@ def test_group_for_capture_is_hive_and_utc_day() -> None:
         site="home",
         kind="video",
         trigger="motion",
-        start_utc=datetime(2027, 8, 14, 9, 30, tzinfo=timezone.utc),
-        end_utc=datetime(2027, 8, 14, 9, 31, tzinfo=timezone.utc),
+        start_utc=datetime(2027, 8, 14, 9, 30, tzinfo=UTC),
+        end_utc=datetime(2027, 8, 14, 9, 31, tzinfo=UTC),
         clock_source="ntp",
         software_version="0.1.0",
     )
@@ -142,8 +142,8 @@ def test_capture_frame_goes_through_the_same_manifest_path(tmp_path: Path) -> No
         site="home",
         kind="video",
         trigger="motion",
-        start_utc=datetime(2027, 8, 14, 23, 59, tzinfo=timezone.utc),
-        end_utc=datetime(2027, 8, 15, 0, 1, tzinfo=timezone.utc),
+        start_utc=datetime(2027, 8, 14, 23, 59, tzinfo=UTC),
+        end_utc=datetime(2027, 8, 15, 0, 1, tzinfo=UTC),
         clock_source="ntp",
         software_version="0.1.0",
     )

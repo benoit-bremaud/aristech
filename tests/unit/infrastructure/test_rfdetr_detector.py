@@ -2,7 +2,7 @@
 
 import sys
 import types
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import numpy as np
 import pytest
@@ -10,7 +10,7 @@ import pytest
 from aristech.domain import Species, VideoFrame
 from aristech.infrastructure.vision.rfdetr_detector import RFDETRDetector, detections_from_arrays
 
-_TS = datetime(2026, 10, 23, tzinfo=timezone.utc)
+_TS = datetime(2026, 10, 23, tzinfo=UTC)
 _NAMES = ["vespa_velutina", "vespa_crabro", "apis_mellifera", "other"]
 
 

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
@@ -8,7 +8,7 @@ _PARIS = (48.8566, 2.3522)
 
 
 def _utc(*args: int) -> datetime:
-    return datetime(*args, tzinfo=timezone.utc)
+    return datetime(*args, tzinfo=UTC)
 
 
 def test_paris_equinox_sunrise_and_sunset_within_three_minutes() -> None:

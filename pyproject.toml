@@ -7,7 +7,7 @@ name = "aristech"
 version = "0.1.0"
 description = "aristech: real-time detection of the Asian hornet (Vespa velutina) in front of beehives."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Benoit Bremaud", email = "benoit.bremaud@vev.com" }]
 keywords = [
@@ -23,7 +23,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -48,7 +47,7 @@ vision = [
     "opencv-python>=4.9,<5",
     "pandas>=2.2,<3",
     "numpy>=1.26,<2",
-    "Pillow>=12.3,<13",
+    "Pillow>=13.0,<14",
 ]
 # Pre-field model training and scoring (ADR-0022, ADR-0024): RF-DETR, Apache-2.0 code and
 # Nano-Large weights (only Small is used). Checkpoints stay git-ignored, loaded from a path.
@@ -98,14 +97,14 @@ markers = [
 ]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 mypy_path = "src"
 packages = ["aristech"]

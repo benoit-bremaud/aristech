@@ -12,7 +12,7 @@ and ``<dataset>/<split>/labels/*.txt``.
 
 import logging
 from collections.abc import Callable, Iterator, Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from itertools import chain
 from pathlib import Path
 
@@ -103,7 +103,7 @@ def collect_samples(
     """
     base = Path(dataset_dir)
     reader = image_reader or _default_image_reader
-    ts = timestamp or datetime.now(timezone.utc)
+    ts = timestamp or datetime.now(UTC)
     return chain.from_iterable(
         _split_samples(detector, base / split, class_map, reader, ts) for split in splits
     )

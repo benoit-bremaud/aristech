@@ -7,9 +7,9 @@ install-dev:
 	pip install -e ".[dev]"
 	pre-commit install
 
-# Regenerate requirements.txt from requirements.in (pip-tools).
+# Regenerate requirements.txt from requirements.in, for the lowest supported Python (ADR-0026).
 lock:
-	pip-compile --strip-extras requirements.in
+	uv pip compile -p 3.11 --strip-extras requirements.in -o requirements.txt
 
 test:
 	pytest

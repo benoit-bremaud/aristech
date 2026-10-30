@@ -67,7 +67,7 @@ aristech/
 
 ## Installation
 
-Requires Python ≥ 3.10.
+Requires Python ≥ 3.11.
 
 ```bash
 git clone https://github.com/benoit-bremaud/aristech.git
@@ -102,7 +102,7 @@ make format        # ruff format + autofix
 make lock          # relock requirements.txt
 ```
 
-CI (GitHub Actions) runs ruff, ruff format, mypy and pytest on Python 3.10–3.12 for every push and
+CI (GitHub Actions) runs ruff, ruff format, mypy and pytest on Python 3.11–3.12 for every push and
 pull request ([.github/workflows/ci.yml](.github/workflows/ci.yml)), plus the security baseline
 (ADR-0007). Workflow, branches and conventions: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 History purge procedure: [docs/MAINTENANCE.md](docs/MAINTENANCE.md).
