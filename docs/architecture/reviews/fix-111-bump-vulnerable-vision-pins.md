@@ -13,7 +13,7 @@ Review of the Python 3.11 floor and the vision-pin bump (ADR-0026, issue #111) b
 |---|---|
 | 1 Tests | ✅ 270 unit passed on 3.11 (5 deselected integration); real-weights check below |
 | 2 Coverage | tests 98 % statements (floor 80) |
-| 3 SonarQube | ⚠️ not run: Community Build analyses `main` only; runs after promotion |
+| 3 SonarQube | ✅ PASSED (local scan of the branch head, new coverage 98.3 %, duplication 0 %) |
 | 4 Secrets | ✅ gitleaks clean on `origin/dev..HEAD` · only `.env.example` tracked · diff read: nothing sensitive |
 | 5 QA pass | ✅ real-weights run (below), no UI in scope |
 
