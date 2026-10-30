@@ -27,8 +27,8 @@ git init -q "$tmp/repo"
 key="AKIA""QYLPMN5HHHFPZAM2"
 printf 'aws_access_key_id = %s\naws_secret_access_key = %s\n' "$key" "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEYx" > "$tmp/repo/creds.ini"
 git -C "$tmp/repo" add creds.ini
-if (cd "$tmp/repo" && gitleaks git --staged --redact --no-banner . > /dev/null 2>&1); then
-  fail "gitleaks accepted a staged secret"
-fi
+rc=0
+(cd "$tmp/repo" && gitleaks git --staged --redact --no-banner . > /dev/null 2>&1) || rc=$?
+[ "$rc" -eq 1 ] || fail "gitleaks did not report the staged secret (exit $rc)"
 
 echo "test-local-ci: OK"

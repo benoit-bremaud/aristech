@@ -25,7 +25,8 @@ mise x -- lefthook install           # git hooks: just fast on commit, just chec
   runner. Version floors follow the security advisories (ADR-0012); `numpy<2` and
   `opencv-python<5` are held on purpose.
 - `dev` — pytest, ruff, mypy, pip-tools. The local CI tools (just, lefthook, gitleaks, semgrep,
-  osv-scanner, typos, actionlint, zizmor) come from `mise.toml` (ADR-0027).
+  osv-scanner, typos, actionlint, zizmor) come from `mise.toml` (ADR-0027); mise needs `uv` to
+  install mypy and Semgrep.
 - `gpu` — NVIDIA CUDA libraries (Linux x86_64 only).
 
 ```bash
