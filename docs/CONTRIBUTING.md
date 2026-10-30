@@ -28,7 +28,20 @@ aristech follows a design-first method (ADR-0008):
 
 ## Branch conventions
 
-Always branch from `main`. Never commit directly to `main`.
+Two long-lived branches (ADR-0025, flow in
+[`architecture/diagrams/promotion/01-activity.md`](architecture/diagrams/promotion/01-activity.md)):
+
+- `dev` — integration. Always green; every work branch starts here and comes back here by a
+  squash-merged pull request.
+- `main` — field-ready. Every commit is installable on a device at the apiary. It receives only
+  **merge-commit** pull requests from `dev`, for a commit that passed QA on staging (the bench
+  device; `just gate` locally until it exists), and hotfixes.
+
+`dev` is the GitHub default branch. Never commit directly to `main` or `dev`. Always branch from
+`dev`; a **hotfix** branches from `main`, goes through the same gate and QA, and `main` is merged
+back into `dev` right after by a merge-commit pull request.
+Staging is an environment, not a branch. A signed tag `vX.Y.Z` on `main` marks the production
+version and is the only trigger of GitHub Actions.
 
 | Prefix             | For                                            |
 | ------------------ | ---------------------------------------------- |
@@ -42,7 +55,7 @@ Always branch from `main`. Never commit directly to `main`.
 
 ## Work cycle
 
-1. Create the dedicated branch.
+1. Create the dedicated branch from `dev` (from `main` for a hotfix).
 2. Develop, then run locally:
 
    ```bash
@@ -60,19 +73,22 @@ Always branch from `main`. Never commit directly to `main`.
    docs(research): add Hall et al. 2025 to acoustic section
    ```
 
-4. Open a pull request to `main`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
+4. Open a pull request to `dev`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
    automatically; fill every section.
 5. Merge gate: CI green (ruff, mypy, pytest 3.10–3.12, security baseline), every review comment
    handled, local checks green (tests, lint, format, mypy, coverage, gitleaks, smoke run).
-6. Squash-merge and delete the branch, then clean up locally:
+6. Squash-merge into `dev` and delete the branch, then clean up locally:
 
    ```bash
-   git checkout main && git pull
+   git checkout dev && git pull
    git branch -d <branch>   # -D if needed: a squash merge often leaves the branch "unmerged" for git
    git remote prune origin
    ```
 
 7. Add the `PROJECT_LOG.md` entry for the merged PR.
+8. Promotion to `main`: once the `dev` commit has passed QA on staging, open a pull request
+   `dev` → `main` and merge it with a **merge commit** (never a squash: the attested SHA must
+   reach `main`). The owner then cuts the signed tag when a field version is wanted.
 
 ## Code standards
 
@@ -109,7 +125,7 @@ Always branch from `main`. Never commit directly to `main`.
 ## Security
 
 - **Never put secrets** in code, commits or examples. `.env.example` holds placeholders only.
-- **No force-push to `main`.**
+- **No force-push to `main` or `dev`.**
 - **aristech legal floor** (Code de l'environnement L411-1 + L415-3): any feature that could harm a
   pollinator defaults to abstention. See [architecture.md § Legal floor](architecture.md#legal-floor).
 
