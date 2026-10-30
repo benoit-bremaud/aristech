@@ -381,3 +381,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - SonarQube python:S7517 fixed in `EvaluationReport.all_class_metrics` (open issues 2 → 0).
   - osv-scanner runs with `--no-resolve`: the lock is complete and the transitive resolution (deps.dev) failed twice in a row.
   - **Next**: first `dev` → `main` promotion (ADR-0025), then C1 hardware (#84).
+
+- **PR #128 merged** (`69a8dcf`, merge commit on `main`) — `chore(release): promote dev to main (first promotion)`. Issue #127.
+  - First `dev` → `main` promotion under ADR-0025: the eleven commits from PR #113 to PR #126 (branching model, Python 3.11, local CI tiers, removal of the check workflows, dependency bumps, `scripts/` lint).
+  - **Verification**: `just gate` on `e7b0a68` (270 tests on 3.11 and 3.12, coverage 97.7 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
+  - No tag yet: the signed `v*` tag is the owner's call.
+  - **Next**: C1 hardware — #84 (microphone end of life), then the order list for the bench Pi 5.
