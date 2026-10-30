@@ -6,7 +6,7 @@ pre-commit:
       run: mise x -- gitleaks git --staged --redact --no-banner .
     - name: ruff
       run: mise x -- ruff check {staged_files} && mise x -- ruff format --check {staged_files}
-      glob: "{src,tests}/**/*.py"
+      glob: "{src,tests,scripts}/**/*.py"
     - name: typos
       run: mise x -- typos --force-exclude {staged_files}
     - name: actionlint

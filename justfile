@@ -12,8 +12,8 @@ fast:
     lefthook run pre-commit
 
 lint:
-    ruff check src tests
-    ruff format --check src tests
+    ruff check src tests scripts
+    ruff format --check src tests scripts
     mypy
     typos . .github
     actionlint
@@ -26,11 +26,12 @@ test:
 
 # SAST (Semgrep Community Edition, no login, metrics off) and lockfile vulnerabilities.
 # EIO_BACKEND=posix: semgrep-core's io_uring backend fails under a low locked-memory limit.
+# --no-resolve: requirements.txt is a full lock; transitive resolution calls deps.dev, which flakes.
 security:
     if curl -fsS -o /dev/null --max-time 10 https://semgrep.dev/c/p/python; then \
       EIO_BACKEND=posix semgrep scan --config p/python --error --metrics=off --quiet src scripts; \
     else echo "security: WARNING semgrep rule registry unreachable, semgrep not run"; fi
-    osv-scanner scan source -L requirements.txt
+    osv-scanner scan source --no-resolve -L requirements.txt
 
 secrets:
     gitleaks git --redact --no-banner .

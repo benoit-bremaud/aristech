@@ -23,12 +23,12 @@ test-integration:
 	pytest -m integration
 
 lint:
-	ruff check src tests
-	ruff format --check src tests
+	ruff check src tests scripts
+	ruff format --check src tests scripts
 
 format:
-	ruff format src tests
-	ruff check --fix src tests
+	ruff format src tests scripts
+	ruff check --fix src tests scripts
 
 type-check:
 	mypy
