@@ -37,8 +37,9 @@ Two long-lived branches (ADR-0025, flow in
   **merge-commit** pull requests from `dev`, for a commit that passed QA on staging (the bench
   device; `just gate` locally until it exists), and hotfixes.
 
-Never commit directly to `main` or `dev`. Always branch from `dev`; a **hotfix** branches from
-`main`, goes through the same gate and QA, and `main` is merged back into `dev` right after.
+`dev` is the GitHub default branch. Never commit directly to `main` or `dev`. Always branch from
+`dev`; a **hotfix** branches from `main`, goes through the same gate and QA, and `main` is merged
+back into `dev` right after by a merge-commit pull request.
 Staging is an environment, not a branch. A signed tag `vX.Y.Z` on `main` marks the production
 version and is the only trigger of GitHub Actions.
 
@@ -54,7 +55,7 @@ version and is the only trigger of GitHub Actions.
 
 ## Work cycle
 
-1. Create the dedicated branch.
+1. Create the dedicated branch from `dev` (from `main` for a hotfix).
 2. Develop, then run locally:
 
    ```bash
@@ -124,7 +125,7 @@ version and is the only trigger of GitHub Actions.
 ## Security
 
 - **Never put secrets** in code, commits or examples. `.env.example` holds placeholders only.
-- **No force-push to `main`.**
+- **No force-push to `main` or `dev`.**
 - **aristech legal floor** (Code de l'environnement L411-1 + L415-3): any feature that could harm a
   pollinator defaults to abstention. See [architecture.md § Legal floor](architecture.md#legal-floor).
 

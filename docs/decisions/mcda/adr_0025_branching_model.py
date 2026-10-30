@@ -27,14 +27,17 @@ DECISIONS = {
 
 
 def total(weights: list[int], scores: list[int]) -> int:
+    """Weighted sum of 0-5 scores, out of 500."""
     return sum(w * s for w, s in zip(weights, scores, strict=True))
 
 
 def main() -> None:
+    """Print each decision's totals best first, then its sensitivity scenarios."""
     for name, (criteria, weights, options, variants) in DECISIONS.items():
         assert sum(weights) == 100, name
+        assert all(len(s) == len(criteria) for s in options.values()), name
         print(f"## {name}  ({', '.join(criteria)})")
-        for label, scores in options.items():
+        for label, scores in sorted(options.items(), key=lambda kv: -total(weights, kv[1])):
             print(f"  {total(weights, scores):>4}  {label}")
         for alt in variants:
             assert sum(alt) == 100, name

@@ -6,8 +6,9 @@
 ## Context
 
 How a change travels from a developer's branch to a device at the apiary: which checks run where,
-and which steps are local (`just`) versus GitHub (one workflow, on the signed tag). Swimlanes are
-the places where the work happens, not components.
+and which steps are local (`just`) versus GitHub (one workflow, on the signed tag). The partitions
+(Mermaid subgraphs, standing in for UML activity partitions) are the places where the work happens,
+not components.
 
 ## Diagram
 
@@ -26,39 +27,49 @@ flowchart TD
     end
 
     subgraph Integration["GitHub — dev (squash)"]
-        H -- yes --> I["Squash-merge into dev"]
+        I["Squash-merge into dev"]
     end
 
     subgraph Staging["Staging environment (bench device)"]
-        I --> J["just deploy staging<br/>from the dev commit"]
+        J["just deploy staging<br/>from the dev commit"]
         J --> K["QA pass (qa-browser-check)"]
         K --> L{"QA passed?"}
-        L -- no --> M["Issue per defect"] --> B
+        L -- no --> M["Issue per defect"]
         L -- yes --> N["just attest staging<br/>(signed note deploy/staging)"]
     end
 
     subgraph Main["GitHub — main (merge commit)"]
-        N --> O["PR dev → main<br/>merge commit of the attested SHA"]
+        O["PR dev → main<br/>merge commit of the attested SHA"]
         O --> P["Owner cuts signed tag vX.Y.Z"]
     end
 
     subgraph Prod["GitHub Actions — production (tag only)"]
-        P --> Q["Workflow: verify tag signature,<br/>gate status and staging note"]
+        Q["Workflow: verify tag signature,<br/>gate status and staging note"]
         Q --> R(["Device install · model publication"])
     end
 
     subgraph Hotfix["Hotfix (from main)"]
         X([Field bug]) --> Y["Branch from main · same gate and QA"]
-        Y --> Z["PR → main, then merge main back into dev"]
+        Y --> Z["PR → main (merge commit)"]
     end
+
+    H -- yes --> I
+    I --> J
+    M --> B
+    N --> O
+    P --> Q
+    Z --> P
+    Z -- "back-merge via PR" --> I
 ```
 
 ## Notes
 
-- Until the bench device exists (ADR-0017), the "Staging" lane is replaced by `just gate` run
+- Until the bench device exists (ADR-0017), the "Staging" partition is replaced by `just gate` run
   locally; `just deploy staging` and `just attest staging` arrive with the device.
 - The production workflow is a sketch: aristech has no device install nor model publication job
   yet. The tag already marks the field-ready version.
 - The attestations (`gate` commit status, `deploy/staging` signed note) are the cross-project
   tooling of agents-skills#210, bricks 3 and 5; until then the PR review and the owner's approval
   stand in for them.
+- A hotfix follows the same tag path as a release; its back-merge into `dev` is a merge-commit
+  pull request, since `dev` refuses direct pushes.

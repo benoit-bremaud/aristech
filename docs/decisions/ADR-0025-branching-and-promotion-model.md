@@ -50,8 +50,8 @@ weights /100, totals /500; scores are estimates.
 | B. `main` + short branches, staging environment, signed tag (the convention) | 4 | 3 | 5 | 5 | 5 | 5 | 5 | **440** |
 | C. B + a `dev` integration branch | 5 | 5 | 5 | 3 | 5 | 2 | 4 | 430 |
 
-Sensitivity: contributors 30 and simplicity 5 → **C 450**, A 420, B 420; `main` field-ready 30
-and simplicity 20 → B 450, C 435. A is never first: the `staging` branch costs synchronisation and
+Sensitivity: the "owner weights" scenario (contributors 30, simplicity 5) → **C 450**, A 420,
+B 420; `main` field-ready 30 and simplicity 20 → B 450, C 435, A 380. A is never first: the `staging` branch costs synchronisation and
 brings nothing over the environment. **B vs C is fragile (10 points)** and hinges on one question:
 do contributors arrive soon? The owner weighs contributors and training experiments higher than
 the matrix's default and **chose C**. C is B plus one branch: the hooks, recipes, staging
@@ -73,7 +73,12 @@ Three long-lived refs and one environment:
 - `dev` → `main` is a **merge commit, never a squash**: the SHA that passed QA must be the one
   that reaches `main`, otherwise its attestations mean nothing.
 - **Hotfix**: branch from `main`, PR to `main` with the same gate and QA, then `main` is merged
-  back into `dev` at once (fast-forward or merge commit) so the fix is never lost.
+  back into `dev` at once by a merge-commit pull request, so the fix is never lost.
+- **`dev` is the GitHub default branch** (owner, 2026-10-30; A 445 vs `main` 300: integration
+  rule 30, contributor ergonomics 25, tooling 20, repository landing page 15, effort 10): clones
+  and pull requests land on `dev`, Dependabot reads its configuration there and its security
+  updates, which always target the default branch, go through integration too. `main` stays
+  visible through its tags and releases.
 - **Dependabot** targets `dev`; nothing reaches `main` without the integration step.
 - **Rulesets** (public repository, free): no direct push and a pull request required on `main`
   and `dev`; merge commit only on `main`; `v*` tags owner-only and signed (skill `release-tag`).
@@ -88,10 +93,15 @@ Three long-lived refs and one environment:
 - Derogation to the cross-project convention (no fixed `dev`), to record in its derogations table
   with this ADR as the reason; re-evaluate if aristech stays single-developer for a year.
 - `CONTRIBUTING.md` changes: branch from `dev`, PR to `dev`, the hotfix path, the merge-commit rule.
+- Bootstrap, before this ADR's pull request merges: create `dev` from `main` on origin, make it
+  the default branch, add the rulesets. Dependabot fails its weekly run if `dev` is missing.
 - #109 (local CI) wires `just check` on pre-push and `just gate` for every merge, whatever the
   target branch; `just deploy staging` waits for the bench device (ADR-0017) and gets its own issue.
+  It also retires `pre-commit install` (`CONTRIBUTING.md` § Dev install, `Makefile`).
 - #110 removes or reduces the check workflows: `main` and `dev` are protected by the local gate,
-  not by a GitHub job. CodeQL on a public repository is re-examined there.
+  not by a GitHub job. CodeQL on a public repository is re-examined there. It rewrites
+  `CONTRIBUTING.md` work-cycle step 5 ("CI green, pytest 3.10–3.12") and the pull request
+  template ("private R&D project", "CI green"), both still true today.
 - The open PRs that target `main` at the time of the switch are retargeted to `dev`.
 - Two long-lived branches cost one extra merge per release and one back-merge per hotfix; the
   owner accepts that cost for the integration habit.
