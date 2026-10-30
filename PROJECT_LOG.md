@@ -364,3 +364,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Also**: `.pre-commit-config.yaml` retired; `_typos.toml` for French and author names; every workflow action pinned by SHA with `persist-credentials: false`; Semgrep forced to its posix I/O backend (io_uring failed under the locked-memory limit).
   - **Incident**: the first real pre-push ran the wiring test inside the hook, where `GIT_DIR` points at the repository; its throwaway `git init` set `core.bare=true` in the shared git config. Restored to `false`, index checked clean; the script now clears the `GIT_*` variables.
   - **Next**: #110 — remove `gitleaks.yml`, reduce or remove `ci.yml`, keep `codeql.yml`, `scorecard.yml`, `dependency-review.yml`.
+
+- **PR #120 merged** (`cc979b2`) — `chore(ci): remove dead GitHub workflows (wave 0 bis)`. Issue #110, last brick of the local CI wave (benoit-bremaud/agents-skills#259).
+  - **Decision** (ADR-0028, owner, MCDA by script): remove `ci.yml` (400) over reducing it to `just check` (325) or keeping it (190); `gitleaks.yml` removed too. `codeql.yml`, `scorecard.yml` and `dependency-review.yml` kept (public-repository baseline).
+  - `just gate` now also runs the unit tests on Python 3.12 (`just test-312`, throwaway uv environment), replacing the CI matrix; 53 s with SonarQube.
+  - Merge rule rewritten (CONTRIBUTING step 5, PR template, `CLAUDE.md`): `just gate` green on the head SHA, GitHub security checks green, every comment handled.
+  - **Open**: nothing on GitHub proves `just gate` ran until the cross-project `gate` commit status (ADR-0025) lands.
