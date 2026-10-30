@@ -93,8 +93,10 @@ Three long-lived refs and one environment:
 - Derogation to the cross-project convention (no fixed `dev`), to record in its derogations table
   with this ADR as the reason; re-evaluate if aristech stays single-developer for a year.
 - `CONTRIBUTING.md` changes: branch from `dev`, PR to `dev`, the hotfix path, the merge-commit rule.
-- Bootstrap, before this ADR's pull request merges: create `dev` from `main` on origin, make it
-  the default branch, add the rulesets. Dependabot fails its weekly run if `dev` is missing.
+- Bootstrap, right after this ADR's pull request merges into `main` (the last one to target it
+  directly): create `dev` from that `main` commit on origin, make it the default branch, add the
+  rulesets. Dependabot reads `target-branch: dev` from the default branch and fails its weekly
+  run while `dev` is missing, so this happens the same day.
 - #109 (local CI) wires `just check` on pre-push and `just gate` for every merge, whatever the
   target branch; `just deploy staging` waits for the bench device (ADR-0017) and gets its own issue.
   It also retires `pre-commit install` (`CONTRIBUTING.md` § Dev install, `Makefile`).
