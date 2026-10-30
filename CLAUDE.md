@@ -24,7 +24,7 @@ skip a gate because a change looks small.
 - **One chat per brick**. Git workflow (branches, Conventional Commits): `docs/CONTRIBUTING.md`.
 - **Pre-push review report** per branch in `docs/architecture/reviews/<branch>.md`; ask the owner
   per PR which review counts (review-local, Copilot, Codex).
-- **Merge** only on CI green + every comment handled + explicit owner OK; then a
+- **Merge** only on `just gate` green + GitHub security checks green + every comment handled + explicit owner OK; then a
   `PROJECT_LOG.md` entry (agent-agnostic: no tool or reviewer names).
 
 ## Non-negotiables

@@ -77,8 +77,9 @@ version and is the only trigger of GitHub Actions.
 
 4. Open a pull request to `dev`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
    automatically; fill every section.
-5. Merge gate: `mise x -- just gate` green on the head SHA (`just check` + the SonarQube quality
-   gate), CI green, every review comment handled.
+5. Merge gate: `mise x -- just gate` green on the head SHA (`just check`, the Python 3.12 tests and
+   the SonarQube quality gate), the GitHub security checks green (CodeQL, dependency review), every
+   review comment handled.
 6. Squash-merge into `dev` and delete the branch, then clean up locally:
 
    ```bash
