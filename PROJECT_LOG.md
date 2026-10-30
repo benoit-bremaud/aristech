@@ -375,3 +375,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - pandas 2.2.2 → 2.3.3 (held below 3), pyyaml 6.0.1 → 6.0.3, `codeql-action` v4.39.0 → v4.39.1; replaces Dependabot #107 and #108, both stuck in conflict after the removal of `gitleaks.yml`. Real-weights report reproduced with pandas 2.3.3 (ADR-0012); `just gate` green.
   - Closed: Dependabot #117 (it edited the frozen environment records, ADR-0026), issues #40 (`gitleaks.yml` removed, ADR-0028) and #47 (keras no longer a dependency, ADR-0010).
   - **Next**: #105 and #50 (small quality leftovers), then the first `dev` → `main` promotion (ADR-0025).
+
+- **PR #125 merged** (`5c0605c`) — `ci: lint and format-check scripts/ in CI`. Issues #105 and #50.
+  - `scripts/prepare_directories.py` and `scripts/prepare_images.py` removed (preprocessing of the legacy Keras training, ADR-0010); ruff now covers `scripts/` in `just lint`, the pre-commit hook and the Makefile.
+  - SonarQube python:S7517 fixed in `EvaluationReport.all_class_metrics` (open issues 2 → 0).
+  - osv-scanner runs with `--no-resolve`: the lock is complete and the transitive resolution (deps.dev) failed twice in a row.
+  - **Next**: first `dev` → `main` promotion (ADR-0025), then C1 hardware (#84).
