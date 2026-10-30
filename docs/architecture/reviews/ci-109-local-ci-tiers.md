@@ -5,7 +5,7 @@ Review of the local CI tiers (ADR-0027, issue #109) before the push.
 - Date: 2026-10-30
 - Scope: branch diff `origin/dev...HEAD`
 - Checks run: design · docs · tests · security · correctness (adversarial pass on the diff)
-- Verdict: ship · Must 0 (1 fixed) · Should 2 fixed · Nice 4 (2 fixed)
+- Verdict: ship · Must 0 (2 fixed) · Should 2 fixed · Nice 4 (2 fixed)
 
 ## Pre-merge gate
 
@@ -24,6 +24,11 @@ Measured: `just fast` under 1 s, `just check` about 15–20 s, `just gate` 26 s.
 
 - `scripts/test-local-ci.sh:30` `[tests]` · any non-zero gitleaks exit (127 when missing) passed
   the staged-secret test · now requires exit 1 — fixed.
+- `scripts/test-local-ci.sh:28` `[correctness]` · found by the first real push: inside a git hook
+  `GIT_DIR` points at this repository, so the throwaway `git init` re-initialised it and set
+  `core.bare=true` in the shared config (restored to `false`, index checked clean) · the script
+  now unsets the `GIT_*` variables first; verified with `GIT_DIR` set, then by the pre-push hook
+  (`just check` 36 s) — fixed.
 
 ## 🟡 Should Have
 
