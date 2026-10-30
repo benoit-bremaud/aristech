@@ -370,3 +370,8 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - `just gate` now also runs the unit tests on Python 3.12 (`just test-312`, throwaway uv environment), replacing the CI matrix; 53 s with SonarQube.
   - Merge rule rewritten (CONTRIBUTING step 5, PR template, `CLAUDE.md`): `just gate` green on the head SHA, GitHub security checks green, every comment handled.
   - **Open**: nothing on GitHub proves `just gate` ran until the cross-project `gate` commit status (ADR-0025) lands.
+
+- **PR #123 merged** (`1d60095`) — `chore(deps): bump pandas, pyyaml and codeql-action`. Issue #122, post-wave cleanup.
+  - pandas 2.2.2 → 2.3.3 (held below 3), pyyaml 6.0.1 → 6.0.3, `codeql-action` v4.39.0 → v4.39.1; replaces Dependabot #107 and #108, both stuck in conflict after the removal of `gitleaks.yml`. Real-weights report reproduced with pandas 2.3.3 (ADR-0012); `just gate` green.
+  - Closed: Dependabot #117 (it edited the frozen environment records, ADR-0026), issues #40 (`gitleaks.yml` removed, ADR-0028) and #47 (keras no longer a dependency, ADR-0010).
+  - **Next**: #105 and #50 (small quality leftovers), then the first `dev` → `main` promotion (ADR-0025).
