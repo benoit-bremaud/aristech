@@ -1,7 +1,9 @@
 version: 2
 updates:
+  # ADR-0025: every update enters through the integration branch.
   - package-ecosystem: pip
     directory: "/"
+    target-branch: dev
     schedule:
       interval: weekly
     commit-message:
@@ -19,6 +21,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: "/"
+    target-branch: dev
     schedule:
       interval: weekly
     commit-message:
