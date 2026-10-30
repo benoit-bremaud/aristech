@@ -1,4 +1,4 @@
-<!-- Aristech PR template — private R&D project. Keep it concise. -->
+<!-- Aristech PR template — public R&D project. Keep it concise. -->
 
 ## Summary
 
@@ -16,7 +16,7 @@
 
 ## Checklist
 
-- [ ] CI green (`make lint type-check test`, or markdownlint for docs-only PRs)
+- [ ] `mise x -- just gate` green on the head SHA (markdownlint too for docs PRs)
 - [ ] No `Any` introduced without justification; no inline secrets
 - [ ] English in all GitHub artefacts (title, body, code comments, replies)
 - [ ] AI attribution, if any, stays sober (`Co-Authored-By` trailer, one line in the PR body)

@@ -38,8 +38,13 @@ secrets:
 # L1 — pre-push (< 3 min)
 check: lint test security secrets
 
-# L2 — pre-merge: L1 + the SonarQube quality gate on the local server
-gate: check
+# Unit tests on Python 3.12, the highest supported version, in a throwaway uv environment
+test-312:
+    uv run -q --isolated --no-project -p 3.12 --with-editable . --with pytest --with pyyaml \
+      --with python-dotenv --with opencv-python-headless --with "numpy<2" pytest -q -p no:cacheprovider
+
+# L2 — pre-merge: L1 + Python 3.12 tests + the SonarQube quality gate on the local server
+gate: check test-312
     if ! command -v sonar-scanner > /dev/null; then echo "gate: sonar-scanner not on PATH" >&2; exit 1; fi
     SONAR_TOKEN="$(cat "$HOME/.config/sonar-tokens/aristech" 2>/dev/null || printf '%s' "${SONAR_TOKEN:-}")" \
       sonar-scanner -Dsonar.qualitygate.wait=true

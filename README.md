@@ -95,17 +95,15 @@ dataset paths in [.env.example](.env.example). `aristech --help` lists every fla
 ## Development
 
 ```bash
-make test-unit     # fast tests, no hardware
-make test          # default pytest run
-make lint          # ruff check + ruff format --check
-make type-check    # mypy strict
-make format        # ruff format + autofix
-make lock          # relock requirements.txt
+mise x -- just check   # local CI, also run by the pre-push hook
+mise x -- just gate    # before merge: check + Python 3.12 tests + SonarQube
+make test-unit         # fast tests, no hardware
+make format            # ruff format + autofix
+make lock              # relock requirements.txt
 ```
 
-CI (GitHub Actions) runs ruff, ruff format, mypy and pytest on Python 3.11–3.12 for every push and
-pull request ([.github/workflows/ci.yml](.github/workflows/ci.yml)), plus the security baseline
-(ADR-0007). Workflow, branches and conventions: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+Checks run locally (ADR-0027, ADR-0028); GitHub Actions keeps only the public-repository security
+baseline (CodeQL, OpenSSF Scorecard, dependency review). Workflow, branches and conventions: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 History purge procedure: [docs/MAINTENANCE.md](docs/MAINTENANCE.md).
 
 ## License

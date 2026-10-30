@@ -8,7 +8,7 @@ root=$(git rev-parse --show-toplevel)
 cd "$root"
 fail() { echo "test-local-ci: FAIL $*" >&2; exit 1; }
 
-for r in fast lint test security secrets check gate; do
+for r in fast lint test test-312 security secrets check gate; do
   just --summary | tr ' ' '\n' | grep -qx "$r" || fail "recipe '$r' missing"
 done
 just --show check | grep -q '^check: lint test security secrets' || fail "check does not compose lint test security secrets"
