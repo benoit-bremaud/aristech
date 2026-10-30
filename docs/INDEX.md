@@ -13,7 +13,7 @@ opening five of them.
 | [LICENSE](../LICENSE)                       | MIT.                                                                                                                |
 | [pyproject.toml](../pyproject.toml)         | Packaging and tooling configuration (PEP 621).                                                                       |
 | [Makefile](../Makefile)                     | Common dev commands (`make test-unit`, `make lock`, etc.).                                                            |
-| [.pre-commit-config.yaml](../.pre-commit-config.yaml) | pre-commit hooks (ruff, mypy).                                                                                 |
+| [justfile](../justfile), [lefthook.yml](../lefthook.yml), [mise.toml](../mise.toml) | Local CI: `just fast` on commit, `just check` on push, `just gate` before merge (ADR-0027). |
 | [.markdownlint.json](../.markdownlint.json) | Markdown linting config — `MD013`, `MD033`, `MD041`, `MD060` disabled for stylistic reasons.                          |
 
 ## Planning and requirements

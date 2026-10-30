@@ -15,7 +15,8 @@ python -m venv .venv
 source .venv/bin/activate            # Linux/macOS
 # .\.venv\Scripts\activate           # Windows
 pip install -e ".[dev,vision]"
-pre-commit install
+mise install                         # local CI tools (mise.toml)
+mise x -- lefthook install           # git hooks: just fast on commit, just check on push
 ```
 
 ### Extras
@@ -23,7 +24,9 @@ pre-commit install
 - `vision` — torch, torchvision, OpenCV, pandas, Pillow: the live detector and the evaluation
   runner. Version floors follow the security advisories (ADR-0012); `numpy<2` and
   `opencv-python<5` are held on purpose.
-- `dev` — pytest, ruff, mypy, pre-commit, pip-tools.
+- `dev` — pytest, ruff, mypy, pip-tools. The local CI tools (just, lefthook, gitleaks, semgrep,
+  osv-scanner, typos, actionlint, zizmor) come from `mise.toml` (ADR-0027); mise needs `uv` to
+  install mypy and Semgrep.
 - `gpu` — NVIDIA CUDA libraries (Linux x86_64 only).
 
 ```bash
@@ -48,6 +51,10 @@ YOLOv5's own runtime packages (`matplotlib`, `scipy`, `seaborn`, `tqdm`, `reques
 ```bash
 pip install "setuptools<81" matplotlib scipy seaborn tqdm requests psutil
 ```
+
+A training environment with the `train` extra also needs a `typing_extensions` newer than the one
+in `requirements.txt` (rfdetr's dependencies import `typing_extensions.Sentinel`):
+`pip install -U typing_extensions`.
 
 The checkpoint is a pickle: torch ≥ 2.6 refuses it by default, and `VespAIDetector` loads it with
 `weights_only=False` because it comes from a trusted path. Never point `--weights` at an untrusted

@@ -12,8 +12,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.11"
           cache: pip
@@ -29,15 +31,15 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      # Installe le package pour que `aristech.*` soit importable comme
-      # en prod. Les deps lourdes (torch) ne sont pas requises
-      # par tests/unit (qui mocke les ports) — donc on installe seulement
-      # ce que les tests utilisent.
+      # Install the package so `aristech.*` imports as in production. tests/unit uses fakes at
+      # the ports and needs no heavy dependency (torch), so only what the tests import is installed.
       - run: pip install -e . --no-deps
       - run: pip install pytest pytest-cov pyyaml python-dotenv opencv-python-headless numpy
       - name: Run tests (default selection, no hardware, no models)

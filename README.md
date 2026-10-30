@@ -75,7 +75,8 @@ cd aristech
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev,vision]"
-pre-commit install
+mise install                         # local CI tools (mise.toml)
+mise x -- lefthook install           # git hooks: just fast on commit, just check on push
 ```
 
 Platform details and the GPU extra: [docs/INSTALL.md](docs/INSTALL.md).

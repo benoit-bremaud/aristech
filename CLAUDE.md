@@ -45,13 +45,14 @@ No `python` on PATH: use the venv.
 
 ```bash
 uv venv -p 3.11 .venv
-uv pip install -e . --no-deps ruff mypy types-PyYAML pytest pyyaml python-dotenv
-make test-unit
-make type-check
+uv pip install -e . --no-deps pytest pytest-cov pyyaml python-dotenv
+mise install && mise x -- lefthook install
+mise x -- just check        # L1: lint, mypy, typos, actionlint, zizmor, tests ≥ 80 %, semgrep, osv, gitleaks
+mise x -- just gate         # L2 before merge: check + SonarQube quality gate
 ```
 
-CI also runs `ruff format --check`, which `make lint` does not: run `make format` before every
-push. Check workflow edits with `actionlint`.
+Local CI (ADR-0027): `just fast` runs on commit, `just check` on push; tools pinned in `mise.toml`
+/ `mise.lock`. `make format` fixes the formatting.
 
 Quality: `make sonar` (unit-test coverage + scan of the local SonarQube, key `aristech`) reads the
 project token `project-aristech-local-2026` from `~/.config/sonar-tokens/aristech`, falling back
