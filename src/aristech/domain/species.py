@@ -1,9 +1,9 @@
 """Species the detector can report."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Species(str, Enum):
+class Species(StrEnum):
     """Insects told apart at the hive entrance; `UNKNOWN` for any other class."""
 
     VESPA_VELUTINA = "vespa_velutina"

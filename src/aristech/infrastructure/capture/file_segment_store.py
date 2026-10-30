@@ -3,7 +3,7 @@
 import json
 import logging
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from aristech.domain import SegmentMetadata
@@ -81,4 +81,4 @@ class FileSegmentStore:
             return datetime.fromisoformat(str(data["start_utc"]))
         except (OSError, ValueError, KeyError):
             _log.debug("no readable sidecar for %s; using its file time", media)
-            return datetime.fromtimestamp(media.stat().st_mtime, tz=timezone.utc)
+            return datetime.fromtimestamp(media.stat().st_mtime, tz=UTC)

@@ -3,7 +3,7 @@
 import hashlib
 import importlib.util
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -68,7 +68,7 @@ def _fake_reader(monkeypatch: pytest.MonkeyPatch) -> None:
             _mod.CLASS_MAP,
             splits=splits,
             image_reader=lambda path: (None, 100, 100),
-            timestamp=datetime(2026, 10, 23, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 10, 23, tzinfo=UTC),
         )
 
     monkeypatch.setattr(_mod, "collect_samples", collect)

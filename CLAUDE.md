@@ -5,7 +5,7 @@ on top; this file only adds what is specific to aristech.
 
 ## What the project is
 
-Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.10+,
+Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.11+,
 Clean Architecture (`domain` → `application` → `infrastructure` / `interface`), plus
 `evaluation/` (offline metrics, heavy imports lazy) and `datasets/` (stdlib dataset split
 helper). First adapter: the VespAI YOLOv5 detector.
@@ -44,7 +44,7 @@ skip a gate because a change looks small.
 No `python` on PATH: use the venv.
 
 ```bash
-uv venv -p 3.10 .venv
+uv venv -p 3.11 .venv
 uv pip install -e . --no-deps ruff mypy types-PyYAML pytest pyyaml python-dotenv
 make test-unit
 make type-check

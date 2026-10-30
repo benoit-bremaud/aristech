@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -25,7 +25,7 @@ def _metadata(start: datetime, flagged: bool = False) -> SegmentMetadata:
 
 
 def _segment(store: FileSegmentStore, hour: int, flagged: bool = False) -> Path:
-    start = datetime(2026, 8, 15, hour, tzinfo=timezone.utc)
+    start = datetime(2026, 8, 15, hour, tzinfo=UTC)
     path = store.path_for("audio", start)
     Path(path).write_bytes(b"x")
     store.write_sidecar(path, _metadata(start, flagged))
@@ -35,13 +35,13 @@ def _segment(store: FileSegmentStore, hour: int, flagged: bool = False) -> Path:
 def test_path_is_dated_and_typed(tmp_path: Path) -> None:
     store = FileSegmentStore(tmp_path)
 
-    path = store.path_for("video", datetime(2026, 8, 15, 9, 30, tzinfo=timezone.utc))
+    path = store.path_for("video", datetime(2026, 8, 15, 9, 30, tzinfo=UTC))
 
     assert path == str(tmp_path / "video" / "2026-08-15" / "video_20260815T093000000000Z.mp4")
 
 
 def test_unknown_kind_is_rejected(tmp_path: Path) -> None:
-    store, now = FileSegmentStore(tmp_path), datetime.now(timezone.utc)
+    store, now = FileSegmentStore(tmp_path), datetime.now(UTC)
     with pytest.raises(ValueError, match="unknown segment kind"):
         store.path_for("photo", now)
 
@@ -81,7 +81,7 @@ def test_free_fraction_is_a_fraction(tmp_path: Path) -> None:
 
 def test_orphan_segment_without_sidecar_is_rotated(tmp_path: Path) -> None:
     crashed_run = FileSegmentStore(tmp_path)
-    orphan = Path(crashed_run.path_for("video", datetime(2026, 8, 15, 7, tzinfo=timezone.utc)))
+    orphan = Path(crashed_run.path_for("video", datetime(2026, 8, 15, 7, tzinfo=UTC)))
     orphan.write_bytes(b"x")
     store = FileSegmentStore(tmp_path)
     os.utime(orphan, (0, 0))
@@ -113,7 +113,7 @@ def test_nothing_to_rotate_is_cached_until_next_sidecar(tmp_path: Path) -> None:
 
 def test_segment_being_written_is_never_rotated(tmp_path: Path) -> None:
     store = FileSegmentStore(tmp_path)
-    active = Path(store.path_for("audio", datetime(2026, 8, 15, 7, tzinfo=timezone.utc)))
+    active = Path(store.path_for("audio", datetime(2026, 8, 15, 7, tzinfo=UTC)))
     active.write_bytes(b"x")
 
     assert store.delete_oldest_unflagged() is False

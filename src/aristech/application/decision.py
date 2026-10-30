@@ -1,11 +1,11 @@
 """Legal-floor decision rule applied to every detection."""
 
-from enum import Enum
+from enum import StrEnum
 
 from aristech.domain import Detection
 
 
-class Decision(str, Enum):
+class Decision(StrEnum):
     """What the system should do about a single detection."""
 
     ACT = "act"

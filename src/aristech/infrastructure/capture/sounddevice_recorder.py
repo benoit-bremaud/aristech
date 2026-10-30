@@ -10,7 +10,7 @@ import logging
 import queue
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 _log = logging.getLogger("aristech.capture")
@@ -42,7 +42,7 @@ class SoundDeviceRecorder:
         if status:
             self.overflows += 1
         self._peaks = [float(abs(indata[:, i]).max()) for i in range(len(_CHANNELS))]
-        captured_end = datetime.now(timezone.utc)
+        captured_end = datetime.now(UTC)
         captured_start = captured_end - timedelta(seconds=frames / self._sample_rate)
         self._blocks.put((indata.copy(), captured_start, captured_end))
 

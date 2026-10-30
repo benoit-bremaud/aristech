@@ -75,7 +75,7 @@ version and is the only trigger of GitHub Actions.
 
 4. Open a pull request to `dev`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
    automatically; fill every section.
-5. Merge gate: CI green (ruff, mypy, pytest 3.10–3.12, security baseline), every review comment
+5. Merge gate: CI green (ruff, mypy, pytest 3.11–3.12, security baseline), every review comment
    handled, local checks green (tests, lint, format, mypy, coverage, gitleaks, smoke run).
 6. Squash-merge into `dev` and delete the branch, then clean up locally:
 
