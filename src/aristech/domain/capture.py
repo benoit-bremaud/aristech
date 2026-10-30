@@ -3,7 +3,7 @@
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from enum import Enum
 
 
@@ -66,7 +66,7 @@ def daylight_window(
     `longitude` is positive east. The window is computed for the UTC date `day`, which is the
     local date in Europe; far east of Greenwich the evening margin can fall on the next UTC day.
     """
-    midnight = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
+    midnight = datetime(day.year, day.month, day.day, tzinfo=UTC)
     n = math.ceil(midnight.timestamp() / 86400 + _UNIX_EPOCH_JD - _J2000 + 0.0008)
     mean_noon = n - longitude / 360
     anomaly = math.radians((357.5291 + 0.98560028 * mean_noon) % 360)
@@ -90,4 +90,4 @@ def daylight_window(
 
 
 def _from_julian(julian_day: float) -> datetime:
-    return datetime.fromtimestamp((julian_day - _UNIX_EPOCH_JD) * 86400, tz=timezone.utc)
+    return datetime.fromtimestamp((julian_day - _UNIX_EPOCH_JD) * 86400, tz=UTC)

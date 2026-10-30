@@ -5,7 +5,7 @@ on top; this file only adds what is specific to aristech.
 
 ## What the project is
 
-Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.10+,
+Real-time detection of the Asian hornet (*Vespa velutina*) in front of beehives. Python 3.11+,
 Clean Architecture (`domain` → `application` → `infrastructure` / `interface`), plus
 `evaluation/` (offline metrics, heavy imports lazy) and `datasets/` (stdlib dataset split
 helper). First adapter: the VespAI YOLOv5 detector.
@@ -24,7 +24,7 @@ skip a gate because a change looks small.
 - **One chat per brick**. Git workflow (branches, Conventional Commits): `docs/CONTRIBUTING.md`.
 - **Pre-push review report** per branch in `docs/architecture/reviews/<branch>.md`; ask the owner
   per PR which review counts (review-local, Copilot, Codex).
-- **Merge** only on CI green + every comment handled + explicit owner OK; then a
+- **Merge** only on `just gate` green + GitHub security checks green + every comment handled + explicit owner OK; then a
   `PROJECT_LOG.md` entry (agent-agnostic: no tool or reviewer names).
 
 ## Non-negotiables
@@ -44,14 +44,15 @@ skip a gate because a change looks small.
 No `python` on PATH: use the venv.
 
 ```bash
-uv venv -p 3.10 .venv
-uv pip install -e . --no-deps ruff mypy types-PyYAML pytest pyyaml python-dotenv
-make test-unit
-make type-check
+uv venv -p 3.11 .venv
+uv pip install -e . --no-deps pytest pytest-cov pyyaml python-dotenv
+mise install && mise x -- lefthook install
+mise x -- just check        # L1: lint, mypy, typos, actionlint, zizmor, tests ≥ 80 %, semgrep, osv, gitleaks
+mise x -- just gate         # L2 before merge: check + SonarQube quality gate
 ```
 
-CI also runs `ruff format --check`, which `make lint` does not: run `make format` before every
-push. Check workflow edits with `actionlint`.
+Local CI (ADR-0027): `just fast` runs on commit, `just check` on push; tools pinned in `mise.toml`
+/ `mise.lock`. `make format` fixes the formatting.
 
 Quality: `make sonar` (unit-test coverage + scan of the local SonarQube, key `aristech`) reads the
 project token `project-aristech-local-2026` from `~/.config/sonar-tokens/aristech`, falling back

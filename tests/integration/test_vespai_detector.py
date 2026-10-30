@@ -10,7 +10,7 @@ bundled, so paths must be supplied explicitly):
 """
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -37,7 +37,7 @@ def test_detects_velutina_on_sample_image():
         pixels=image,
         width=int(image.shape[1]),
         height=int(image.shape[0]),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     detections = VespAIDetector(weights, yolov5_dir, confidence=0.5).detect(frame)

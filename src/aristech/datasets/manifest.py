@@ -13,7 +13,7 @@ import re
 import shutil
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from aristech.datasets.registry import Source
@@ -29,7 +29,7 @@ _FRAME_INDEX = re.compile(r"_\d+$")
 _FIELDS = ("image_sha256", "source_id", "source_path", "group", "label_sha256", "classes", "split")
 
 
-class Split(str, Enum):
+class Split(StrEnum):
     """Where an image is used."""
 
     TRAIN = "train"

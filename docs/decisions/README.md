@@ -33,3 +33,6 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0023](ADR-0023-inaturalist-fetch-script.md) | Fetch iNaturalist photos with a stdlib script and per-photo attribution | Accepted |
 | [ADR-0024](ADR-0024-prefield-model-training-and-scoring.md) | Train RF-DETR Small on an exported YOLO view, score it through the UC3 harness | Accepted |
 | [ADR-0025](ADR-0025-branching-and-promotion-model.md) | `dev` integration branch, field-ready `main`, staging as an environment, signed tags | Accepted |
+| [ADR-0026](ADR-0026-python-311-for-pillow-13.md) | Python ≥ 3.11 so the `vision` extra can take Pillow 13 | Accepted |
+| [ADR-0027](ADR-0027-local-ci-tiers.md) | Local CI tiers with just, lefthook and mise | Accepted |
+| [ADR-0028](ADR-0028-remove-github-check-workflows.md) | Remove the GitHub check workflows, keep the public security baseline | Accepted |

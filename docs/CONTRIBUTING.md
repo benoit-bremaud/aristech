@@ -12,7 +12,8 @@ cd aristech
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pre-commit install
+mise install                         # local CI tools (mise.toml)
+mise x -- lefthook install           # git hooks: just fast on commit, just check on push
 ```
 
 ## Method
@@ -59,11 +60,12 @@ version and is the only trigger of GitHub Actions.
 2. Develop, then run locally:
 
    ```bash
-   make lint type-check test
+   mise x -- just check
    ```
 
-   `make lint` runs `ruff check` and `ruff format --check`, like CI; `make format` fixes the
-   formatting.
+   `just check` (ADR-0027) runs ruff, mypy, typos, actionlint, zizmor, the unit tests with the
+   80 % coverage floor, Semgrep, osv-scanner and gitleaks; the pre-push hook runs it too, and the
+   pre-commit hook runs `just fast` on the staged files. `make format` fixes the formatting.
 
 3. Commit in [Conventional Commits](https://www.conventionalcommits.org/) format:
 
@@ -75,8 +77,9 @@ version and is the only trigger of GitHub Actions.
 
 4. Open a pull request to `dev`. The template (`.github/PULL_REQUEST_TEMPLATE.md`) applies
    automatically; fill every section.
-5. Merge gate: CI green (ruff, mypy, pytest 3.10–3.12, security baseline), every review comment
-   handled, local checks green (tests, lint, format, mypy, coverage, gitleaks, smoke run).
+5. Merge gate: `mise x -- just gate` green on the head SHA (`just check`, the Python 3.12 tests and
+   the SonarQube quality gate), the GitHub security checks green (CodeQL, dependency review), every
+   review comment handled.
 6. Squash-merge into `dev` and delete the branch, then clean up locally:
 
    ```bash

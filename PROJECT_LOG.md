@@ -337,3 +337,47 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Results on test-v1 at conf ≥ 0.5**: velutina P 0.571 / R 0.480 (VespAI 0 / 0), crabro 0.885 / 0.719, bees 0.964 / 0.860, other 0.545 / 0.667; no bee predicted as a hornet. At 0.8 velutina recall falls to 0.010. Velutina errors come mostly from the crowded Roboflow apiary frames.
   - **Review cycle**: local report, Must 2 fixed (the export no longer replaces a directory that is not a view; diagram 05 matched to the scripts), Should 9 fixed (missing label, shared file hash, class map from the canonical list, stale-view check in the report, docs and tests). CI dependency review flagged pillow 12.3.0 in the environment record; the record was renamed so it is not read as an install manifest and now warns to upgrade pillow. CI green, quality gate OK (new-code coverage 98.3 %).
   - **Open**: pre-field only, the M5 gate needs field rows (`test-v2`); velutina recall is the first number to improve (more hive-entrance velutina images, larger resolution or Medium size, per-class thresholds); the local training environment still has pillow 12.3.0.
+
+## 2026-10-30
+
+- **PR #113 merged** (`b1d23cb`) — `docs(adr): branching and promotion model (dev, main, staging environment, signed tags)`. Issue #112, prerequisite of the move to a local CI (#111 → #109 → #110, cross-project wave benoit-bremaud/agents-skills#259).
+  - **Why first**: the wave deletes the GitHub check workflows, but `ci.yml` is the project's only automated check and no local tier exists yet (no `justfile`, no git hook; a `.pre-commit-config.yaml` is present but was never installed). The owner chose to build the local tiers first, and to settle the branching model before them.
+  - **Decisions** (ADR-0025, owner, MCDA by script):
+    - Branching: a `dev` integration branch, `main` field-ready, staging as an environment (bench device) deployed from `dev`, signed `v*` tags as the only trigger of GitHub Actions; no `staging` branch. Convention B scored 440, the chosen C 430; the owner weighs contributors and multi-week training experiments higher (owner-weights scenario C 450). Derogation to the cross-project "no `dev`" rule.
+    - `dev` is the GitHub default branch (445 vs 300): Dependabot security updates always target the default branch.
+    - Squash into `dev`; merge commit only from `dev` into `main`, so the QA-passed SHA reaches `main`; hotfix from `main`, back-merged into `dev` by a merge-commit PR.
+  - **Bootstrap** (same day, GitHub settings): `dev` created from `b1d23cb` and made default; rulesets `protect-main` (PR required, merge commit only), `protect-dev` (PR required, squash or merge commit), `protect-release-tags` (`v*` admin-only, signed), all with an admin bypass; Dependabot PRs #106–#108 retargeted to `dev`. No required status check yet: the `gate` status comes with the cross-project attestation tooling.
+  - **Review cycle**: local report `docs/architecture/reviews/docs-112-branching-model.md`, Must 0, Should 8 fixed (Mermaid partition edges, default branch, bootstrap order, hotfix back-merge via PR, CONTRIBUTING and gate wording, stale statements tracked for #109/#110). Local checks green on the head SHA (270 tests, coverage 98 %, ruff, mypy, gitleaks); CI green.
+  - **Measured for #109** (baseline of the future `just check`): coverage 98 %, gitleaks clean on 148 commits, Semgrep `p/python` 0 findings, zizmor 4 unpinned actions + 3 credential-persistence findings, typos 45 false positives on French words, osv-scanner 4 vulnerable packages in `requirements.txt` (pillow 12.3 → 13.0 major, filelock, certifi, setuptools); estimated `just check` about 35 s.
+  - **Next**: #111 fix the vulnerable vision pins, then #109 local CI tiers (lefthook + mise, `.pre-commit-config.yaml` retired), then #110 the workflows: `gitleaks.yml` removed, `ci.yml` reduced or removed, `codeql.yml`, `scorecard.yml` and `dependency-review.yml` kept (owner, cross-project decision 2026-10-30: public repositories keep them).
+
+- **PR #115 merged** (`2ab68b9`) — `fix(deps): require Python 3.11 and bump vulnerable vision pins`. Issue #111, first brick of the local CI wave.
+  - **Why**: osv-scanner flagged pillow 12.3.0 (41 advisories, highest 9.8), filelock and setuptools in `requirements.txt`. Every Pillow fix is in 13.0.0, which requires Python ≥ 3.11; Python 3.10 reached end of life on 2026-10-01.
+  - **Decision** (ADR-0026, owner, MCDA by script): Python ≥ 3.11 + Pillow 13 (420) over a time-boxed waiver on Pillow 12.3 (380) and per-version markers (290). Pillow `>=13.0,<14`, filelock `>=4.2.1`; lock compiled by `uv pip compile -p 3.11` (`make lock`); ruff `py311` (`datetime.UTC`, `StrEnum` for `Species`, `Split`, `Decision`); CI on 3.11 and 3.12.
+  - **Verification**: 270 tests, coverage 98 %, ruff, mypy, gitleaks, osv-scanner (no issues), SonarQube gate passed; real-weights run on a fresh 3.11 venv (Pillow 13.0.0, torch 2.14.1 + CUDA) reproduced `docs/research/prefield-model-test-v1-tables.md` byte for byte. The training venv also needed a newer `typing_extensions` than the lock's 4.12.0 and `setuptools<81` for YOLOv5.
+  - Dependabot PR #106 (setuptools 84.1.0) closed as superseded (84.2.1 in the lock).
+  - **Next**: #109 local CI tiers (exclude the frozen environment records from osv-scanner, typos config for French), then #110.
+
+- **PR #118 merged** (`10ce28e`) — `ci: add local CI tiers (just check, lefthook pre-push)`. Issue #109, second brick of the local CI wave.
+  - **Decision** (ADR-0027, owner, MCDA by script): just + lefthook + mise (470) over the pre-commit framework (325) and hand-written hooks (250); Semgrep with an unreachable rule registry prints a visible warning and goes on (430, over vendored rules 420 and a hard failure 350).
+  - **Tiers**: `just fast` on pre-commit (gitleaks staged, ruff, typos, actionlint; under 1 s), commit-msg Conventional Commits check, `just check` on pre-push (ruff, mypy, typos, actionlint, zizmor, wiring test, unit tests with an 80 % floor, Semgrep `p/python`, osv-scanner on `requirements.txt`, gitleaks full history; 15–36 s), `just gate` before merge (check + SonarQube quality gate; 26 s). Toolchain pinned in `mise.toml` / `mise.lock`.
+  - **Also**: `.pre-commit-config.yaml` retired; `_typos.toml` for French and author names; every workflow action pinned by SHA with `persist-credentials: false`; Semgrep forced to its posix I/O backend (io_uring failed under the locked-memory limit).
+  - **Incident**: the first real pre-push ran the wiring test inside the hook, where `GIT_DIR` points at the repository; its throwaway `git init` set `core.bare=true` in the shared git config. Restored to `false`, index checked clean; the script now clears the `GIT_*` variables.
+  - **Next**: #110 — remove `gitleaks.yml`, reduce or remove `ci.yml`, keep `codeql.yml`, `scorecard.yml`, `dependency-review.yml`.
+
+- **PR #120 merged** (`cc979b2`) — `chore(ci): remove dead GitHub workflows (wave 0 bis)`. Issue #110, last brick of the local CI wave (benoit-bremaud/agents-skills#259).
+  - **Decision** (ADR-0028, owner, MCDA by script): remove `ci.yml` (400) over reducing it to `just check` (325) or keeping it (190); `gitleaks.yml` removed too. `codeql.yml`, `scorecard.yml` and `dependency-review.yml` kept (public-repository baseline).
+  - `just gate` now also runs the unit tests on Python 3.12 (`just test-312`, throwaway uv environment), replacing the CI matrix; 53 s with SonarQube.
+  - Merge rule rewritten (CONTRIBUTING step 5, PR template, `CLAUDE.md`): `just gate` green on the head SHA, GitHub security checks green, every comment handled.
+  - **Open**: nothing on GitHub proves `just gate` ran until the cross-project `gate` commit status (ADR-0025) lands.
+
+- **PR #123 merged** (`1d60095`) — `chore(deps): bump pandas, pyyaml and codeql-action`. Issue #122, post-wave cleanup.
+  - pandas 2.2.2 → 2.3.3 (held below 3), pyyaml 6.0.1 → 6.0.3, `codeql-action` v4.39.0 → v4.39.1; replaces Dependabot #107 and #108, both stuck in conflict after the removal of `gitleaks.yml`. Real-weights report reproduced with pandas 2.3.3 (ADR-0012); `just gate` green.
+  - Closed: Dependabot #117 (it edited the frozen environment records, ADR-0026), issues #40 (`gitleaks.yml` removed, ADR-0028) and #47 (keras no longer a dependency, ADR-0010).
+  - **Next**: #105 and #50 (small quality leftovers), then the first `dev` → `main` promotion (ADR-0025).
+
+- **PR #125 merged** (`5c0605c`) — `ci: lint and format-check scripts/ in CI`. Issues #105 and #50.
+  - `scripts/prepare_directories.py` and `scripts/prepare_images.py` removed (preprocessing of the legacy Keras training, ADR-0010); ruff now covers `scripts/` in `just lint`, the pre-commit hook and the Makefile.
+  - SonarQube python:S7517 fixed in `EvaluationReport.all_class_metrics` (open issues 2 → 0).
+  - osv-scanner runs with `--no-resolve`: the lock is complete and the transitive resolution (deps.dev) failed twice in a row.
+  - **Next**: first `dev` → `main` promotion (ADR-0025), then C1 hardware (#84).

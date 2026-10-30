@@ -2,7 +2,7 @@
 
 import subprocess
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -34,7 +34,7 @@ class SystemClock:
 
     def now(self) -> datetime:
         """Current time, timezone-aware UTC."""
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
 
     def source(self) -> str:
         """Where the time comes from (spec A4)."""

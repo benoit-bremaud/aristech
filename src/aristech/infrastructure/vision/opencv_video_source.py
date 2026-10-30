@@ -8,7 +8,7 @@ detector adapter is responsible for any colour conversion it needs.
 """
 
 from collections.abc import Iterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from aristech.domain import VideoFrame
@@ -44,7 +44,7 @@ class OpenCVVideoSource:
                 pixels=frame,
                 width=int(width),
                 height=int(height),
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
 
     def close(self) -> None:

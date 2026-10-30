@@ -1,13 +1,13 @@
 from collections.abc import Mapping
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from aristech.application.use_cases import CampaignConfig, RecordCampaign
 from aristech.domain import RigState, SegmentMetadata
 
-_NOON = datetime(2026, 8, 15, 12, 0, tzinfo=timezone.utc)
-_MIDNIGHT = datetime(2026, 8, 15, 0, 0, tzinfo=timezone.utc)
+_NOON = datetime(2026, 8, 15, 12, 0, tzinfo=UTC)
+_MIDNIGHT = datetime(2026, 8, 15, 0, 0, tzinfo=UTC)
 
 
 class _FakeClock:

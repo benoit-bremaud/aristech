@@ -1,0 +1,29 @@
+# typos config (ADR-0027): French legal citations, author names and package names, not typos.
+[files]
+extend-exclude = ["notebooks/", "data/registry/*.csv", "*.ipynb"]
+
+[default]
+# Commit SHAs in the log (d5ede54).
+extend-ignore-re = ["`[0-9a-f]{7,40}`"]
+
+[default.extend-words]
+# French (legal texts, titles of cited works)
+environnement = "environnement"
+insectes = "insectes"
+comparaison = "comparaison"
+invalide = "invalide"
+sur = "sur"
+Territoires = "Territoires"
+# Author names, species, acronyms
+Generalis = "Generalis"
+Requier = "Requier"
+Yiu = "Yiu"
+Ba = "Ba"
+UE = "UE"
+ND = "ND"
+mexicanus = "mexicanus"
+# Python package, identifiers, English usage
+certifi = "certifi"
+iy = "iy"
+nd = "nd"
+mis = "mis"
