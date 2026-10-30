@@ -23,6 +23,8 @@ printf 'Add local tiers.\n' > "$tmp/bad"
 sh scripts/check-commit-msg.sh "$tmp/ok" || fail "valid commit subject refused"
 if sh scripts/check-commit-msg.sh "$tmp/bad" 2> /dev/null; then fail "invalid commit subject accepted"; fi
 
+# Inside a git hook GIT_DIR and friends point at this repository: clear them for the throwaway one.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
 git init -q "$tmp/repo"
 key="AKIA""QYLPMN5HHHFPZAM2"
 printf 'aws_access_key_id = %s\naws_secret_access_key = %s\n' "$key" "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEYx" > "$tmp/repo/creds.ini"
