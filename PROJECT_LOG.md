@@ -455,3 +455,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Verification**: `just gate` on `44fddc9` (341 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
   - No tag yet: the signed `v*` tag is the owner's call.
   - **Next**: owner test on a real Telegram bot; bench hardware.
+
+- **PR #159 merged** (`172c017`) — `feat(notify): push fault and heartbeat messages on the alert channel`. Issue #158, ADR-0033.
+  - MCDA: daily heartbeat (395) over 6 h (380) and hourly (315), C first in 67 % of weight vectors; faults `loop_error` + `source_ended` (440) over loop error only (380) and hardware faults (320); one push per fault kind per hour, muted faults counted (450) over none (360) and a token bucket (315).
+  - `HealthMonitor` in `application/health.py` (pure, wall `Clock` injected); `Notifier` gains `notify_heartbeat` and `notify_fault`; the Telegram adapter pushes them through the delayed queue, the fault without exception text. `health` section in `config/config.yaml`. Spec health-push, UC11.
+  - Heartbeat ticks per processed frame: a hung or dead unit sends none, so the beekeeper is the dead man's switch until the server watchdog (M6).
+  - Known limits: the rate limit is per process (restart delay must be ≥ cool-down); a stream URL ends like a file.
+  - **Verification**: `just gate` green (364 tests, coverage 98 %, SonarQube gate passed); pre-push review without Must; checks green.
+  - **Next**: owner test on a real Telegram bot (alert, heartbeat, fault); bench hardware.
