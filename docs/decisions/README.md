@@ -37,3 +37,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0027](ADR-0027-local-ci-tiers.md) | Local CI tiers with just, lefthook and mise | Accepted |
 | [ADR-0028](ADR-0028-remove-github-check-workflows.md) | Remove the GitHub check workflows, keep the public security baseline | Accepted |
 | [ADR-0029](ADR-0029-act-threshold-margin-and-bound.md) | ACT threshold — zero bees with margin, false-alert cap, rule-of-three bound | Accepted |
+| [ADR-0030](ADR-0030-live-detector-choice-and-default-threshold.md) | Live detector choice and per-detector default ACT threshold | Accepted |

@@ -1,9 +1,12 @@
 """Live visual detection use case."""
 
+import logging
 from dataclasses import dataclass
 
 from aristech.application.decision import Decision, decide
 from aristech.application.ports import HornetDetector, Notifier, VideoSource
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +64,8 @@ class DetectHornetVisual:
                     elif decision is Decision.ABSTAIN:
                         self._notifier.notify_abstention(detection)
                         abstentions += 1
+                    else:
+                        _log.debug("ignore %s %.2f", detection.species.value, detection.confidence)
         finally:
             self._video.close()
         return DetectionRun(threats=threats, abstentions=abstentions)
