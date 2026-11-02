@@ -156,7 +156,8 @@ def test_one_attack_alert_per_episode_and_a_summary_at_end_of_stream():
     result, notifier = _episode_run([[hornet, hornet]] * 20)
     assert result.episodes == 1
     assert len(notifier.started) == 1
-    assert len(notifier.ended) == 1 and notifier.ended[0].hit_frames == 20
+    assert len(notifier.ended) == 1
+    assert notifier.ended[0].hit_frames == 20
 
 
 def test_detections_below_count_point_and_non_targets_never_count():
@@ -165,7 +166,8 @@ def test_detections_below_count_point_and_non_targets_never_count():
     bee = _det(Species.APIS_MELLIFERA, 0.99)
     result, notifier = _episode_run([[below, crabro, bee]] * 20)
     assert result.episodes == 0
-    assert notifier.started == [] and notifier.ended == []
+    assert notifier.started == []
+    assert notifier.ended == []
 
 
 def test_count_point_defaults_to_the_act_point():
@@ -184,7 +186,8 @@ def test_two_episodes_separated_by_more_than_the_cooldown_raise_two_alerts():
     per_frame = [[hornet]] * 5 + [[]] * 70 + [[hornet]] * 5 + [[]] * 70
     result, notifier = _episode_run(per_frame)
     assert result.episodes == 2
-    assert len(notifier.started) == 2 and len(notifier.ended) == 2
+    assert len(notifier.started) == 2
+    assert len(notifier.ended) == 2
 
 
 def test_open_episode_is_summarised_when_the_detector_fails():
@@ -214,5 +217,6 @@ def test_open_episode_is_summarised_when_the_detector_fails():
     )
     with pytest.raises(RuntimeError, match="boom"):
         use_case.run()
-    assert len(notifier.started) == 1 and len(notifier.ended) == 1
+    assert len(notifier.started) == 1
+    assert len(notifier.ended) == 1
     assert video.closed

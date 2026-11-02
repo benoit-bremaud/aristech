@@ -4,9 +4,14 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from aristech.application.attack_episode import AttackEpisodeTracker, EpisodeRule
+from aristech.application.attack_episode import (
+    AttackEpisode,
+    AttackEpisodeTracker,
+    EpisodeRule,
+)
 from aristech.application.decision import Decision, decide
 from aristech.application.ports import HornetDetector, Notifier, VideoSource
+from aristech.domain import Detection
 
 _log = logging.getLogger(__name__)
 
@@ -76,32 +81,44 @@ class DetectHornetVisual:
         tracker = AttackEpisodeTracker(self._config.episode_rule)
         last_seen: datetime | None = None
         try:
-            threshold = self._config.confidence_threshold
-            count_point = self._config.count_point
             for frame in self._video.frames():
                 hit = False
                 for detection in self._detector.detect(frame):
-                    hit = hit or (detection.is_threat() and detection.confidence >= count_point)
-                    decision = decide(detection, threshold)
-                    if decision is Decision.ACT:
-                        self._notifier.notify_detection(detection)
-                        threats += 1
-                    elif decision is Decision.ABSTAIN:
-                        self._notifier.notify_abstention(detection)
-                        abstentions += 1
-                    else:
-                        _log.debug("ignore %s %.2f", detection.species.value, detection.confidence)
+                    decision = self._report(detection)
+                    threats += decision is Decision.ACT
+                    abstentions += decision is Decision.ABSTAIN
+                    hit = hit or self._counts(detection)
                 last_seen = frame.timestamp
-                episode = tracker.observe(frame.timestamp, hit)
-                if episode is not None and episode.ended is None:
-                    self._notifier.notify_attack_started(episode)
-                    episodes += 1
-                elif episode is not None:
-                    self._notifier.notify_attack_ended(episode)
+                episodes += self._track(tracker.observe(frame.timestamp, hit))
         finally:
             try:
-                if last_seen is not None and (ended := tracker.close(last_seen)) is not None:
-                    self._notifier.notify_attack_ended(ended)
+                if last_seen is not None:
+                    self._track(tracker.close(last_seen))
             finally:
                 self._video.close()
         return DetectionRun(threats=threats, abstentions=abstentions, episodes=episodes)
+
+    def _report(self, detection: Detection) -> Decision:
+        """Apply the ACT / ABSTAIN / IGNORE rule and notify accordingly."""
+        decision = decide(detection, self._config.confidence_threshold)
+        if decision is Decision.ACT:
+            self._notifier.notify_detection(detection)
+        elif decision is Decision.ABSTAIN:
+            self._notifier.notify_abstention(detection)
+        else:
+            _log.debug("ignore %s %.2f", detection.species.value, detection.confidence)
+        return decision
+
+    def _counts(self, detection: Detection) -> bool:
+        """A *V. velutina* at or above the COUNT point makes its frame a hit."""
+        return detection.is_threat() and detection.confidence >= self._config.count_point
+
+    def _track(self, episode: AttackEpisode | None) -> int:
+        """Notify an episode that opened (returns 1) or closed (returns 0)."""
+        if episode is None:
+            return 0
+        if episode.ended is None:
+            self._notifier.notify_attack_started(episode)
+            return 1
+        self._notifier.notify_attack_ended(episode)
+        return 0

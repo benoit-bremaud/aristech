@@ -196,8 +196,8 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         args.episode_rule = _episode_rule(config.get("alert") or {})
-    except (TypeError, ValueError) as exc:
-        log.error("Invalid alert configuration: %s", exc)
+    except (TypeError, ValueError):
+        log.exception("Invalid alert configuration")
         return 2
     return _run_visual_detection(args, log)
 

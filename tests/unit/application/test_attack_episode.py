@@ -19,7 +19,8 @@ def _feed(tracker: AttackEpisodeTracker, frames: list[tuple[float, bool]]) -> li
 def test_episode_opens_once_on_the_nth_hit_within_the_window():
     events = _feed(AttackEpisodeTracker(_RULE), [(0, True), (1, True), (2, True), (3, True)])
     assert len(events) == 1
-    assert events[0].started == _at(2) and events[0].ended is None
+    assert events[0].started == _at(2)
+    assert events[0].ended is None
     assert events[0].hit_frames == 3
 
 
@@ -39,8 +40,10 @@ def test_episode_closes_after_the_cooldown_with_its_summary():
     events = _feed(tracker, frames)
     assert len(events) == 2
     ended = events[1]
-    assert ended.started == _at(2) and ended.ended == _at(63)
-    assert ended.peak == 4 and ended.hit_frames == 4
+    assert ended.started == _at(2)
+    assert ended.ended == _at(63)
+    assert ended.peak == 4
+    assert ended.hit_frames == 4
 
 
 def test_pressure_back_before_the_cooldown_keeps_one_episode():
@@ -61,7 +64,8 @@ def test_close_ends_an_open_episode_and_is_a_no_op_otherwise():
     assert tracker.close(_at(0)) is None
     _feed(tracker, [(0, True), (1, True), (2, True)])
     ended = tracker.close(_at(5))
-    assert ended is not None and ended.ended == _at(5)
+    assert ended is not None
+    assert ended.ended == _at(5)
     assert tracker.close(_at(6)) is None
 
 

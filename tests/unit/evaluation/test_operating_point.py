@@ -198,7 +198,8 @@ def test_image_point_counts_flagged_images_not_boxes():
 
 def test_image_point_without_flags_or_positives_is_zero():
     point = image_point([([], [])], 0.5)
-    assert point.precision == 0.0 and point.recall == 0.0
+    assert point.precision == 0.0
+    assert point.recall == 0.0
 
 
 def test_count_point_is_the_lowest_threshold_reaching_the_precision():
@@ -207,10 +208,12 @@ def test_count_point_is_the_lowest_threshold_reaching_the_precision():
 
 
 def test_count_point_unreachable_raises():
+    samples = _count_samples()
     with pytest.raises(ValueError, match="no threshold"):
-        select_count_point(_count_samples(), [0.1, 0.3], 0.9, act_threshold=0.5)
+        select_count_point(samples, [0.1, 0.3], 0.9, act_threshold=0.5)
 
 
 def test_count_point_above_act_rejects_the_model():
+    samples = _count_samples()
     with pytest.raises(ValueError, match="above the ACT point"):
-        select_count_point(_count_samples(), [0.1, 0.3, 0.5], 0.9, act_threshold=0.45)
+        select_count_point(samples, [0.1, 0.3, 0.5], 0.9, act_threshold=0.45)
