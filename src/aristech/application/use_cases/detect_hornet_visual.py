@@ -101,8 +101,6 @@ class DetectHornetVisual:
                 episodes += self._track(tracker.observe(frame.timestamp, hit))
                 frames += 1
                 self._beat(frames, episodes)
-            if self._config.live_source:
-                self._fault(FaultKind.SOURCE_ENDED, "the live source stopped sending frames")
         except Exception as exc:
             self._fault(FaultKind.LOOP_ERROR, type(exc).__name__)
             raise
@@ -112,6 +110,9 @@ class DetectHornetVisual:
                     self._track(tracker.close(last_seen))
             finally:
                 self._video.close()
+        # Outside the try: a failing fault push must not be reported again as a loop error.
+        if self._config.live_source:
+            self._fault(FaultKind.SOURCE_ENDED, "the live source stopped sending frames")
         return DetectionRun(threats=threats, abstentions=abstentions, episodes=episodes)
 
     def _report(self, detection: Detection) -> Decision:

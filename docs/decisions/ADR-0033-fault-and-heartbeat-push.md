@@ -76,5 +76,10 @@ Sensitivity: B first in 63 % of weight vectors and at ±10 on every criterion. *
   M6.
 - The heartbeat is tied to the loop: it proves frames are processed, not only that the process
   runs.
+- The rate limit lives in the process: each fault ends the run, so a service manager that restarts
+  the unit at once sends one fault per restart. Set the restart delay to at least the cool-down
+  (`RestartSec` with systemd, M6), or persist the last fault time if that proves too noisy.
+- Only a camera index counts as a live source; a network stream URL is handled as a file, so its
+  end is not a fault yet (add when a network camera is used).
 - A push channel failure cannot be pushed; it stays in the log and the delayed queue (ADR-0032).
 - The beekeeper learns of a dead unit up to 24 h late; lower `heartbeat_s` if that is too long.

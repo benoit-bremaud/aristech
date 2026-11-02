@@ -24,10 +24,11 @@ works, and be told when it detects a fault it can still report, without a flood 
 
 - **A1** The detection loop raises an error → a `loop_error` fault is pushed, then the run stops
   with the error (open episode summarised, source closed).
-- **A2** The live camera source stops sending frames → a `source_ended` fault is pushed. The end of
-  a video file is not a fault.
+- **A2** The live camera source (a camera index) stops sending frames → a `source_ended` fault is
+  pushed. The end of a video file is not a fault; a network stream URL counts as a file for now.
 - **A3** The same fault kind repeats within the cool-down (1 h) → it is logged, not pushed, and
-  counted in the next push of that kind.
+  counted in the next push of that kind. The limit holds within one process; a restarted unit
+  starts afresh, so the restart delay must be at least the cool-down (ADR-0033).
 - **A4** The unit dies, hangs or loses the network → no heartbeat arrives; the beekeeper notices
   the missing message (server-side watchdog with M6).
 - **A5** The push channel is down → the message waits in the delayed queue (ADR-0032 A1).

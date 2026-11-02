@@ -65,7 +65,8 @@ class HealthMonitor:
         self._suppressed: dict[FaultKind, int] = {}
 
     def tick(self, frames: int, episodes: int) -> Heartbeat | None:
-        """Return a heartbeat when one is due, else None; called once per frame."""
+        """Return a heartbeat when one is due, else None; called once per frame, so a
+        source that hangs sends no heartbeat, which is the signal (ADR-0033)."""
         now = self._clock.now()
         if now < self._next_heartbeat:
             return None
