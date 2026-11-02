@@ -45,3 +45,26 @@ def test_main_does_not_warn_when_bee_mapped(caplog: pytest.LogCaptureFixture) ->
     _mod.main([*_ARGV, "--class-map", "1:vespa_velutina,2:apis_mellifera"])
     assert "apis_mellifera" not in caplog.text
     assert "Dataset" in caplog.text
+
+
+def test_main_exits_2_when_vespai_has_no_yolov5_dir(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    weights = tmp_path / "w.pt"
+    weights.touch()
+    argv = [
+        "--weights",
+        str(weights),
+        "--dataset",
+        str(tmp_path),
+        "--class-map",
+        "1:vespa_velutina",
+    ]
+    assert _mod.main(argv) == 2
+    assert "YOLOv5" in caplog.text
+
+
+def test_build_detector_rfdetr_is_lazy() -> None:
+    # Nothing is loaded at construction: a missing checkpoint fails on detect only.
+    detector = _mod._build_detector("rfdetr", "missing.pth", None)
+    assert type(detector).__name__ == "RFDETRDetector"
