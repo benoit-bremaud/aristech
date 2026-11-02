@@ -387,3 +387,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Verification**: `just gate` on `e7b0a68` (270 tests on 3.11 and 3.12, coverage 97.7 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
   - No tag yet: the signed `v*` tag is the owner's call.
   - **Next**: C1 hardware — #84 (microphone end of life), then the order list for the bench Pi 5.
+
+## 2026-11-02
+
+- **PR #130 merged** (`59c770e`) — `docs(c1): record ICS-43434 EOL check and microphone fallback`. Issue #84.
+  - The ICS-43434 chip is end of life (TDK PCN-000772: last-time buy 2026-06-15, last-time ship 2027-01-15); the Adafruit 6049 breakout is still in stock.
+  - ADR-0017 stands (MCDA A 410 / B 330 / C 285): keep the ICS-43434 and order 4 breakouts (2 + 2 spares, +24 €). Fallback for later units: TDK T5848 (I²S, 1.8 V I/O, needs a level shifter); it ranks first only if longevity weighs 35.
+  - **Verification**: `just gate` green on `509a3a2` (SonarQube gate passed); CodeQL green.
+  - **Next**: order list for the bench Pi 5 (separate issue).
