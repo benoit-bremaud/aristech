@@ -416,3 +416,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - The live `--confidence` default is unchanged; the threshold is re-measured on the field set (M5). The COUNT point waits for the `attack-alert` gate.
   - **Verification**: `just gate` green on `69e56ed` (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
+- **PR #141 merged** (`ae8b0af`) — `feat(cli): run live detection with the RF-DETR detector at the ACT threshold`. Issue #140 (M6).
+  - ADR-0030 (MCDA B 475 / D 385 / C 345 / A 280; B first in 99 % of weight vectors): `--detector {vespai,rfdetr}` with `--checkpoint`; `--confidence` defaults to 0.45 for RF-DETR (ADR-0029) and 0.5 for VespAI; a warning when the checkpoint sha256 is not the measured model. The ADR-0009 floor is unchanged.
+  - Every run logs the warm-up, FPS and detect latency p50 / p95, also on failure; ignored species are logged at debug level.
+  - Laptop CPU baseline (i9-13900H, 60-frame sample made from test-v1 images): 16–44 FPS, p50 18–37 ms, warm-up 9–17 s; the spread follows machine load (`docs/research/live-fps-laptop-cpu.md`).
+  - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL green.
+  - **Next**: measure on the idle bench Pi 5 once it arrives; `config/logging.yaml` file handler fails without a `logs/` folder (pre-existing).
