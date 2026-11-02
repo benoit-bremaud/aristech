@@ -116,6 +116,10 @@ recomputable on demand.
 **🚪 Gate** — documented threshold + tested abstention; "never a bee
 classified as a target above threshold" **verified on the set**.
 
+**Done (issue #18, provisional)** — ADR-0029 rule; RF-DETR Small on test-v1:
+ACT threshold 0.45, zero of 780 bees as target (bound ≤ 0.38 %), 2.1 % false-alert
+images ([report](research/operating-point-test-v1.md)). Re-measured on the field set at M5.
+
 ### M5 — Own data and own model
 
 Capture with C1 → annotation pipeline → frozen test set → fine-tune a permissively licensed

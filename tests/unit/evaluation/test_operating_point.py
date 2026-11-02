@@ -6,6 +6,8 @@ from aristech.domain import BoundingBox, Detection, Species
 from aristech.evaluation.metrics import Annotation, Sample, evaluate
 from aristech.evaluation.operating_point import (
     bees_as_target_count,
+    false_alert_rate,
+    rule_of_three_bound,
     select_operating_point,
     threshold_sweep,
 )
@@ -106,3 +108,68 @@ def test_selected_operating_point_never_flags_a_bee(
     # Independent of the selector's own filter: the bee read at 0.4 must be cut.
     assert point.confidence_threshold == expected_threshold
     assert bees_as_target_count(evaluate(samples, confidence_threshold=expected_threshold)) == 0
+
+
+@pytest.mark.parametrize(
+    ("trials", "bound"),
+    [(0, 1.0), (1, 1.0), (3, 1.0), (300, 0.01), (780, 3 / 780)],
+)
+def test_rule_of_three_bound(trials: int, bound: float) -> None:
+    assert rule_of_three_bound(trials) == pytest.approx(bound)
+
+
+def test_select_records_bee_count_and_bound() -> None:
+    chosen = select_operating_point(_samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.9])
+    assert chosen.bee_count == 1
+    assert chosen.bees_as_target_bound == 1.0
+
+
+def test_margin_skips_the_first_safe_threshold() -> None:
+    # 0.3 unsafe, 0.5 first safe: with one step of margin, 0.5 is too close to
+    # the bee read at 0.4, so 0.7 is chosen (still catches the 0.8 hornet).
+    chosen = select_operating_point(
+        _samples_bee_misread_at_low_conf(), thresholds=[0.3, 0.5, 0.7, 0.9], margin_steps=1
+    )
+    assert chosen.confidence_threshold == 0.7
+    assert chosen.target.recall == 1.0
+
+
+def test_margin_never_picks_the_first_candidate() -> None:
+    # Nothing below the first candidate witnesses that it is safe.
+    chosen = select_operating_point([_HORNET_IMAGE], thresholds=[0.1, 0.3], margin_steps=1)
+    assert chosen.confidence_threshold == 0.3
+
+
+def test_margin_raises_when_no_threshold_has_room() -> None:
+    samples = _samples_bee_misread_at_low_conf()
+    with pytest.raises(ValueError, match="legal floor"):
+        select_operating_point(samples, thresholds=[0.3, 0.5], margin_steps=2)
+
+
+def test_negative_margin_is_rejected() -> None:
+    with pytest.raises(ValueError, match="margin_steps"):
+        select_operating_point([], thresholds=[0.5], margin_steps=-1)
+
+
+_CRABRO_MISREAD_IMAGE: Sample = (
+    [_pred(Species.VESPA_VELUTINA, 0.6)],
+    [_truth(Species.VESPA_CRABRO)],
+)
+
+
+def test_false_alert_rate_counts_target_free_images() -> None:
+    samples = [_HORNET_IMAGE, _CRABRO_MISREAD_IMAGE, _BEE_MISREAD_IMAGE]
+    assert false_alert_rate(samples, 0.3) == 1.0  # both target-free images alert
+    assert false_alert_rate(samples, 0.5) == 0.5  # only the 0.6 crabro misread
+    assert false_alert_rate(samples, 0.7) == 0.0
+    assert false_alert_rate([_HORNET_IMAGE], 0.1) == 0.0  # no target-free image
+
+
+def test_false_alert_cap_raises_the_threshold() -> None:
+    samples = [_HORNET_IMAGE, _CRABRO_MISREAD_IMAGE]
+    loose = select_operating_point(samples, thresholds=[0.5, 0.7, 0.9])
+    capped = select_operating_point(samples, thresholds=[0.5, 0.7, 0.9], max_false_alert_rate=0.0)
+    assert loose.confidence_threshold == 0.5
+    assert loose.false_alert_rate == 1.0
+    assert capped.confidence_threshold == 0.7
+    assert capped.false_alert_rate == 0.0
