@@ -17,6 +17,8 @@
 ## Checklist
 
 - [ ] `mise x -- just gate` green on the head SHA (markdownlint too for docs PRs)
+- [ ] QA checklist filled (`docs/architecture/qa/<date>-<topic>.md`) and linked from step 5 of
+      the review report: coverage checked, every planned check run or listed as not tested
 - [ ] No `Any` introduced without justification; no inline secrets
 - [ ] English in all GitHub artefacts (title, body, code comments, replies)
 - [ ] AI attribution, if any, stays sober (`Co-Authored-By` trailer, one line in the PR body)

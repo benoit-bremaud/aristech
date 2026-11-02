@@ -1,16 +1,72 @@
 """`aristech` command line: configuration, logging and the composition root."""
 
 import argparse
+import hashlib
 import logging
 import logging.config
+import statistics
 import sys
+import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import yaml
 
+if TYPE_CHECKING:
+    from aristech.application.ports import HornetDetector
+    from aristech.domain import Detection, VideoFrame
+
 # Detector floor: boxes between it and --confidence reach decide() as ABSTAIN (ADR-0009).
 _DEFAULT_DETECTOR_FLOOR = 0.1
+
+# Default operating threshold per detector (ADR-0030). The RF-DETR value is the ACT point of
+# ADR-0029, measured on test-v1 for the checkpoint with this sha256 only.
+_DEFAULT_CONFIDENCE = {"vespai": 0.5, "rfdetr": 0.45}
+_RFDETR_MEASURED_SHA256 = "3df5a250d9cf3dc837a86376b62b634d0f693d202288a782bd46cb8cf992fcab"
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+class _TimedDetector:
+    """`HornetDetector` decorator that records the wall-clock latency of every `detect` call."""
+
+    def __init__(self, inner: "HornetDetector") -> None:
+        self._inner = inner
+        self.latencies: list[float] = []
+
+    def detect(self, frame: "VideoFrame") -> "Sequence[Detection]":
+        start = time.perf_counter()
+        try:
+            return self._inner.detect(frame)
+        finally:
+            self.latencies.append(time.perf_counter() - start)
+
+
+def _log_timing(log: logging.Logger, latencies: list[float], elapsed: float) -> None:
+    """Log FPS and detect latency. The first call loads the model (lazy adapters), so it is
+    reported apart as warm-up and left out of the steady-state figures."""
+    if len(latencies) < 2:
+        log.info("Timing: %d frame(s), too few for a steady-state figure.", len(latencies))
+        return
+    warm_up, steady = latencies[0], sorted(latencies[1:])
+    steady_elapsed = elapsed - warm_up
+    p95 = steady[min(len(steady) - 1, int(0.95 * len(steady)))]
+    log.info(
+        "Timing: %d frame(s), warm-up %.1f s, then %.2f FPS end to end, "
+        "detect latency p50 %.1f ms, p95 %.1f ms.",
+        len(latencies),
+        warm_up,
+        len(steady) / steady_elapsed if steady_elapsed > 0 else 0.0,
+        statistics.median(steady) * 1000,
+        p95 * 1000,
+    )
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -45,22 +101,37 @@ def main(argv: list[str] | None = None) -> int:
         help="Video source to analyse (file or camera index). Needs the 'vision' extra.",
     )
     parser.add_argument(
+        "--detector",
+        choices=sorted(_DEFAULT_CONFIDENCE),
+        default="vespai",
+        help="Detector to run with --video (ADR-0030); rfdetr also needs the 'train' extra.",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default=None,
+        help="Path to the RF-DETR checkpoint (.pth). Required with --detector rfdetr.",
+    )
+    parser.add_argument(
         "--weights",
         type=str,
         default=None,
-        help="Path to the VespAI weights (.pt). Required with --video.",
+        help="Path to the VespAI weights (.pt). Required with --detector vespai.",
     )
     parser.add_argument(
         "--yolov5-dir",
         type=str,
         default=None,
-        help="Path to the local YOLOv5 clone (VespAI submodule). Required with --video.",
+        help="Path to the local YOLOv5 clone (VespAI submodule). Required with --detector vespai.",
     )
     parser.add_argument(
         "--confidence",
         type=float,
-        default=0.5,
-        help="ACT/ABSTAIN operating threshold (0-1), see ADR-0004.",
+        default=None,
+        help=(
+            "ACT/ABSTAIN operating threshold (0-1), see ADR-0004. "
+            "Default: 0.45 for rfdetr (ADR-0029), 0.5 for vespai."
+        ),
     )
     parser.add_argument(
         "--detector-floor",
@@ -103,13 +174,49 @@ def main(argv: list[str] | None = None) -> int:
     return _run_visual_detection(args, log)
 
 
+def _model_args_present(args: argparse.Namespace, log: logging.Logger) -> bool:
+    if args.detector == "rfdetr":
+        if args.checkpoint is None:
+            log.error("--detector rfdetr needs --checkpoint.")
+            return False
+    elif args.weights is None or args.yolov5_dir is None:
+        log.error("--detector vespai needs --weights and --yolov5-dir.")
+        return False
+    return True
+
+
+def _model_files_ok(args: argparse.Namespace, log: logging.Logger) -> bool:
+    """Check the model files exist; warn when the RF-DETR checkpoint is not the one measured
+    by ADR-0029, since the default threshold is then not a measured ACT point (ADR-0030)."""
+    if args.detector == "rfdetr":
+        if not Path(args.checkpoint).is_file():
+            log.error("Checkpoint not found: %s", args.checkpoint)
+            return False
+        if _sha256(Path(args.checkpoint)) != _RFDETR_MEASURED_SHA256:
+            log.warning(
+                "Checkpoint %s is not the model measured by ADR-0029: "
+                "--confidence %s is not a measured ACT point for it.",
+                args.checkpoint,
+                args.confidence,
+            )
+        return True
+    if not Path(args.weights).is_file():
+        log.error("Weights not found: %s", args.weights)
+        return False
+    if not Path(args.yolov5_dir).is_dir():
+        log.error("YOLOv5 directory not found: %s", args.yolov5_dir)
+        return False
+    return True
+
+
 def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     """Composition root: build the vision adapters and run `DetectHornetVisual`.
     Imports are local so the base CLI works without the `vision` extra."""
-    if args.weights is None or args.yolov5_dir is None:
-        log.error("--video needs --weights and --yolov5-dir.")
+    if not _model_args_present(args, log):
         return 2
 
+    if args.confidence is None:
+        args.confidence = _DEFAULT_CONFIDENCE[args.detector]
     if not 0.0 <= args.confidence <= 1.0:
         log.error("--confidence must be in [0, 1] (got %s).", args.confidence)
         return 2
@@ -138,12 +245,11 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     else:
         source = args.video
 
-    if not Path(args.weights).is_file():
-        log.error("Weights not found: %s", args.weights)
+    if not _model_files_ok(args, log):
         return 2
-    if not Path(args.yolov5_dir).is_dir():
-        log.error("YOLOv5 directory not found: %s", args.yolov5_dir)
-        return 2
+    log.info(
+        "Detector %s, ACT threshold %s, detector floor %s.", args.detector, args.confidence, floor
+    )
 
     from aristech.application.use_cases import (
         DetectHornetVisual,
@@ -151,25 +257,36 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     )
     from aristech.infrastructure.notify.logging_notifier import LoggingNotifier
     from aristech.infrastructure.vision.opencv_video_source import OpenCVVideoSource
-    from aristech.infrastructure.vision.vespai_detector import VespAIDetector
 
+    detector = _TimedDetector(_build_detector(args, floor))
     use_case = DetectHornetVisual(
         video=OpenCVVideoSource(source),
-        detector=VespAIDetector(
-            weights_path=args.weights,
-            yolov5_dir=args.yolov5_dir,
-            confidence=floor,
-        ),
+        detector=detector,
         notifier=LoggingNotifier(),
         config=DetectHornetVisualConfig(confidence_threshold=args.confidence),
     )
-    result = use_case.run()
+    start = time.perf_counter()
+    try:
+        result = use_case.run()
+    finally:
+        _log_timing(log, detector.latencies, time.perf_counter() - start)
     log.info(
         "Analysis done: %d threat(s), %d abstention(s) below the threshold.",
         result.threats,
         result.abstentions,
     )
     return 0
+
+
+def _build_detector(args: argparse.Namespace, floor: float) -> "HornetDetector":
+    """Build the chosen detector at the floor; imports stay lazy (optional extras)."""
+    if args.detector == "rfdetr":
+        from aristech.infrastructure.vision.rfdetr_detector import RFDETRDetector
+
+        return RFDETRDetector(checkpoint_path=args.checkpoint, confidence=floor)
+    from aristech.infrastructure.vision.vespai_detector import VespAIDetector
+
+    return VespAIDetector(weights_path=args.weights, yolov5_dir=args.yolov5_dir, confidence=floor)
 
 
 if __name__ == "__main__":

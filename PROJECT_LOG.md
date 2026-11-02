@@ -381,3 +381,44 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - SonarQube python:S7517 fixed in `EvaluationReport.all_class_metrics` (open issues 2 → 0).
   - osv-scanner runs with `--no-resolve`: the lock is complete and the transitive resolution (deps.dev) failed twice in a row.
   - **Next**: first `dev` → `main` promotion (ADR-0025), then C1 hardware (#84).
+
+- **PR #128 merged** (`69a8dcf`, merge commit on `main`) — `chore(release): promote dev to main (first promotion)`. Issue #127.
+  - First `dev` → `main` promotion under ADR-0025: the eleven commits from PR #113 to PR #126 (branching model, Python 3.11, local CI tiers, removal of the check workflows, dependency bumps, `scripts/` lint).
+  - **Verification**: `just gate` on `e7b0a68` (270 tests on 3.11 and 3.12, coverage 97.7 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
+  - No tag yet: the signed `v*` tag is the owner's call.
+  - **Next**: C1 hardware — #84 (microphone end of life), then the order list for the bench Pi 5.
+
+## 2026-11-02
+
+- **PR #130 merged** (`59c770e`) — `docs(c1): record ICS-43434 EOL check and microphone fallback`. Issue #84.
+  - The ICS-43434 chip is end of life (TDK PCN-000772: last-time buy 2026-06-15, last-time ship 2027-01-15); the Adafruit 6049 breakout is still in stock.
+  - ADR-0017 stands (MCDA A 410 / B 330 / C 285): keep the ICS-43434 and order 4 breakouts (2 + 2 spares, +24 €). Fallback for later units: TDK T5848 (I²S, 1.8 V I/O, needs a level shifter); it ranks first only if longevity weighs 35.
+  - **Verification**: `just gate` green on `509a3a2` (SonarQube gate passed); CodeQL green.
+  - **Next**: order list for the bench Pi 5 (separate issue).
+
+- **PR #133 merged** (`a83c1ab`) — `docs(c1): add priced bench Pi 5 hardware order list`. Issue #132.
+  - Bill of materials for the bench rig (also the staging device, ADR-0025), every price and stock status read live on 2026-11-02: 666.32 EUR incl. VAT, shipping excluded, against ~369 EUR estimated in ADR-0017 (Pi 5 8 GB 213 EUR, SSD 146 EUR: 2026 memory prices).
+  - Storage (MCDA C 390 / B 380 / A 375 / D 345): M.2 HAT+ with a 512 GB 2230 SSD for the bench; 1 TB ranks first only if capacity weighs 35. ADR-0017 stands.
+  - Unpriced: RTC battery (out of stock), insect mesh (buy in store). No order placed: the owner orders.
+  - **Verification**: `just gate` green (SonarQube gate passed); CodeQL green.
+  - **Next**: owner orders the bench hardware; #134 (QA checklist).
+
+- **PR #136 merged** (`1886461`) — `chore(qa): add a QA checklist that tracks the test matrix and executed checks`. Issue #134.
+  - `docs/architecture/qa/checklist-template.md`, copied to `qa/<date>-<topic>.md` at every QA pass: coverage of the use cases and requirement sections the diff touches, then each planned check run with its evidence (matrix format of the QA pass, plus a `Covers` column).
+  - Hooked into pre-merge gate step 5: CONTRIBUTING, PR template, design dossier and review READMEs; first filled checklist on the branch itself.
+  - Left open: `docs/requirements.md` has no stable requirement IDs, so coverage rows cite use cases or section names.
+  - **Verification**: `just gate` green on `9de1d4f` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
+
+- **PR #138 merged** (`c3b32ff`) — `feat(evaluation): measure the ACT operating point with margin and false-alert cap`. Issue #18 (M4).
+  - ADR-0029 (MCDA C 360 / D 335 / A 330 / B 270; C first in 70 % of weight vectors): the ACT threshold has zero bees as target at its grid point and the one below, at most 2.5 % of target-free images alerting, and is published with the rule-of-three bound. The legal floor is a constraint, not a criterion.
+  - RF-DETR Small on test-v1: provisional ACT threshold **0.45** — 0 of 780 bees as target (bound ≤ 0.38 %), 5/238 false-alert images, 86 % of hornet images caught. No bee is read as target at any threshold, so the false-alert cap decides; box precision (0.52) understates image precision (0.90) because of duplicate boxes.
+  - The live `--confidence` default is unchanged; the threshold is re-measured on the field set (M5). The COUNT point waits for the `attack-alert` gate.
+  - **Verification**: `just gate` green on `69e56ed` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
+- **PR #141 merged** (`ae8b0af`) — `feat(cli): run live detection with the RF-DETR detector at the ACT threshold`. Issue #140 (M6).
+  - ADR-0030 (MCDA B 475 / D 385 / C 345 / A 280; B first in 99 % of weight vectors): `--detector {vespai,rfdetr}` with `--checkpoint`; `--confidence` defaults to 0.45 for RF-DETR (ADR-0029) and 0.5 for VespAI; a warning when the checkpoint sha256 is not the measured model. The ADR-0009 floor is unchanged.
+  - Every run logs the warm-up, FPS and detect latency p50 / p95, also on failure; ignored species are logged at debug level.
+  - Laptop CPU baseline (i9-13900H, 60-frame sample made from test-v1 images): 16–44 FPS, p50 18–37 ms, warm-up 9–17 s; the spread follows machine load (`docs/research/live-fps-laptop-cpu.md`).
+  - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL green.
+  - **Next**: measure on the idle bench Pi 5 once it arrives; `config/logging.yaml` file handler fails without a `logs/` folder (pre-existing).

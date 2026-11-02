@@ -16,6 +16,8 @@ from aristech.evaluation.operating_point import (
     OperatingPoint,
     ThresholdPoint,
     bees_as_target_count,
+    false_alert_rate,
+    rule_of_three_bound,
     select_operating_point,
     threshold_sweep,
 )
@@ -32,8 +34,10 @@ __all__ = [
     "collect_samples",
     "evaluate",
     "evaluate_on_dataset",
+    "false_alert_rate",
     "iou",
     "parse_yolo_labels",
+    "rule_of_three_bound",
     "select_operating_point",
     "threshold_sweep",
 ]

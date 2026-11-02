@@ -1,16 +1,23 @@
 """Measure the detector's confidence operating point on an annotated set.
 
-Runs VespAI once over a YOLO-format dataset at confidence 0 (so the whole
-prediction range is available), sweeps candidate confidence thresholds, and
-prints both the per-threshold curve and the selected operating point — the
-lowest threshold at which **no honeybee is classified as the target**
-(`VESPA_VELUTINA`), with the best hornet recall under that legal-floor zero.
+Runs a detector (RF-DETR checkpoint or VespAI) once over a YOLO-format dataset
+at confidence 0 (so the whole prediction range is available), sweeps candidate
+confidence thresholds, and prints both the per-threshold curve and the
+selected operating point — the lowest threshold at which **no honeybee is classified as the target**
+(`VESPA_VELUTINA`), one grid step of margin above the last unsafe threshold
+(ADR-0029), with the 95 % rule-of-three bound on the bees-as-target rate.
 
-This is the M4 "verified on the set" step. It needs the `vision` extra
-(torch + opencv), the VespAI weights (operator-supplied; not in the repo), and
-the annotated dataset — so it runs locally, not in CI.
+This is the M4 "verified on the set" step. It needs the `train` extra
+(RF-DETR) or the `vision` extra and VespAI weights (operator-supplied; not in
+the repo), and the annotated dataset — so it runs locally, not in CI.
 
-Example:
+Example (RF-DETR on the frozen test set, canonical class ids):
+    python scripts/measure_operating_point.py --detector rfdetr \\
+        --weights data/runs/prefield-small/checkpoint_best_total.pth \\
+        --dataset data/views/prefield --splits test-v1 \\
+        --class-map 0:vespa_velutina,1:vespa_crabro,2:apis_mellifera,3:unknown
+
+Example (VespAI):
     python scripts/measure_operating_point.py \\
         --weights path/to/vespai.pt \\
         --yolov5-dir path/to/yolov5 \\
@@ -24,9 +31,11 @@ import logging
 import sys
 from pathlib import Path
 
+from aristech.application.ports import HornetDetector
 from aristech.domain import Species
 from aristech.evaluation import (
     collect_samples,
+    false_alert_rate,
     select_operating_point,
     threshold_sweep,
 )
@@ -72,15 +81,43 @@ def _count_truth_bees(samples: list[Sample]) -> int:
     )
 
 
+def _build_detector(kind: str, weights: str, yolov5_dir: str | None) -> HornetDetector:
+    """Build the detector at confidence 0 so the sweep sees every prediction.
+
+    Imported lazily so --help works without the heavy extras installed.
+    """
+    if kind == "rfdetr":
+        from aristech.infrastructure.vision.rfdetr_detector import RFDETRDetector
+
+        return RFDETRDetector(checkpoint_path=weights, confidence=0.0)
+    from aristech.infrastructure.vision.vespai_detector import VespAIDetector
+
+    return VespAIDetector(weights_path=weights, yolov5_dir=str(yolov5_dir), confidence=0.0)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="measure_operating_point",
-        description="Sweep VespAI confidence thresholds and pick the legal-floor "
+        description="Sweep detector confidence thresholds and pick the legal-floor "
         "operating point on a YOLO dataset.",
     )
-    parser.add_argument("--weights", required=True, help="Poids VespAI (.pt).")
     parser.add_argument(
-        "--yolov5-dir", required=True, help="Clone local YOLOv5 (sous-module VespAI)."
+        "--detector", choices=("vespai", "rfdetr"), default="vespai", help="Default: vespai."
+    )
+    parser.add_argument("--weights", required=True, help="VespAI .pt or RF-DETR checkpoint.")
+    parser.add_argument("--yolov5-dir", help="Local YOLOv5 clone (VespAI only).")
+    parser.add_argument(
+        "--max-false-alert-rate",
+        type=float,
+        default=0.025,
+        help="Cap on the share of target-free images that raise an alert (ADR-0029). "
+        "Default: 0.025.",
+    )
+    parser.add_argument(
+        "--margin-steps",
+        type=int,
+        default=1,
+        help="Safe grid steps required below the chosen threshold (ADR-0029). Default: 1.",
     )
     parser.add_argument("--dataset", required=True, help="YOLO dataset root.")
     parser.add_argument(
@@ -124,18 +161,13 @@ def main(argv: list[str] | None = None) -> int:
     if not Path(args.weights).is_file():
         _log.error("Poids introuvables : %s", args.weights)
         return 2
-    if not Path(args.yolov5_dir).is_dir():
+    if args.detector == "vespai" and not (args.yolov5_dir and Path(args.yolov5_dir).is_dir()):
         _log.error("YOLOv5 directory not found: %s", args.yolov5_dir)
         return 2
 
-    # Imported here so --help works without the `vision` extra installed.
-    from aristech.infrastructure.vision.vespai_detector import VespAIDetector
+    detector = _build_detector(args.detector, args.weights, args.yolov5_dir)
 
-    # confidence=0.0 is mandatory: the detector must emit every prediction so
-    # the sweep sees the full range (see evaluation.collect_samples).
-    detector = VespAIDetector(weights_path=args.weights, yolov5_dir=args.yolov5_dir, confidence=0.0)
-
-    _log.info("Running VespAI over %s (splits=%s)…", dataset, args.splits)
+    _log.info("Running %s over %s (splits=%s)…", args.detector, dataset, args.splits)
     samples = list(collect_samples(detector, dataset, class_map, splits=tuple(args.splits)))
     _log.info("Scored %d image(s).", len(samples))
 
@@ -147,31 +179,44 @@ def main(argv: list[str] | None = None) -> int:
             "actually exercised here. Use a set that contains bees to verify it."
         )
 
-    _log.info("\n%-10s %8s %8s %8s %14s", "conf", "P", "R", "F1", "bees→target")
+    _log.info(
+        "\n%-10s %8s %8s %8s %14s %12s", "conf", "P", "R", "F1", "bees→target", "false alerts"
+    )
     for point in threshold_sweep(samples, thresholds, iou_threshold=args.iou):
         m = point.target
         _log.info(
-            "%-10.2f %8.3f %8.3f %8.3f %14d",
+            "%-10.2f %8.3f %8.3f %8.3f %14d %12.3f",
             point.confidence_threshold,
             m.precision,
             m.recall,
             m.f1,
             point.bees_as_target,
+            false_alert_rate(samples, point.confidence_threshold),
         )
 
     try:
-        chosen = select_operating_point(samples, thresholds, iou_threshold=args.iou)
+        chosen = select_operating_point(
+            samples,
+            thresholds,
+            iou_threshold=args.iou,
+            margin_steps=args.margin_steps,
+            max_false_alert_rate=args.max_false_alert_rate,
+        )
     except ValueError as exc:
         _log.error("\nNo safe operating point: %s", exc)
         return 1
 
     _log.info(
         "\n✓ Operating point: confidence_threshold=%.2f "
-        "(V. velutina P=%.3f R=%.3f, bees→target=%d)",
+        "(V. velutina P=%.3f R=%.3f, bees→target=%d of %d bees, "
+        "95 %% bound ≤ %.2f %%, false alerts %.1f %% of images)",
         chosen.confidence_threshold,
         chosen.target.precision,
         chosen.target.recall,
         chosen.bees_as_target,
+        chosen.bee_count,
+        100 * chosen.bees_as_target_bound,
+        100 * chosen.false_alert_rate,
     )
     _log.info("Pass it to the CLI as --confidence (DetectHornetVisualConfig.confidence_threshold).")
     return 0
