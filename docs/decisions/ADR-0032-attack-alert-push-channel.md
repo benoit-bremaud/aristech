@@ -46,6 +46,8 @@ personal data), which keeps A's privacy cost low. **Chosen: A** (owner, 2026-11-
 
 ## Consequences
 
+- A push is synchronous with a 3-s timeout: a dead network stalls the detection loop up to 3 s
+  per episode event (and per queued message on recovery); a background sender comes with M6.
 - The queue lives in memory: a restart while offline loses it (the log keeps the episode). A
   persistent queue, the hive id and a representative frame come with the embedded deployment (M6).
 - Telegram (a third party) receives alert times and counts; switch to option B if that becomes

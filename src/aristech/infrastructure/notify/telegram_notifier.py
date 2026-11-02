@@ -6,6 +6,7 @@ events are pushed, never a detection (spec attack-alert AC5). Stdlib only.
 import json
 import logging
 import os
+import urllib.parse
 import urllib.request
 from collections import deque
 from collections.abc import Callable, Mapping
@@ -24,14 +25,17 @@ API_URL_ENV = "ARISTECH_TELEGRAM_API_URL"
 DEFAULT_API_URL = "https://api.telegram.org"
 # Messages kept while the channel is down (spec A1); the oldest are dropped beyond it.
 MAX_PENDING = 50
-_TIMEOUT_S = 10.0
+# Short: a push runs inside the detection loop, so a dead network stalls it this long.
+_TIMEOUT_S = 3.0
 
 Send = Callable[[str], None]
 
 
 def http_sender(token: str, chat_id: str, api_url: str = DEFAULT_API_URL) -> Send:
     """Return a function that posts one text message with the Bot API `sendMessage`."""
-    if not api_url.startswith(("https://", "http://127.0.0.1")):
+    parts = urllib.parse.urlsplit(api_url)
+    local_stub = parts.scheme == "http" and parts.hostname == "127.0.0.1"
+    if parts.username or parts.password or not (parts.scheme == "https" or local_stub):
         raise ValueError("the Telegram API URL must be https (or http://127.0.0.1 for a stub)")
     url = f"{api_url.rstrip('/')}/bot{token}/sendMessage"
 
@@ -41,7 +45,7 @@ def http_sender(token: str, chat_id: str, api_url: str = DEFAULT_API_URL) -> Sen
             url, data=body, headers={"Content-Type": "application/json"}
         )
         with urllib.request.urlopen(request, timeout=_TIMEOUT_S) as response:  # noqa: S310  # nosemgrep
-            response.read()
+            response.read(4096)
 
     return send
 
@@ -111,6 +115,7 @@ class TelegramNotifier:
             return True
         except (OSError, HTTPException, ValueError) as exc:
             failure = f"{type(exc).__name__} ({exc})"
+        # Urllib error messages carry no URL today; the mask guards the token if one ever does.
         if self._secret:
             failure = failure.replace(self._secret, "***")
         _log.error("FAULT push channel: %s; %d message(s) queued", failure, len(self._pending) + 1)

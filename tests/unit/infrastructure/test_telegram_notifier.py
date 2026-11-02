@@ -107,6 +107,7 @@ def test_queue_keeps_order_while_down_and_is_bounded(channel, inner):
     channel.down = False
     notifier.notify_attack_ended(ENDED)
     assert len(channel.sent) == MAX_PENDING + 1
+    assert all(m.startswith("[delayed] Hornet attack under way") for m in channel.sent[:-1])
     assert channel.sent[-1].startswith("Hornet attack ended")
 
 
@@ -115,9 +116,12 @@ def test_from_env_needs_token_and_chat_id(inner):
         TelegramNotifier.from_env(inner, env={"ARISTECH_TELEGRAM_TOKEN": "t"})
 
 
-def test_sender_refuses_plain_http_to_a_remote_host():
+@pytest.mark.parametrize(
+    "url", ["http://example.org", "http://127.0.0.1.evil.com", "http://127.0.0.1@evil.com/"]
+)
+def test_sender_refuses_plain_http_to_a_remote_host(url):
     with pytest.raises(ValueError, match="https"):
-        http_sender("t", "1", "http://example.org")
+        http_sender("t", "1", url)
 
 
 def test_http_sender_posts_send_message_to_the_bot_api():
@@ -145,4 +149,6 @@ def test_http_sender_posts_send_message_to_the_bot_api():
     TelegramNotifier.from_env(_RecordingNotifier(), env=env).notify_attack_started(STARTED)
     thread.join(timeout=5)
     server.server_close()
-    assert received == [("/bottok/sendMessage", {"chat_id": "42", "text": received[0][1]["text"]})]
+    assert [path for path, _ in received] == ["/bottok/sendMessage"]
+    assert received[0][1]["chat_id"] == "42"
+    assert received[0][1]["text"].startswith("Hornet attack under way")

@@ -22,6 +22,6 @@
 | ADR accepted | ✅ | ADR-0032 (owner chose A, Telegram bot, 410/500, 2026-11-02) |
 | Dependency rule kept | ✅ | Adapter in `infrastructure/notify/`, stdlib `urllib` only; no new port (second `Notifier`) |
 | Test strategy | ✅ | Unit with a hand-written fake channel (one push per event, no detection push, fault, delayed queue, bound, env secrets), sender against a local HTTP stub, CLI wiring. Sample-clip run against a local stub. |
-| Risks | ✅ | In-memory queue lost on restart (log keeps the episode; persistent queue with M6); Telegram sees alert times and counts. |
+| Risks | ✅ | Synchronous push (3-s timeout) can stall the loop on a dead network; in-memory queue lost on restart (log keeps the episode; persistent queue with M6); Telegram sees alert times and counts. |
 
 - Owner: Benoît Bremaud — ☑ approved plan, option A (date: 2026-11-02)

@@ -259,6 +259,7 @@ def test_empty_alert_section_uses_the_defaults(argv, tmp_path, caplog):
 
 def test_push_without_secrets_stops_before_running(argv, caplog, monkeypatch):
     monkeypatch.delenv("ARISTECH_TELEGRAM_TOKEN", raising=False)
+    monkeypatch.delenv("ARISTECH_TELEGRAM_CHAT_ID", raising=False)
     with caplog.at_level(logging.INFO, logger="aristech"):
         assert main([*argv, "--push", "telegram"]) == 2
     assert "Push channel unusable" in caplog.text
