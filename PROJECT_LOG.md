@@ -442,3 +442,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Live path: `AttackEpisodeTracker` (N = 3, W = 10 s, T = 60 s, provisional, `config/config.yaml`), two new `Notifier` methods, `--count-confidence`; video files are stamped with video time instead of processing time.
   - **Verification**: `just gate` green (329 tests, coverage 97.86 %, SonarQube gate passed); sample clip from test-v1 images: two bursts 70 s apart → 2 alerts, 40 s apart → 1 alert.
   - **Next**: push channel (M6) for the alert; COUNT and episode values from the field set (M5).
+
+- **PR #153 merged** (`136dca8`) — `feat(alert): send the attack alert on a push channel`. Issue #152, ADR-0032.
+  - Channel MCDA: Telegram bot (410) over self-hosted ntfy (395) and email (295); Telegram first in 79 % of weight vectors, ntfy passes it once privacy weighs 35. Pushed content is minimal (time, counts, no image or location).
+  - `TelegramNotifier` decorates the log notifier and pushes only episode start and end (AC5); `--push telegram`; token and chat id from the environment only; API URL https (or http on 127.0.0.1 for a stub), parsed so look-alike hosts are refused.
+  - A3: a failed push is logged as `FAULT push channel` with the token masked, never raised. A1: bounded in-memory queue replayed as `[delayed]`. Push is synchronous (3-s timeout); a persistent queue and a background sender wait for M6.
+  - **Verification**: `just gate` green (339 tests, coverage 96.75 %, SonarQube gate passed); 80-s sample clip with RF-DETR Small against a local Bot API stub: 1 alert + 1 summary; stub down: FAULT logged, run exits 0; CodeQL green.
+  - **Next**: owner test on a real bot; fault and heartbeat pushes (ADR-0006) can reuse the adapter.
