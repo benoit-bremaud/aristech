@@ -435,3 +435,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - `_ensure_log_dirs` runs before `dictConfig`; the basicConfig fallback is unchanged. A unit test runs the CLI in an empty folder and checks `logs/app.log` (red without the fix).
   - **Verification**: `just gate` green (296 tests, coverage 97.7 %, SonarQube gate passed); QA on a fresh clone: CLI exits 0 and writes `logs/app.log`; CodeQL green.
   - **Next**: brick C, COUNT point and attack alert (ADR-0014, spec attack-alert).
+
+- **PR #150 merged** (`be5a83a`) — `feat(alert): measure the COUNT point and raise one attack alert per episode`. Issue #149, ADR-0031.
+  - COUNT target: image precision ≥ 0.80 (410) over ≥ 0.85 (400), COUNT = ACT (365) and the ≈ 95 % of ADR-0014 (195, infeasible: max 0.938 at 0.75). Episode rule E1, N hit frames in a sliding window W then cool-down T (415), over first-hit (315) and N consecutive frames (360).
+  - RF-DETR Small on test-v1: COUNT **0.15** (image P 0.800, R 0.96) ≤ ACT 0.45; it sits exactly on the target, so re-measure on the field set.
+  - Live path: `AttackEpisodeTracker` (N = 3, W = 10 s, T = 60 s, provisional, `config/config.yaml`), two new `Notifier` methods, `--count-confidence`; video files are stamped with video time instead of processing time.
+  - **Verification**: `just gate` green (329 tests, coverage 97.86 %, SonarQube gate passed); sample clip from test-v1 images: two bursts 70 s apart → 2 alerts, 40 s apart → 1 alert.
+  - **Next**: push channel (M6) for the alert; COUNT and episode values from the field set (M5).
