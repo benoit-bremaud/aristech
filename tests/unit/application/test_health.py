@@ -75,5 +75,6 @@ def test_another_fault_kind_is_not_muted(clock):
 
 @pytest.mark.parametrize(("heartbeat", "cooldown"), [(0, 1), (1, 0), (-1, 1)])
 def test_rule_rejects_non_positive_durations(heartbeat, cooldown):
+    period, quiet = timedelta(seconds=heartbeat), timedelta(seconds=cooldown)
     with pytest.raises(ValueError, match="positive"):
-        HealthRule(timedelta(seconds=heartbeat), timedelta(seconds=cooldown))
+        HealthRule(period, quiet)
