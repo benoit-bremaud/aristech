@@ -395,3 +395,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - ADR-0017 stands (MCDA A 410 / B 330 / C 285): keep the ICS-43434 and order 4 breakouts (2 + 2 spares, +24 €). Fallback for later units: TDK T5848 (I²S, 1.8 V I/O, needs a level shifter); it ranks first only if longevity weighs 35.
   - **Verification**: `just gate` green on `509a3a2` (SonarQube gate passed); CodeQL green.
   - **Next**: order list for the bench Pi 5 (separate issue).
+
+- **PR #133 merged** (`a83c1ab`) — `docs(c1): add priced bench Pi 5 hardware order list`. Issue #132.
+  - Bill of materials for the bench rig (also the staging device, ADR-0025), every price and stock status read live on 2026-11-02: 666.32 EUR incl. VAT, shipping excluded, against ~369 EUR estimated in ADR-0017 (Pi 5 8 GB 213 EUR, SSD 146 EUR: 2026 memory prices).
+  - Storage (MCDA C 390 / B 380 / A 375 / D 345): M.2 HAT+ with a 512 GB 2230 SSD for the bench; 1 TB ranks first only if capacity weighs 35. ADR-0017 stands.
+  - Unpriced: RTC battery (out of stock), insect mesh (buy in store). No order placed: the owner orders.
+  - **Verification**: `just gate` green (SonarQube gate passed); CodeQL green.
+  - **Next**: owner orders the bench hardware; #134 (QA checklist).
