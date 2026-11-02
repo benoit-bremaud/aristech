@@ -409,3 +409,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Left open: `docs/requirements.md` has no stable requirement IDs, so coverage rows cite use cases or section names.
   - **Verification**: `just gate` green on `9de1d4f` (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
+
+- **PR #138 merged** (`c3b32ff`) — `feat(evaluation): measure the ACT operating point with margin and false-alert cap`. Issue #18 (M4).
+  - ADR-0029 (MCDA C 360 / D 335 / A 330 / B 270; C first in 70 % of weight vectors): the ACT threshold has zero bees as target at its grid point and the one below, at most 2.5 % of target-free images alerting, and is published with the rule-of-three bound. The legal floor is a constraint, not a criterion.
+  - RF-DETR Small on test-v1: provisional ACT threshold **0.45** — 0 of 780 bees as target (bound ≤ 0.38 %), 5/238 false-alert images, 86 % of hornet images caught. No bee is read as target at any threshold, so the false-alert cap decides; box precision (0.52) understates image precision (0.90) because of duplicate boxes.
+  - The live `--confidence` default is unchanged; the threshold is re-measured on the field set (M5). The COUNT point waits for the `attack-alert` gate.
+  - **Verification**: `just gate` green on `69e56ed` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
