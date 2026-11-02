@@ -195,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        args.episode_rule = _episode_rule(config.get("alert", {}))
+        args.episode_rule = _episode_rule(config.get("alert") or {})
     except (TypeError, ValueError) as exc:
         log.error("Invalid alert configuration: %s", exc)
         return 2
@@ -209,8 +209,11 @@ def _episode_rule(alert: dict[str, Any]) -> "EpisodeRule":
     from aristech.application.attack_episode import EpisodeRule
 
     default = EpisodeRule()
+    min_hit_frames = alert.get("min_hit_frames", default.min_hit_frames)
+    if isinstance(min_hit_frames, bool) or not isinstance(min_hit_frames, int):
+        raise TypeError(f"alert.min_hit_frames must be an integer (got {min_hit_frames!r})")
     return EpisodeRule(
-        min_hit_frames=int(alert.get("min_hit_frames", default.min_hit_frames)),
+        min_hit_frames=min_hit_frames,
         window=timedelta(seconds=float(alert.get("window_s", default.window.total_seconds()))),
         cooldown=timedelta(
             seconds=float(alert.get("cooldown_s", default.cooldown.total_seconds()))

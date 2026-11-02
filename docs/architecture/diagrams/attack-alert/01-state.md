@@ -13,7 +13,7 @@ stateDiagram-v2
     Episode --> Episode: frame [hits in W ≥ N] / last pressure := frame time
     Episode --> Episode: frame [hits in W < N and quiet < T]
     Episode --> Calm: frame [hits in W < N and quiet ≥ T] / notify_attack_ended (summary)
-    Episode --> [*]: end of stream / notify_attack_ended (summary)
+    Episode --> [*]: end of stream, interruption or error / notify_attack_ended (summary)
     Calm --> [*]: end of stream
 ```
 

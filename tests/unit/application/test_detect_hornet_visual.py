@@ -177,3 +177,42 @@ def test_count_point_defaults_to_the_act_point():
 def test_count_point_outside_zero_to_act_is_rejected(count):
     with pytest.raises(ValueError):
         DetectHornetVisualConfig(confidence_threshold=0.45, count_threshold=count)
+
+
+def test_two_episodes_separated_by_more_than_the_cooldown_raise_two_alerts():
+    hornet = _det(Species.VESPA_VELUTINA, 0.2)
+    per_frame = [[hornet]] * 5 + [[]] * 70 + [[hornet]] * 5 + [[]] * 70
+    result, notifier = _episode_run(per_frame)
+    assert result.episodes == 2
+    assert len(notifier.started) == 2 and len(notifier.ended) == 2
+
+
+def test_open_episode_is_summarised_when_the_detector_fails():
+    hornet = _det(Species.VESPA_VELUTINA, 0.2)
+
+    class _FailingDetector:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+            self.calls += 1
+            if self.calls > 3:
+                raise RuntimeError("boom")
+            return [hornet]
+
+    video = _FakeVideoSource(_frames(5))
+    notifier = _RecordingNotifier()
+    use_case = DetectHornetVisual(
+        video=video,
+        detector=_FailingDetector(),
+        notifier=notifier,
+        config=DetectHornetVisualConfig(
+            confidence_threshold=0.45,
+            count_threshold=0.15,
+            episode_rule=EpisodeRule(min_hit_frames=3),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="boom"):
+        use_case.run()
+    assert len(notifier.started) == 1 and len(notifier.ended) == 1
+    assert video.closed

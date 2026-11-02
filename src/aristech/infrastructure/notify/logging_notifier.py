@@ -44,7 +44,7 @@ class LoggingNotifier:
         _log.warning(
             "ATTACK ALERT episode started %s (%d hit frame(s) in the window)",
             episode.started.isoformat(),
-            episode.hit_frames,
+            episode.peak,
         )
 
     def notify_attack_ended(self, episode: AttackEpisode) -> None:

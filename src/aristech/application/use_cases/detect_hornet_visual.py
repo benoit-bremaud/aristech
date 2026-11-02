@@ -69,7 +69,9 @@ class DetectHornetVisual:
         self._config = config or DetectHornetVisualConfig()
 
     def run(self) -> DetectionRun:
-        """Consume the whole source, then close it, even on error."""
+        """Consume the whole source, then close it, even on error. An episode still
+        open when the run stops (end of stream, interruption or error) is closed at
+        the last frame seen and its summary sent."""
         threats = abstentions = episodes = 0
         tracker = AttackEpisodeTracker(self._config.episode_rule)
         last_seen: datetime | None = None
@@ -97,7 +99,9 @@ class DetectHornetVisual:
                 elif episode is not None:
                     self._notifier.notify_attack_ended(episode)
         finally:
-            self._video.close()
-        if last_seen is not None and (ended := tracker.close(last_seen)) is not None:
-            self._notifier.notify_attack_ended(ended)
+            try:
+                if last_seen is not None and (ended := tracker.close(last_seen)) is not None:
+                    self._notifier.notify_attack_ended(ended)
+            finally:
+                self._video.close()
         return DetectionRun(threats=threats, abstentions=abstentions, episodes=episodes)

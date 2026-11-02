@@ -76,3 +76,10 @@ def test_close_ends_an_open_episode_and_is_a_no_op_otherwise():
 def test_invalid_rule_is_rejected(kwargs):
     with pytest.raises(ValueError):
         EpisodeRule(**kwargs)
+
+
+def test_hits_below_n_do_not_keep_an_episode_open():
+    opening = [(0, True), (1, True), (2, True)]
+    trickle = [(float(s), True) for s in range(20, 90, 20)]
+    events = _feed(AttackEpisodeTracker(_RULE), opening + trickle)
+    assert [e.ended is None for e in events] == [True, False]

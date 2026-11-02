@@ -25,7 +25,8 @@ class EpisodeRule:
 @dataclass(frozen=True, slots=True)
 class AttackEpisode:
     """An attack episode: `ended` is None while it lasts; `peak` is the highest
-    hit-frame count seen in one window; `hit_frames` the total while it lasted."""
+    hit-frame count seen in one window; `hit_frames` the total hit frames so far
+    (at the start, the hits of the opening window)."""
 
     started: datetime
     hit_frames: int

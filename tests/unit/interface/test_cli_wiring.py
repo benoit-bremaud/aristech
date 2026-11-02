@@ -243,8 +243,15 @@ def test_alert_section_sets_the_episode_rule(argv, tmp_path, caplog):
     assert "ATTACK ALERT episode started" in caplog.text
 
 
-def test_invalid_alert_section_errors(argv, tmp_path):
+@pytest.mark.parametrize("value", ["0", "3.7", "true", "x"])
+def test_invalid_alert_section_errors(argv, tmp_path, value):
     (tmp_path / "config.yaml").write_text(
-        "app:\n  version: test\nalert:\n  min_hit_frames: 0\n", encoding="utf-8"
+        f"app:\n  version: test\nalert:\n  min_hit_frames: {value}\n", encoding="utf-8"
     )
     assert main(argv) == 2
+
+
+def test_empty_alert_section_uses_the_defaults(argv, tmp_path, caplog):
+    (tmp_path / "config.yaml").write_text("app:\n  version: test\nalert:\n", encoding="utf-8")
+    _run(argv, caplog)
+    assert "0 attack episode(s)" in caplog.text
