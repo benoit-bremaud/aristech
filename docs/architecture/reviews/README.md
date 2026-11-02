@@ -1,7 +1,8 @@
 # Reviews
 
 - `audit-YYYY-MM-DD.md` — project audits.
-- `<branch>.md` — pre-push review report for a branch (Must / Should / Nice / Disagree).
+- `<branch>.md` — pre-push review report for a branch (Must / Should / Nice / Disagree). Its
+  step 5 (QA pass) links the filled QA checklist ([template](../qa/checklist-template.md)).
 
 | Report | Scope |
 |--------|-------|
