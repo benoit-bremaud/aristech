@@ -402,3 +402,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Unpriced: RTC battery (out of stock), insect mesh (buy in store). No order placed: the owner orders.
   - **Verification**: `just gate` green (SonarQube gate passed); CodeQL green.
   - **Next**: owner orders the bench hardware; #134 (QA checklist).
+
+- **PR #136 merged** (`1886461`) — `chore(qa): add a QA checklist that tracks the test matrix and executed checks`. Issue #134.
+  - `docs/architecture/qa/checklist-template.md`, copied to `qa/<date>-<topic>.md` at every QA pass: coverage of the use cases and requirement sections the diff touches, then each planned check run with its evidence (matrix format of the QA pass, plus a `Covers` column).
+  - Hooked into pre-merge gate step 5: CONTRIBUTING, PR template, design dossier and review READMEs; first filled checklist on the branch itself.
+  - Left open: `docs/requirements.md` has no stable requirement IDs, so coverage rows cite use cases or section names.
+  - **Verification**: `just gate` green on `9de1d4f` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: owner orders the bench hardware; C1 field acceptance criteria once it arrives.
