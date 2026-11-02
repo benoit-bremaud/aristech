@@ -36,6 +36,8 @@ from aristech.domain import Species
 from aristech.evaluation import (
     collect_samples,
     false_alert_rate,
+    image_point,
+    select_count_point,
     select_operating_point,
     threshold_sweep,
 )
@@ -112,6 +114,13 @@ def main(argv: list[str] | None = None) -> int:
         default=0.025,
         help="Cap on the share of target-free images that raise an alert (ADR-0029). "
         "Default: 0.025.",
+    )
+    parser.add_argument(
+        "--count-precision",
+        type=float,
+        default=0.80,
+        help="Image-level V. velutina precision the COUNT point must reach (ADR-0031). "
+        "Default: 0.80.",
     )
     parser.add_argument(
         "--margin-steps",
@@ -219,6 +228,32 @@ def main(argv: list[str] | None = None) -> int:
         100 * chosen.false_alert_rate,
     )
     _log.info("Pass it to the CLI as --confidence (DetectHornetVisualConfig.confidence_threshold).")
+
+    _log.info("\n%-10s %8s %8s %16s", "conf", "img P", "img R", "flagged neg.")
+    for threshold in thresholds:
+        point = image_point(samples, threshold)
+        _log.info(
+            "%-10.2f %8.3f %8.3f %16d",
+            threshold,
+            point.precision,
+            point.recall,
+            point.flagged_negatives,
+        )
+    try:
+        count = select_count_point(
+            samples, thresholds, args.count_precision, chosen.confidence_threshold
+        )
+    except ValueError as exc:
+        _log.error("\nNo COUNT point: %s", exc)
+        return 1
+    _log.info(
+        "\n✓ COUNT point: %.2f (image P=%.3f R=%.3f, %d flagged target-free image(s)). "
+        "Pass it to the CLI as --count-confidence.",
+        count.confidence_threshold,
+        count.precision,
+        count.recall,
+        count.flagged_negatives,
+    )
     return 0
 
 

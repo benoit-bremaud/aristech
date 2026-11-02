@@ -21,6 +21,9 @@ def test_reads_frames_from_a_generated_video(tmp_path):
     assert len(frames) == 3
     assert frames[0].width == width
     assert frames[0].height == height
+    # File frames carry video time (5 fps), not processing time.
+    step = frames[2].timestamp - frames[1].timestamp
+    assert step.total_seconds() == pytest.approx(0.2, abs=0.01)
 
 
 def test_open_failure_raises(tmp_path):

@@ -7,7 +7,9 @@ from aristech.evaluation.metrics import Annotation, Sample, evaluate
 from aristech.evaluation.operating_point import (
     bees_as_target_count,
     false_alert_rate,
+    image_point,
     rule_of_three_bound,
+    select_count_point,
     select_operating_point,
     threshold_sweep,
 )
@@ -173,3 +175,42 @@ def test_false_alert_cap_raises_the_threshold() -> None:
     assert loose.false_alert_rate == 1.0
     assert capped.confidence_threshold == 0.7
     assert capped.false_alert_rate == 0.0
+
+
+def _count_samples() -> list[Sample]:
+    # Two hornet images (0.3 and 0.6) and two target-free images with a false
+    # target box (0.2 and 0.4): image precision is 2/4 at 0.1, 2/3 at 0.3, 1/1 at 0.5.
+    return [
+        ([_pred(Species.VESPA_VELUTINA, 0.3)], [_truth(Species.VESPA_VELUTINA)]),
+        ([_pred(Species.VESPA_VELUTINA, 0.6)], [_truth(Species.VESPA_VELUTINA)]),
+        ([_pred(Species.VESPA_VELUTINA, 0.2)], [_truth(Species.APIS_MELLIFERA)]),
+        ([_pred(Species.VESPA_VELUTINA, 0.4)], []),
+    ]
+
+
+def test_image_point_counts_flagged_images_not_boxes():
+    duplicate = ([_pred(Species.VESPA_VELUTINA, 0.9)] * 3, [_truth(Species.VESPA_VELUTINA)])
+    point = image_point([duplicate, *_count_samples()], 0.3)
+    assert (point.flagged_positives, point.flagged_negatives, point.positives) == (3, 1, 3)
+    assert point.precision == pytest.approx(3 / 4)
+    assert point.recall == pytest.approx(1.0)
+
+
+def test_image_point_without_flags_or_positives_is_zero():
+    point = image_point([([], [])], 0.5)
+    assert point.precision == 0.0 and point.recall == 0.0
+
+
+def test_count_point_is_the_lowest_threshold_reaching_the_precision():
+    point = select_count_point(_count_samples(), [0.5, 0.1, 0.3], 0.6, act_threshold=0.5)
+    assert point.confidence_threshold == 0.3
+
+
+def test_count_point_unreachable_raises():
+    with pytest.raises(ValueError, match="no threshold"):
+        select_count_point(_count_samples(), [0.1, 0.3], 0.9, act_threshold=0.5)
+
+
+def test_count_point_above_act_rejects_the_model():
+    with pytest.raises(ValueError, match="above the ACT point"):
+        select_count_point(_count_samples(), [0.1, 0.3, 0.5], 0.9, act_threshold=0.45)

@@ -1,8 +1,9 @@
 from collections.abc import Iterator, Sequence
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 
+from aristech.application.attack_episode import AttackEpisode, EpisodeRule
 from aristech.application.use_cases import (
     DetectHornetVisual,
     DetectHornetVisualConfig,
@@ -35,12 +36,20 @@ class _RecordingNotifier:
     def __init__(self) -> None:
         self.received: list[Detection] = []
         self.abstained: list[Detection] = []
+        self.started: list[AttackEpisode] = []
+        self.ended: list[AttackEpisode] = []
 
     def notify_detection(self, detection: Detection) -> None:
         self.received.append(detection)
 
     def notify_abstention(self, detection: Detection) -> None:
         self.abstained.append(detection)
+
+    def notify_attack_started(self, episode: AttackEpisode) -> None:
+        self.started.append(episode)
+
+    def notify_attack_ended(self, episode: AttackEpisode) -> None:
+        self.ended.append(episode)
 
 
 def _frame() -> VideoFrame:
@@ -117,3 +126,54 @@ def test_closes_video_source_on_detector_exception():
     with pytest.raises(RuntimeError, match="boom"):
         use_case.run()
     assert video.closed, "VideoSource.close() must run even on error"
+
+
+def _frames(count: int) -> list[VideoFrame]:
+    t0 = datetime(2026, 11, 2)
+    return [
+        VideoFrame(pixels=None, width=640, height=480, timestamp=t0 + timedelta(seconds=i))
+        for i in range(count)
+    ]
+
+
+def _episode_run(per_frame, count_threshold=0.15):
+    notifier = _RecordingNotifier()
+    use_case = DetectHornetVisual(
+        video=_FakeVideoSource(_frames(len(per_frame))),
+        detector=_ScriptedDetector(per_frame),
+        notifier=notifier,
+        config=DetectHornetVisualConfig(
+            confidence_threshold=0.45,
+            count_threshold=count_threshold,
+            episode_rule=EpisodeRule(min_hit_frames=3),
+        ),
+    )
+    return use_case.run(), notifier
+
+
+def test_one_attack_alert_per_episode_and_a_summary_at_end_of_stream():
+    hornet = _det(Species.VESPA_VELUTINA, 0.2)
+    result, notifier = _episode_run([[hornet, hornet]] * 20)
+    assert result.episodes == 1
+    assert len(notifier.started) == 1
+    assert len(notifier.ended) == 1 and notifier.ended[0].hit_frames == 20
+
+
+def test_detections_below_count_point_and_non_targets_never_count():
+    below = _det(Species.VESPA_VELUTINA, 0.1)
+    crabro = _det(Species.VESPA_CRABRO, 0.99)
+    bee = _det(Species.APIS_MELLIFERA, 0.99)
+    result, notifier = _episode_run([[below, crabro, bee]] * 20)
+    assert result.episodes == 0
+    assert notifier.started == [] and notifier.ended == []
+
+
+def test_count_point_defaults_to_the_act_point():
+    config = DetectHornetVisualConfig(confidence_threshold=0.45)
+    assert config.count_point == 0.45
+
+
+@pytest.mark.parametrize("count", [0.5, -0.1])
+def test_count_point_outside_zero_to_act_is_rejected(count):
+    with pytest.raises(ValueError):
+        DetectHornetVisualConfig(confidence_threshold=0.45, count_threshold=count)

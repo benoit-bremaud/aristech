@@ -3,3 +3,8 @@
 app:
   name: "Aristech"
   version: "0.1.0"
+# Attack episode rule (ADR-0031): provisional values, to be set from field data (M5).
+alert:
+  min_hit_frames: 3   # frames with a counted V. velutina that open an episode...
+  window_s: 10        # ...within this sliding window (seconds)
+  cooldown_s: 60      # seconds without that pressure that close it
