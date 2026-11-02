@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 
 from aristech.domain import BoundingBox, Detection, Species, VideoFrame
-from aristech.infrastructure.vision import opencv_video_source, vespai_detector
+from aristech.infrastructure.vision import opencv_video_source, rfdetr_detector, vespai_detector
+from aristech.interface.cli import main as cli
 from aristech.interface.cli.main import main
 
 
@@ -47,6 +48,7 @@ def argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> list[str]:
     _FakeDetector.created = []
     monkeypatch.setattr(opencv_video_source, "OpenCVVideoSource", _FakeVideo)
     monkeypatch.setattr(vespai_detector, "VespAIDetector", _FakeDetector)
+    monkeypatch.setattr(rfdetr_detector, "RFDETRDetector", _FakeDetector)
     cfg = tmp_path / "config.yaml"
     cfg.write_text("app:\n  version: test\n", encoding="utf-8")
     weights = tmp_path / "w.pt"
@@ -112,3 +114,101 @@ def test_default_floor_is_clamped_to_low_confidence(argv):
 def test_floor_outside_zero_to_confidence_errors(argv, floor):
     assert main([*argv, "--confidence", "0.5", "--detector-floor", floor]) == 2
     assert _FakeDetector.created == []
+
+
+def test_vespai_default_threshold_is_point_five(argv, caplog):
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main(argv) == 0
+    assert "Detector vespai, ACT threshold 0.5," in caplog.text
+    assert "weights_path" in _FakeDetector.created[0]
+
+
+def _base_argv(tmp_path: Path) -> list[str]:
+    return [
+        "--config",
+        str(tmp_path / "config.yaml"),
+        "--logging-config",
+        str(tmp_path / "none.yaml"),
+        "--video",
+        str(tmp_path / "clip.mp4"),
+        "--detector",
+        "rfdetr",
+    ]
+
+
+@pytest.fixture
+def rfdetr_argv(argv: list[str], tmp_path: Path) -> list[str]:
+    checkpoint = tmp_path / "best.pth"
+    checkpoint.write_bytes(b"model")
+    return [*_base_argv(tmp_path), "--checkpoint", str(checkpoint)]
+
+
+def test_rfdetr_runs_at_the_act_threshold_of_adr_0029(rfdetr_argv, caplog):
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main(rfdetr_argv) == 0
+    assert "Detector rfdetr, ACT threshold 0.45, detector floor 0.1." in caplog.text
+    assert _FakeDetector.created[0]["confidence"] == 0.1
+    assert _FakeDetector.created[0]["checkpoint_path"].endswith("best.pth")
+    assert "1 threat(s), 1 abstention(s)" in caplog.text
+
+
+def test_rfdetr_warns_on_an_unmeasured_checkpoint(rfdetr_argv, caplog):
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main(rfdetr_argv) == 0
+    assert "not the model measured by ADR-0029" in caplog.text
+
+
+def test_rfdetr_measured_checkpoint_does_not_warn(rfdetr_argv, caplog, monkeypatch):
+    monkeypatch.setattr(cli, "_sha256", lambda path: cli._RFDETR_MEASURED_SHA256)
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main(rfdetr_argv) == 0
+    assert "not the model measured" not in caplog.text
+
+
+def test_rfdetr_without_checkpoint_errors(argv, tmp_path):
+    assert main(_base_argv(tmp_path)) == 2
+    assert _FakeDetector.created == []
+
+
+def test_rfdetr_missing_checkpoint_errors(argv, tmp_path):
+    missing = str(tmp_path / "missing.pth")
+    assert main([*_base_argv(tmp_path), "--checkpoint", missing]) == 2
+    assert _FakeDetector.created == []
+
+
+def test_run_logs_fps_and_latency(argv, caplog):
+    _run(argv, caplog)
+    assert "Timing: 1 frame(s), too few" in caplog.text
+
+
+def test_ignored_species_is_logged_at_debug(argv, caplog):
+    with caplog.at_level(logging.DEBUG, logger="aristech"):
+        assert main([*argv, "--confidence", "0.5"]) == 0
+    assert "ignore apis_mellifera 0.30" in caplog.text
+
+
+def test_timing_with_no_frame(caplog):
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        cli._log_timing(logging.getLogger("aristech"), [], 0.0)
+    assert "Timing: 0 frame(s), too few" in caplog.text
+
+
+def test_timing_percentiles(caplog):
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        cli._log_timing(logging.getLogger("aristech"), [2.0, 0.02, 0.04, 0.03], 2.3)
+    assert (
+        "4 frame(s), warm-up 2.0 s, then 10.00 FPS end to end, "
+        "detect latency p50 30.0 ms, p95 40.0 ms."
+    ) in caplog.text
+
+
+class _FailingDetector(_FakeDetector):
+    def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+        raise RuntimeError("model load failed")
+
+
+def test_timing_is_logged_even_when_detection_fails(argv, caplog, monkeypatch):
+    monkeypatch.setattr(vespai_detector, "VespAIDetector", _FailingDetector)
+    with caplog.at_level(logging.INFO, logger="aristech"), pytest.raises(RuntimeError):
+        main(argv)
+    assert "Timing: 1 frame(s), too few" in caplog.text

@@ -1,7 +1,7 @@
 # Component diagram — detection — layers and ports (as-built)
 
 > **Feature**: detection v1
-> **Related ADRs**: ADR-0001, ADR-0002, ADR-0006
+> **Related ADRs**: ADR-0001, ADR-0002, ADR-0006, ADR-0030
 
 ## Context
 
@@ -29,6 +29,7 @@ flowchart TB
     subgraph infrastructure["infrastructure (extra: vision)"]
         CV["vision/OpenCVVideoSource"]
         VESP["vision/VespAIDetector"]
+        RFD["vision/RFDETRDetector (extra: train)"]
         LOG["notify/LoggingNotifier"]
     end
     subgraph evaluation["evaluation (offline, lazy cv2)"]
@@ -36,11 +37,13 @@ flowchart TB
         OP["operating_point.select_operating_point"]
         MET["metrics (IoU, matching, per-class report)"]
     end
+    CKPT[("RF-DETR checkpoint — local, git-ignored, sha256 checked by the CLI")]
     EXT[("VespAI weights + YOLOv5 repo — operator-supplied, CC BY-NC-SA")]
 
     CLI --> UC
     CLI --> CV
     CLI --> VESP
+    CLI --> RFD
     CLI --> LOG
     UC --> DEC
     UC --> P_VS
@@ -49,6 +52,8 @@ flowchart TB
     DEC --> DOM
     CV -. implements .-> P_VS
     VESP -. implements .-> P_DET
+    RFD -. implements .-> P_DET
+    RFD --> CKPT
     LOG -. implements .-> P_N
     VESP --> EXT
     RUN --> P_DET
