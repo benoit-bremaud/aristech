@@ -1,6 +1,6 @@
 """`Notifier` adapter that pushes the attack alert and its summary to a Telegram chat
-(ADR-0032). Everything is still logged by the wrapped notifier; only the two episode
-events are pushed, never a detection (spec attack-alert AC5). Stdlib only.
+(ADR-0032), plus the heartbeat and the faults (ADR-0033). Everything is still logged by
+the wrapped notifier; a detection is never pushed (spec attack-alert AC5). Stdlib only.
 """
 
 import json
@@ -13,6 +13,7 @@ from collections.abc import Callable, Mapping
 from http.client import HTTPException
 
 from aristech.application.attack_episode import AttackEpisode
+from aristech.application.health import Fault, Heartbeat
 from aristech.application.ports import Notifier
 from aristech.domain import Detection
 
@@ -51,7 +52,8 @@ def http_sender(token: str, chat_id: str, api_url: str = DEFAULT_API_URL) -> Sen
 
 
 class TelegramNotifier:
-    """Decorates a `Notifier`: delegates every event, and pushes episode start and end.
+    """Decorates a `Notifier`: delegates every event, and pushes episode start and end,
+    the heartbeat and the faults.
 
     A failed push is logged as a fault and never raised (spec A3): the detection loop
     keeps running. The message is queued and sent, flagged as delayed, before the next
@@ -97,6 +99,21 @@ class TelegramNotifier:
             f"Hornet attack ended: {episode.started:%Y-%m-%d %H:%M:%S} -> {end}, "
             f"peak {episode.peak}, {episode.hit_frames} hit frame(s)."
         )
+
+    def notify_heartbeat(self, heartbeat: Heartbeat) -> None:
+        """Log, then push the alive message."""
+        self._inner.notify_heartbeat(heartbeat)
+        self._push(
+            f"Unit alive at {heartbeat.at:%Y-%m-%d %H:%M %Z}, up since "
+            f"{heartbeat.up_since:%Y-%m-%d %H:%M %Z}: {heartbeat.frames} frame(s), "
+            f"{heartbeat.episodes} attack episode(s)."
+        )
+
+    def notify_fault(self, fault: Fault) -> None:
+        """Log, then push the fault kind, never its traceback."""
+        self._inner.notify_fault(fault)
+        muted = f" ({fault.suppressed} more muted since the last one)" if fault.suppressed else ""
+        self._push(f"Unit fault at {fault.at:%Y-%m-%d %H:%M:%S %Z}: {fault.kind.value}{muted}.")
 
     def _push(self, text: str) -> None:
         while self._pending:

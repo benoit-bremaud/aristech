@@ -1,9 +1,10 @@
 from collections.abc import Iterator, Sequence
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from aristech.application.attack_episode import AttackEpisode, EpisodeRule
+from aristech.application.health import Fault, FaultKind, HealthMonitor, HealthRule, Heartbeat
 from aristech.application.use_cases import (
     DetectHornetVisual,
     DetectHornetVisualConfig,
@@ -38,6 +39,8 @@ class _RecordingNotifier:
         self.abstained: list[Detection] = []
         self.started: list[AttackEpisode] = []
         self.ended: list[AttackEpisode] = []
+        self.heartbeats: list[Heartbeat] = []
+        self.faults: list[Fault] = []
 
     def notify_detection(self, detection: Detection) -> None:
         self.received.append(detection)
@@ -50,6 +53,32 @@ class _RecordingNotifier:
 
     def notify_attack_ended(self, episode: AttackEpisode) -> None:
         self.ended.append(episode)
+
+    def notify_heartbeat(self, heartbeat: Heartbeat) -> None:
+        self.heartbeats.append(heartbeat)
+
+    def notify_fault(self, fault: Fault) -> None:
+        self.faults.append(fault)
+
+
+class _SteppingClock:
+    """Wall clock that moves `step` forward at each reading."""
+
+    def __init__(self, step: timedelta) -> None:
+        self._at = datetime(2026, 11, 2, tzinfo=UTC)
+        self._step = step
+
+    def now(self) -> datetime:
+        self._at += self._step
+        return self._at
+
+    def source(self) -> str:
+        return "ntp"
+
+
+def _health(step_s: float, heartbeat_s: float = 3600) -> HealthMonitor:
+    rule = HealthRule(timedelta(seconds=heartbeat_s), timedelta(hours=1))
+    return HealthMonitor(rule, _SteppingClock(timedelta(seconds=step_s)))
 
 
 def _frame() -> VideoFrame:
@@ -220,3 +249,70 @@ def test_open_episode_is_summarised_when_the_detector_fails():
     assert len(notifier.started) == 1
     assert len(notifier.ended) == 1
     assert video.closed
+
+
+def test_heartbeat_is_sent_when_due_on_the_wall_clock():
+    notifier = _RecordingNotifier()
+    DetectHornetVisual(
+        video=_FakeVideoSource(_frames(5)),
+        detector=_ScriptedDetector([]),
+        notifier=notifier,
+        health=_health(step_s=1000),
+    ).run()
+    # Readings at +1000 s (start), then one per frame: due at +4600 s, i.e. frame 4.
+    assert [b.frames for b in notifier.heartbeats] == [4]
+    assert notifier.faults == []
+
+
+def test_loop_error_is_sent_as_a_fault_then_raised():
+    class _BoomDetector:
+        def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+            raise RuntimeError("model crashed at /secret/path")
+
+    notifier = _RecordingNotifier()
+    video = _FakeVideoSource(_frames(2))
+    use_case = DetectHornetVisual(video, _BoomDetector(), notifier, health=_health(1))
+    with pytest.raises(RuntimeError):
+        use_case.run()
+    assert [(f.kind, f.detail) for f in notifier.faults] == [(FaultKind.LOOP_ERROR, "RuntimeError")]
+    assert video.closed
+
+
+def test_end_of_a_live_source_is_a_fault():
+    notifier = _RecordingNotifier()
+    DetectHornetVisual(
+        video=_FakeVideoSource(_frames(2)),
+        detector=_ScriptedDetector([]),
+        notifier=notifier,
+        config=DetectHornetVisualConfig(live_source=True),
+        health=_health(1),
+    ).run()
+    assert [f.kind for f in notifier.faults] == [FaultKind.SOURCE_ENDED]
+
+
+def test_end_of_a_video_file_is_not_a_fault():
+    notifier = _RecordingNotifier()
+    DetectHornetVisual(
+        video=_FakeVideoSource(_frames(2)),
+        detector=_ScriptedDetector([]),
+        notifier=notifier,
+        health=_health(1),
+    ).run()
+    assert notifier.faults == []
+
+
+def test_without_a_health_monitor_nothing_is_sent():
+    class _BoomDetector:
+        def detect(self, frame: VideoFrame) -> Sequence[Detection]:
+            raise RuntimeError("boom")
+
+    notifier = _RecordingNotifier()
+    use_case = DetectHornetVisual(
+        _FakeVideoSource(_frames(1)),
+        _BoomDetector(),
+        notifier,
+        config=DetectHornetVisualConfig(live_source=True),
+    )
+    with pytest.raises(RuntimeError):
+        use_case.run()
+    assert notifier.faults == notifier.heartbeats == []

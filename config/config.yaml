@@ -8,3 +8,7 @@ alert:
   min_hit_frames: 3   # frames with a counted V. velutina that open an episode...
   window_s: 10        # ...within this sliding window (seconds)
   cooldown_s: 60      # seconds without that pressure that close it
+# Unit health (ADR-0033): heartbeat period and fault rate limit, pushed with --push.
+health:
+  heartbeat_s: 86400      # one alive message a day; a missing one means the unit is down
+  fault_cooldown_s: 3600  # at most one push per fault kind per hour; muted ones are counted

@@ -159,9 +159,11 @@ notification model is therefore **operational health, not detection events**
 - **Attack alert** (ADR-0013) — the one exception to "never pushed": a single aggregated alert per
   attack episode (hornet pressure over a window, with cool-down), on the same push channel as the
   faults. Spec [attack-alert](architecture/specs/attack-alert.md).
-- **Scope** — v1 already logs detections (the `LoggingNotifier`). The
-  heartbeat + fault-alerting + the server-side watchdog land with the
-  autonomous deployment (embedded phase, M6), not before.
+- **Scope** — v1 logs detections (the `LoggingNotifier`). A daily heartbeat and the faults
+  `loop_error` and `source_ended`, rate-limited per kind, are pushed on the alert channel
+  (ADR-0033, spec [health-push](architecture/specs/health-push.md)); until the server-side
+  watchdog exists, the beekeeper is the dead man's switch. The watchdog and hardware faults (disk,
+  temperature, battery) land with the autonomous deployment (M6).
 
 This **supersedes the earlier provisional "alert" defaults** (Telegram
 push of aggregated detections), which were the wrong model. ADR-0013 (2026-10-16) brings back a
