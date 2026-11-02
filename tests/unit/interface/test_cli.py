@@ -2,6 +2,7 @@
 branches that run before any vision adapter is imported, so they need
 neither cv2 nor torch and run in CI."""
 
+import logging
 from pathlib import Path
 
 from aristech.interface.cli.main import main
@@ -20,6 +21,32 @@ def _common(tmp_path: Path) -> list[str]:
 
 def test_no_video_is_a_noop(tmp_path):
     assert main(_common(tmp_path)) == 0
+
+
+def test_creates_missing_log_folder(tmp_path, monkeypatch, caplog):
+    # Fresh checkout: no logs/ folder, file handler path relative to the cwd (#143).
+    monkeypatch.chdir(tmp_path)
+    log_cfg = tmp_path / "logging.yaml"
+    log_cfg.write_text(
+        "version: 1\n"
+        "handlers:\n"
+        "  file:\n"
+        "    class: logging.FileHandler\n"
+        "    filename: logs/app.log\n"
+        "root:\n"
+        "  handlers: [file]\n",
+        encoding="utf-8",
+    )
+    root_handlers = logging.getLogger().handlers[:]
+    try:
+        assert main(["--config", str(_config(tmp_path)), "--logging-config", str(log_cfg)]) == 0
+        assert (tmp_path / "logs" / "app.log").is_file()
+        assert "falling back" not in caplog.text
+    finally:
+        for handler in logging.getLogger().handlers:
+            if handler not in root_handlers:
+                handler.close()
+                logging.getLogger().removeHandler(handler)
 
 
 def test_video_without_weights_errors(tmp_path):

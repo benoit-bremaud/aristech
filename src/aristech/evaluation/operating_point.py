@@ -83,6 +83,74 @@ def false_alert_rate(samples: Sequence[Sample], confidence_threshold: float) -> 
     return alerts / len(negatives)
 
 
+@dataclass(frozen=True, slots=True)
+class ImagePoint:
+    """Image-level *V. velutina* figures at one threshold: what an alert weighs (ADR-0029).
+
+    An image is positive when it holds a ground-truth *V. velutina*; it is
+    flagged when at least one target prediction reaches the threshold.
+    """
+
+    confidence_threshold: float
+    flagged_positives: int
+    flagged_negatives: int
+    positives: int
+
+    @property
+    def precision(self) -> float:
+        """Share of flagged images that hold a real *V. velutina*; 0.0 when none is flagged."""
+        flagged = self.flagged_positives + self.flagged_negatives
+        return self.flagged_positives / flagged if flagged else 0.0
+
+    @property
+    def recall(self) -> float:
+        """Share of images with a *V. velutina* that are flagged; 0.0 without positives."""
+        return self.flagged_positives / self.positives if self.positives else 0.0
+
+
+def image_point(samples: Sequence[Sample], confidence_threshold: float) -> ImagePoint:
+    """Score the samples per image at one threshold (see `ImagePoint`)."""
+    flagged_positives = flagged_negatives = positives = 0
+    for predictions, truths in samples:
+        positive = any(truth.species is Species.VESPA_VELUTINA for truth in truths)
+        flagged = any(d.is_threat() and d.confidence >= confidence_threshold for d in predictions)
+        positives += positive
+        flagged_positives += flagged and positive
+        flagged_negatives += flagged and not positive
+    return ImagePoint(confidence_threshold, flagged_positives, flagged_negatives, positives)
+
+
+def select_count_point(
+    samples: Sequence[Sample],
+    thresholds: Sequence[float],
+    min_image_precision: float,
+    act_threshold: float,
+) -> ImagePoint:
+    """Pick the COUNT point (ADR-0014, ADR-0031): the lowest threshold whose
+    image-level *V. velutina* precision reaches `min_image_precision`.
+
+    Raises `ValueError` when no threshold reaches the target, or when the point
+    found lies above `act_threshold`: `COUNT <= ACT` must hold, and a model
+    where it does not is rejected (ADR-0014).
+    """
+    reached = [
+        point
+        for point in (image_point(samples, t) for t in sorted(thresholds))
+        if point.precision >= min_image_precision
+    ]
+    if not reached:
+        raise ValueError(
+            f"no threshold reaches an image precision of {min_image_precision:.2f} on this set"
+        )
+    count = reached[0]
+    if count.confidence_threshold > act_threshold:
+        raise ValueError(
+            f"COUNT point {count.confidence_threshold:.2f} lies above the ACT point "
+            f"{act_threshold:.2f}: the model is rejected (ADR-0014)"
+        )
+    return count
+
+
 def rule_of_three_bound(trials: int) -> float:
     """95 % upper bound on a rate observed as zero events in `trials` trials (3 / n).
 

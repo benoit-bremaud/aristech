@@ -146,7 +146,10 @@ def rfdetr_argv(argv: list[str], tmp_path: Path) -> list[str]:
 def test_rfdetr_runs_at_the_act_threshold_of_adr_0029(rfdetr_argv, caplog):
     with caplog.at_level(logging.INFO, logger="aristech"):
         assert main(rfdetr_argv) == 0
-    assert "Detector rfdetr, ACT threshold 0.45, detector floor 0.1." in caplog.text
+    assert (
+        "Detector rfdetr, ACT threshold 0.45, COUNT threshold 0.15, detector floor 0.1."
+        in caplog.text
+    )
     assert _FakeDetector.created[0]["confidence"] == 0.1
     assert _FakeDetector.created[0]["checkpoint_path"].endswith("best.pth")
     assert "1 threat(s), 1 abstention(s)" in caplog.text
@@ -212,3 +215,59 @@ def test_timing_is_logged_even_when_detection_fails(argv, caplog, monkeypatch):
     with caplog.at_level(logging.INFO, logger="aristech"), pytest.raises(RuntimeError):
         main(argv)
     assert "Timing: 1 frame(s), too few" in caplog.text
+
+
+def test_count_point_above_act_point_errors(argv):
+    assert main([*argv, "--confidence", "0.5", "--count-confidence", "0.6"]) == 2
+    assert _FakeDetector.created == []
+
+
+def test_floor_above_count_point_errors(argv):
+    args = [*argv, "--confidence", "0.5", "--count-confidence", "0.2", "--detector-floor", "0.3"]
+    assert main(args) == 2
+    assert _FakeDetector.created == []
+
+
+def test_default_floor_is_clamped_to_low_count_point(argv):
+    assert main([*argv, "--confidence", "0.5", "--count-confidence", "0.05"]) == 0
+    assert _FakeDetector.created[0]["confidence"] == 0.05
+
+
+def test_alert_section_sets_the_episode_rule(argv, tmp_path, caplog):
+    (tmp_path / "config.yaml").write_text(
+        "app:\n  version: test\nalert:\n  min_hit_frames: 1\n  window_s: 5\n  cooldown_s: 30\n",
+        encoding="utf-8",
+    )
+    _run(argv, caplog)
+    assert "1 attack episode(s)" in caplog.text
+    assert "ATTACK ALERT episode started" in caplog.text
+
+
+@pytest.mark.parametrize("value", ["0", "3.7", "true", "x"])
+def test_invalid_alert_section_errors(argv, tmp_path, value):
+    (tmp_path / "config.yaml").write_text(
+        f"app:\n  version: test\nalert:\n  min_hit_frames: {value}\n", encoding="utf-8"
+    )
+    assert main(argv) == 2
+
+
+def test_empty_alert_section_uses_the_defaults(argv, tmp_path, caplog):
+    (tmp_path / "config.yaml").write_text("app:\n  version: test\nalert:\n", encoding="utf-8")
+    _run(argv, caplog)
+    assert "0 attack episode(s)" in caplog.text
+
+
+def test_push_without_secrets_stops_before_running(argv, caplog, monkeypatch):
+    monkeypatch.delenv("ARISTECH_TELEGRAM_TOKEN", raising=False)
+    monkeypatch.delenv("ARISTECH_TELEGRAM_CHAT_ID", raising=False)
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main([*argv, "--push", "telegram"]) == 2
+    assert "Push channel unusable" in caplog.text
+    assert _FakeDetector.created == []
+
+
+def test_push_wraps_the_log_sink(argv, caplog, monkeypatch):
+    monkeypatch.setenv("ARISTECH_TELEGRAM_TOKEN", "tok")
+    monkeypatch.setenv("ARISTECH_TELEGRAM_CHAT_ID", "42")
+    _run([*argv, "--push", "telegram"], caplog)
+    assert "Analysis done" in caplog.text

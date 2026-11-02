@@ -422,3 +422,30 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Laptop CPU baseline (i9-13900H, 60-frame sample made from test-v1 images): 16–44 FPS, p50 18–37 ms, warm-up 9–17 s; the spread follows machine load (`docs/research/live-fps-laptop-cpu.md`).
   - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL green.
   - **Next**: measure on the idle bench Pi 5 once it arrives; `config/logging.yaml` file handler fails without a `logs/` folder (pre-existing).
+
+- **PR #145 merged** (`2d06513`, merge commit on `main`) — `chore(release): promote dev to main (second promotion)`. Issue #144.
+  - Second `dev` → `main` promotion under ADR-0025: the eleven commits from PR #129 to PR #142 (C1 microphone EOL check and bench order list, QA checklist, M4 operating point ADR-0029, live RF-DETR detection ADR-0030).
+  - **Verification**: `just gate` on `721e14a` (295 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
+  - The documented venv setup (`uv pip install -e . --no-deps pytest …`) misses `pluggy` and `numpy` on a fresh worktree; to fix separately.
+  - No tag yet: the signed `v*` tag is the owner's call.
+  - **Next**: owner orders the bench hardware; #143 (`logs/` folder).
+
+- **PR #147 merged** (`720a996`) — `fix(logging): create the logs folder before the file handler opens it`. Issue #143.
+  - MCDA: create the parent folder of each file handler in the CLI (475) over committing `logs/.gitkeep` (295) or `delay=True` (230); A stays first with simplicity weighted 40.
+  - `_ensure_log_dirs` runs before `dictConfig`; the basicConfig fallback is unchanged. A unit test runs the CLI in an empty folder and checks `logs/app.log` (red without the fix).
+  - **Verification**: `just gate` green (296 tests, coverage 97.7 %, SonarQube gate passed); QA on a fresh clone: CLI exits 0 and writes `logs/app.log`; CodeQL green.
+  - **Next**: brick C, COUNT point and attack alert (ADR-0014, spec attack-alert).
+
+- **PR #150 merged** (`be5a83a`) — `feat(alert): measure the COUNT point and raise one attack alert per episode`. Issue #149, ADR-0031.
+  - COUNT target: image precision ≥ 0.80 (410) over ≥ 0.85 (400), COUNT = ACT (365) and the ≈ 95 % of ADR-0014 (195, infeasible: max 0.938 at 0.75). Episode rule E1, N hit frames in a sliding window W then cool-down T (415), over first-hit (315) and N consecutive frames (360).
+  - RF-DETR Small on test-v1: COUNT **0.15** (image P 0.800, R 0.96) ≤ ACT 0.45; it sits exactly on the target, so re-measure on the field set.
+  - Live path: `AttackEpisodeTracker` (N = 3, W = 10 s, T = 60 s, provisional, `config/config.yaml`), two new `Notifier` methods, `--count-confidence`; video files are stamped with video time instead of processing time.
+  - **Verification**: `just gate` green (329 tests, coverage 97.86 %, SonarQube gate passed); sample clip from test-v1 images: two bursts 70 s apart → 2 alerts, 40 s apart → 1 alert.
+  - **Next**: push channel (M6) for the alert; COUNT and episode values from the field set (M5).
+
+- **PR #153 merged** (`136dca8`) — `feat(alert): send the attack alert on a push channel`. Issue #152, ADR-0032.
+  - Channel MCDA: Telegram bot (410) over self-hosted ntfy (395) and email (295); Telegram first in 79 % of weight vectors, ntfy passes it once privacy weighs 35. Pushed content is minimal (time, counts, no image or location).
+  - `TelegramNotifier` decorates the log notifier and pushes only episode start and end (AC5); `--push telegram`; token and chat id from the environment only; API URL https (or http on 127.0.0.1 for a stub), parsed so look-alike hosts are refused.
+  - A3: a failed push is logged as `FAULT push channel` with the token masked, never raised. A1: bounded in-memory queue replayed as `[delayed]`. Push is synchronous (3-s timeout); a persistent queue and a background sender wait for M6.
+  - **Verification**: `just gate` green (339 tests, coverage 96.75 %, SonarQube gate passed); 80-s sample clip with RF-DETR Small against a local Bot API stub: 1 alert + 1 summary; stub down: FAULT logged, run exits 0; CodeQL green.
+  - **Next**: owner test on a real bot; fault and heartbeat pushes (ADR-0006) can reuse the adapter.

@@ -75,6 +75,27 @@ precision understates image precision.
 | 0.50 | 97 | 68 | 3 | 2 | 0 |
 | 0.70 | 40 | 7 | 2 | 1 | 0 |
 
+## COUNT point (ADR-0031, issue #149)
+
+Lowest threshold with an image-level *V. velutina* precision of at least 0.80, which must not lie
+above ACT. Script output (`--count-precision 0.80`, default):
+
+| conf | image P | image R | flagged target-free images |
+|---:|---:|---:|---:|
+| 0.05 | 0.742 | 0.980 | 17 |
+| 0.10 | 0.787 | 0.960 | 13 |
+| **0.15** | **0.800** | **0.960** | **12** |
+| 0.20 | 0.821 | 0.920 | 10 |
+| 0.30 | 0.843 | 0.860 | 8 |
+| 0.40 | 0.878 | 0.860 | 6 |
+| 0.45 | 0.896 | 0.860 | 5 |
+| 0.55 | 0.907 | 0.780 | 4 |
+| 0.75 | 0.938 | 0.300 | 1 |
+
+- **COUNT = 0.15 ≤ ACT = 0.45** for this checkpoint; it sits exactly on the target (48 of 60
+  flagged images), so it is fragile to one image.
+- No threshold reaches the ≈ 95 % first guessed in ADR-0014; 0.90 needs 0.55, above ACT.
+
 ## Result and limits
 
 - Gate of issue #18: at 0.45, **zero bees are classified as target** on test-v1, and none at any

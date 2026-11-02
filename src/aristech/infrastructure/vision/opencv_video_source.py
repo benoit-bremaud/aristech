@@ -8,7 +8,7 @@ detector adapter is responsible for any colour conversion it needs.
 """
 
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from aristech.domain import VideoFrame
@@ -33,8 +33,17 @@ class OpenCVVideoSource:
         return self._cap
 
     def frames(self) -> Iterator[VideoFrame]:
-        """Yield BGR frames stamped in UTC; raise `RuntimeError` if the source won't open."""
+        """Yield BGR frames stamped in UTC; raise `RuntimeError` if the source won't open.
+
+        A camera frame is stamped with the current time. A file frame is stamped
+        with its position in the video from the start of the read, so time-based
+        rules (attack episodes, ADR-0031) see video time, not processing time.
+        """
+        import cv2
+
         cap = self._capture()
+        started = datetime.now(UTC)
+        from_file = isinstance(self._source, str)
         while True:
             ok, frame = cap.read()
             if not ok:
@@ -44,7 +53,11 @@ class OpenCVVideoSource:
                 pixels=frame,
                 width=int(width),
                 height=int(height),
-                timestamp=datetime.now(UTC),
+                timestamp=(
+                    started + timedelta(milliseconds=cap.get(cv2.CAP_PROP_POS_MSEC))
+                    if from_file
+                    else datetime.now(UTC)
+                ),
             )
 
     def close(self) -> None:

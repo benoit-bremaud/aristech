@@ -30,8 +30,8 @@ Outcome of the needs brainstorm after the audit plan B0–B7
 - **Product goal** — monitoring (count, log, evidence) **plus one aggregated "attack in progress"
   alert** per episode (ADR-0013). Still no per-detection push.
 - **Two operating points** — ACT = zero bees as target (legal floor, the only point that may drive
-  an actuator); COUNT = high *V. velutina* precision (≈ 95 %, to confirm) for counts and the alert
-  (ADR-0014).
+  an actuator); COUNT = image-level *V. velutina* precision ≥ 0.80 (ADR-0031; 0.15 for
+  RF-DETR Small on test-v1) for counts and the alert (ADR-0014).
 - **Own vision model** — permissively licensed pre-trained base fine-tuned on own footage and
   CC BY / CC0 public data, explicit bee class; VespAI becomes the comparison baseline (ADR-0015).
 - **Acoustic axis** — synchronised audio+video recorded from the first capture campaign; gate A0

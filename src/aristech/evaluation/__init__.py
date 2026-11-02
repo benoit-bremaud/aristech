@@ -13,11 +13,14 @@ from aristech.evaluation.metrics import (
     iou,
 )
 from aristech.evaluation.operating_point import (
+    ImagePoint,
     OperatingPoint,
     ThresholdPoint,
     bees_as_target_count,
     false_alert_rate,
+    image_point,
     rule_of_three_bound,
+    select_count_point,
     select_operating_point,
     threshold_sweep,
 )
@@ -28,6 +31,7 @@ __all__ = [
     "Annotation",
     "ClassMetrics",
     "EvaluationReport",
+    "ImagePoint",
     "OperatingPoint",
     "ThresholdPoint",
     "bees_as_target_count",
@@ -35,9 +39,11 @@ __all__ = [
     "evaluate",
     "evaluate_on_dataset",
     "false_alert_rate",
+    "image_point",
     "iou",
     "parse_yolo_labels",
     "rule_of_three_bound",
+    "select_count_point",
     "select_operating_point",
     "threshold_sweep",
 ]
