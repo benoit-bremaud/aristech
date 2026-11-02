@@ -79,6 +79,14 @@ def _load_yaml(path: Path) -> dict[str, Any]:
     return cast(dict[str, Any], data)
 
 
+def _ensure_log_dirs(logging_config: dict[str, Any]) -> None:
+    """Create the parent folder of every file handler, so a fresh checkout without `logs/`
+    still gets its log file (#143)."""
+    for handler in logging_config.get("handlers", {}).values():
+        if isinstance(handler, dict) and "filename" in handler:
+            Path(handler["filename"]).parent.mkdir(parents=True, exist_ok=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse the arguments and run detection on `--video`; returns the exit code."""
     parser = argparse.ArgumentParser(prog="aristech")
@@ -149,7 +157,9 @@ def main(argv: list[str] | None = None) -> int:
         # malformed dictConfig (Type/Key/Attribute/Import/Value/OSError) all
         # fall back to a working basic configuration.
         try:
-            logging.config.dictConfig(_load_yaml(args.logging_config))
+            logging_config = _load_yaml(args.logging_config)
+            _ensure_log_dirs(logging_config)
+            logging.config.dictConfig(logging_config)
         except Exception as exc:  # noqa: BLE001 — intentional logging fallback
             logging.basicConfig(level=logging.INFO)
             logging.getLogger("aristech").warning(
