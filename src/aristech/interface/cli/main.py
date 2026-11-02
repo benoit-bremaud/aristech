@@ -15,6 +15,7 @@ import yaml
 
 if TYPE_CHECKING:
     from aristech.application.attack_episode import EpisodeRule
+    from aristech.application.health import HealthRule
     from aristech.application.ports import HornetDetector, Notifier
     from aristech.domain import Detection, VideoFrame
 
@@ -168,7 +169,8 @@ def main(argv: list[str] | None = None) -> int:
         choices=["telegram"],
         default=None,
         help=(
-            "Also push the attack alert and its summary (ADR-0032). Telegram reads "
+            "Also push the attack alert, its summary, the heartbeat and the faults "
+            "(ADR-0032, ADR-0033). Telegram reads "
             "ARISTECH_TELEGRAM_TOKEN and ARISTECH_TELEGRAM_CHAT_ID from the environment."
         ),
     )
@@ -205,8 +207,9 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         args.episode_rule = _episode_rule(config.get("alert") or {})
+        args.health_rule = _health_rule(config.get("health") or {})
     except (TypeError, ValueError):
-        log.exception("Invalid alert configuration")
+        log.exception("Invalid alert or health configuration")
         return 2
     return _run_visual_detection(args, log)
 
@@ -226,6 +229,23 @@ def _episode_rule(alert: dict[str, Any]) -> "EpisodeRule":
         window=timedelta(seconds=float(alert.get("window_s", default.window.total_seconds()))),
         cooldown=timedelta(
             seconds=float(alert.get("cooldown_s", default.cooldown.total_seconds()))
+        ),
+    )
+
+
+def _health_rule(health: dict[str, Any]) -> "HealthRule":
+    """Build the heartbeat and fault rate limit from the `health` section (ADR-0033)."""
+    from datetime import timedelta
+
+    from aristech.application.health import HealthRule
+
+    default = HealthRule()
+    return HealthRule(
+        heartbeat=timedelta(
+            seconds=float(health.get("heartbeat_s", default.heartbeat.total_seconds()))
+        ),
+        fault_cooldown=timedelta(
+            seconds=float(health.get("fault_cooldown_s", default.fault_cooldown.total_seconds()))
         ),
     )
 
@@ -340,10 +360,12 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         floor,
     )
 
+    from aristech.application.health import HealthMonitor
     from aristech.application.use_cases import (
         DetectHornetVisual,
         DetectHornetVisualConfig,
     )
+    from aristech.infrastructure.capture.system_clock import SystemClock
     from aristech.infrastructure.vision.opencv_video_source import OpenCVVideoSource
 
     detector = _TimedDetector(_build_detector(args, floor))
@@ -355,7 +377,9 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
             confidence_threshold=args.confidence,
             count_threshold=args.count_confidence,
             episode_rule=args.episode_rule,
+            live_source=isinstance(source, int),
         ),
+        health=HealthMonitor(args.health_rule, SystemClock()),
     )
     start = time.perf_counter()
     try:

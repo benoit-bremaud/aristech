@@ -23,6 +23,7 @@ flowchart LR
             UC1(["UC1 Monitor the hive entrance for hornets"])
             UC2(["UC2 Consult the detection log"])
             UC6(["UC6 Respond to an ongoing hornet attack (planned)"])
+            UC11(["UC11 Check that the unit is alive"])
         end
         subgraph Data
             UC7(["UC7 Record synchronised field footage (planned, C1)"])
@@ -42,6 +43,7 @@ flowchart LR
     Beekeeper --- UC1
     Beekeeper --- UC2
     Beekeeper --- UC6
+    Beekeeper --- UC11
     Researcher --- UC7
     Researcher --- UC8
     Researcher --- UC3
@@ -60,5 +62,7 @@ flowchart LR
 - The detection diagram calls the beekeeper "Operator"; same actor.
 - UC4 now selects **two** points (ACT, COUNT — ADR-0014); the as-built one selects ACT only.
 - UC6 is the beekeeper's goal (react to the attack); the alert is its trigger, not a use case.
+- UC11 is the beekeeper's goal (know the unit works, act on a fault); the heartbeat and the fault
+  pushes are its triggers (ADR-0033, spec health-push).
 - D0 is a manual field protocol (spec `deterrence-field-test`), not a system use case; it gates UC5.
 - UC10's outcome may add an acoustic input to UC1; it can only reinforce abstention (ADR-0016).

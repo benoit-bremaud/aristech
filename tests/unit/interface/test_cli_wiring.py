@@ -271,3 +271,32 @@ def test_push_wraps_the_log_sink(argv, caplog, monkeypatch):
     monkeypatch.setenv("ARISTECH_TELEGRAM_CHAT_ID", "42")
     _run([*argv, "--push", "telegram"], caplog)
     assert "Analysis done" in caplog.text
+
+
+def test_camera_index_ending_is_logged_as_a_fault(argv, tmp_path, caplog):
+    camera = [*argv]
+    camera[camera.index("--video") + 1] = "7"
+    _run(camera, caplog)
+    assert "FAULT source_ended" in caplog.text
+
+
+def test_video_file_ending_is_not_a_fault(argv, caplog):
+    _run(argv, caplog)
+    assert "FAULT" not in caplog.text
+
+
+def test_health_section_sets_the_heartbeat(argv, tmp_path, caplog):
+    (tmp_path / "config.yaml").write_text(
+        "app:\n  version: test\nhealth:\n  heartbeat_s: 0.000001\n  fault_cooldown_s: 60\n",
+        encoding="utf-8",
+    )
+    _run(argv, caplog)
+    assert "heartbeat up since" in caplog.text
+
+
+@pytest.mark.parametrize("value", ["0", "-5", "x"])
+def test_invalid_health_section_errors(argv, tmp_path, value):
+    (tmp_path / "config.yaml").write_text(
+        f"app:\n  version: test\nhealth:\n  heartbeat_s: {value}\n", encoding="utf-8"
+    )
+    assert main(argv) == 2

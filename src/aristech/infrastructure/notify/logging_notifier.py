@@ -6,6 +6,7 @@ alert). Richer channels (MQTT, Telegram) come later as separate adapters.
 import logging
 
 from aristech.application.attack_episode import AttackEpisode
+from aristech.application.health import Fault, Heartbeat
 from aristech.domain import Detection
 
 _log = logging.getLogger("aristech.detection")
@@ -55,4 +56,22 @@ class LoggingNotifier:
             episode.ended.isoformat() if episode.ended else "?",
             episode.peak,
             episode.hit_frames,
+        )
+
+    def notify_heartbeat(self, heartbeat: Heartbeat) -> None:
+        """Log that the unit is alive, with its uptime and work done."""
+        _log.info(
+            "heartbeat up since %s frames=%d episodes=%d",
+            heartbeat.up_since.isoformat(),
+            heartbeat.frames,
+            heartbeat.episodes,
+        )
+
+    def notify_fault(self, fault: Fault) -> None:
+        """Log a fault at ERROR, with the count of same-kind faults muted before it."""
+        _log.error(
+            "FAULT %s: %s (%d muted since the last push)",
+            fault.kind.value,
+            fault.detail,
+            fault.suppressed,
         )

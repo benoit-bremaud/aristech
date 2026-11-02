@@ -1,6 +1,7 @@
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
+from aristech.application.health import Fault, FaultKind, Heartbeat
 from aristech.domain import BoundingBox, Detection, Species
 from aristech.infrastructure.notify.logging_notifier import LoggingNotifier
 
@@ -45,3 +46,18 @@ def test_logs_attack_alert_and_episode_summary(caplog):
     assert "ATTACK ALERT episode started 2026-11-02T12:00:00" in caplog.text
     assert "-> 2026-11-02T12:05:00 peak=5 hit_frames=9" in caplog.text
     assert "-> ? peak=3" in caplog.text
+
+
+def test_logs_heartbeat(caplog):
+    beat = Heartbeat(datetime(2026, 11, 3, tzinfo=UTC), datetime(2026, 11, 2, tzinfo=UTC), 7, 1)
+    with caplog.at_level(logging.INFO, logger="aristech.detection"):
+        LoggingNotifier().notify_heartbeat(beat)
+    assert "heartbeat up since 2026-11-02T00:00:00+00:00 frames=7 episodes=1" in caplog.text
+
+
+def test_logs_fault_at_error(caplog):
+    fault = Fault(FaultKind.SOURCE_ENDED, datetime(2026, 11, 2, tzinfo=UTC), "camera gone", 2)
+    with caplog.at_level(logging.ERROR, logger="aristech.detection"):
+        LoggingNotifier().notify_fault(fault)
+    assert caplog.records[0].levelno == logging.ERROR
+    assert "FAULT source_ended: camera gone (2 muted since the last push)" in caplog.text

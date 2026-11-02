@@ -10,6 +10,7 @@ from aristech.application.attack_episode import (
     EpisodeRule,
 )
 from aristech.application.decision import Decision, decide
+from aristech.application.health import FaultKind, HealthMonitor
 from aristech.application.ports import HornetDetector, Notifier, VideoSource
 from aristech.domain import Detection
 
@@ -20,11 +21,13 @@ _log = logging.getLogger(__name__)
 class DetectHornetVisualConfig:
     """`confidence_threshold`: the ACT point for `decide()` (ADR-0004, ADR-0029).
     `count_threshold`: the COUNT point feeding the attack episodes (ADR-0014,
-    ADR-0031); None means the ACT point. `COUNT <= ACT` must hold."""
+    ADR-0031); None means the ACT point. `COUNT <= ACT` must hold.
+    `live_source`: a camera, whose end is a fault; a video file ends normally (ADR-0033)."""
 
     confidence_threshold: float = 0.5
     count_threshold: float | None = None
     episode_rule: EpisodeRule = field(default_factory=EpisodeRule)
+    live_source: bool = False
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.confidence_threshold <= 1.0:
@@ -57,6 +60,9 @@ class DetectHornetVisual:
     Frames with a *V. velutina* at or above the COUNT point feed the attack
     episode rule, which raises one alert per episode (ADR-0031).
 
+    With a `HealthMonitor`, a heartbeat is sent when due, and a loop error or the end
+    of a live source is sent as a rate-limited fault (ADR-0033).
+
     Every dependency is injected behind a port, so camera, model and notification
     channel can change without touching this use case.
     """
@@ -67,17 +73,20 @@ class DetectHornetVisual:
         detector: HornetDetector,
         notifier: Notifier,
         config: DetectHornetVisualConfig | None = None,
+        health: HealthMonitor | None = None,
     ) -> None:
         self._video = video
         self._detector = detector
         self._notifier = notifier
         self._config = config or DetectHornetVisualConfig()
+        self._health = health
 
     def run(self) -> DetectionRun:
         """Consume the whole source, then close it, even on error. An episode still
         open when the run stops (end of stream, interruption or error) is closed at
-        the last frame seen and its summary sent."""
-        threats = abstentions = episodes = 0
+        the last frame seen and its summary sent. An error is reported as a fault,
+        then raised again."""
+        threats = abstentions = episodes = frames = 0
         tracker = AttackEpisodeTracker(self._config.episode_rule)
         last_seen: datetime | None = None
         try:
@@ -90,6 +99,13 @@ class DetectHornetVisual:
                     hit = hit or self._counts(detection)
                 last_seen = frame.timestamp
                 episodes += self._track(tracker.observe(frame.timestamp, hit))
+                frames += 1
+                self._beat(frames, episodes)
+            if self._config.live_source:
+                self._fault(FaultKind.SOURCE_ENDED, "the live source stopped sending frames")
+        except Exception as exc:
+            self._fault(FaultKind.LOOP_ERROR, type(exc).__name__)
+            raise
         finally:
             try:
                 if last_seen is not None:
@@ -122,3 +138,13 @@ class DetectHornetVisual:
             return 1
         self._notifier.notify_attack_ended(episode)
         return 0
+
+    def _beat(self, frames: int, episodes: int) -> None:
+        """Send the heartbeat when the health monitor says one is due."""
+        if self._health is not None and (beat := self._health.tick(frames, episodes)):
+            self._notifier.notify_heartbeat(beat)
+
+    def _fault(self, kind: FaultKind, detail: str) -> None:
+        """Send a fault unless the rate limit mutes it."""
+        if self._health is not None and (fault := self._health.fault(kind, detail)):
+            self._notifier.notify_fault(fault)
