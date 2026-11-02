@@ -79,7 +79,8 @@ version and is the only trigger of GitHub Actions.
    automatically; fill every section.
 5. Merge gate: `mise x -- just gate` green on the head SHA (`just check`, the Python 3.12 tests and
    the SonarQube quality gate), the GitHub security checks green (CodeQL, dependency review), every
-   review comment handled.
+   review comment handled, and the QA checklist filled (copy of
+   `docs/architecture/qa/checklist-template.md`) and linked from step 5 of the review report.
 6. Squash-merge into `dev` and delete the branch, then clean up locally:
 
    ```bash

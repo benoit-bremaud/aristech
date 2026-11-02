@@ -10,6 +10,7 @@ overview that points here.
 | [`traceability/`](traceability/README.md) | Requirement → design → code → test matrix |
 | [`gates/`](gates/README.md) | Conception gate (PDR) checklists, one per feature |
 | [`reviews/`](reviews/README.md) | Audits and pre-push review reports |
+| [`qa/`](qa/README.md) | QA checklists filled at each QA pass, with their evidence |
 | [`../decisions/`](../decisions/README.md) | Architecture Decision Records |
 
 ## Flow for a feature
@@ -20,4 +21,5 @@ overview that points here.
 3. ADR for every structuring choice.
 4. Conception gate passed in `gates/<feature>.md` (owner sign-off).
 5. Code + tests; traceability row updated.
-6. Pre-push review report in `reviews/<branch>.md`.
+6. Pre-push review report in `reviews/<branch>.md`, with the QA checklist filled in
+   `qa/<YYYY-MM-DD>-<topic>.md` and linked from step 5.
