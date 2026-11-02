@@ -15,7 +15,7 @@ import yaml
 
 if TYPE_CHECKING:
     from aristech.application.attack_episode import EpisodeRule
-    from aristech.application.ports import HornetDetector
+    from aristech.application.ports import HornetDetector, Notifier
     from aristech.domain import Detection, VideoFrame
 
 # Detector floor: boxes between it and --confidence reach decide() as ABSTAIN (ADR-0009).
@@ -163,6 +163,15 @@ def main(argv: list[str] | None = None) -> int:
             "Default: 0.15 for rfdetr, 0.5 for vespai (capped at --confidence)."
         ),
     )
+    parser.add_argument(
+        "--push",
+        choices=["telegram"],
+        default=None,
+        help=(
+            "Also push the attack alert and its summary (ADR-0032). Telegram reads "
+            "ARISTECH_TELEGRAM_TOKEN and ARISTECH_TELEGRAM_CHAT_ID from the environment."
+        ),
+    )
     args = parser.parse_args(argv)
 
     if args.logging_config.exists():
@@ -219,6 +228,22 @@ def _episode_rule(alert: dict[str, Any]) -> "EpisodeRule":
             seconds=float(alert.get("cooldown_s", default.cooldown.total_seconds()))
         ),
     )
+
+
+def _build_notifier(args: argparse.Namespace, log: logging.Logger) -> "Notifier | None":
+    """The log sink, wrapped by the push channel when `--push` asks for one (ADR-0032)."""
+    from aristech.infrastructure.notify.logging_notifier import LoggingNotifier
+
+    if args.push is None:
+        return LoggingNotifier()
+    from aristech.infrastructure.notify.telegram_notifier import TelegramNotifier
+
+    try:
+        return TelegramNotifier.from_env(LoggingNotifier())
+    except ValueError as exc:
+        reason = str(exc)
+    log.error("Push channel unusable: %s", reason)
+    return None
 
 
 def _model_args_present(args: argparse.Namespace, log: logging.Logger) -> bool:
@@ -304,6 +329,9 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
 
     if not _model_files_ok(args, log):
         return 2
+    notifier = _build_notifier(args, log)
+    if notifier is None:
+        return 2
     log.info(
         "Detector %s, ACT threshold %s, COUNT threshold %s, detector floor %s.",
         args.detector,
@@ -316,14 +344,13 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         DetectHornetVisual,
         DetectHornetVisualConfig,
     )
-    from aristech.infrastructure.notify.logging_notifier import LoggingNotifier
     from aristech.infrastructure.vision.opencv_video_source import OpenCVVideoSource
 
     detector = _TimedDetector(_build_detector(args, floor))
     use_case = DetectHornetVisual(
         video=OpenCVVideoSource(source),
         detector=detector,
-        notifier=LoggingNotifier(),
+        notifier=notifier,
         config=DetectHornetVisualConfig(
             confidence_threshold=args.confidence,
             count_threshold=args.count_confidence,
