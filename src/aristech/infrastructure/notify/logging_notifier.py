@@ -5,6 +5,7 @@ alert). Richer channels (MQTT, Telegram) come later as separate adapters.
 
 import logging
 
+from aristech.application.attack_episode import AttackEpisode
 from aristech.domain import Detection
 
 _log = logging.getLogger("aristech.detection")
@@ -36,4 +37,22 @@ class LoggingNotifier:
             c.x,
             c.y,
             detection.timestamp.isoformat(),
+        )
+
+    def notify_attack_started(self, episode: AttackEpisode) -> None:
+        """Log the single alert of an attack episode, at WARNING so it stands out."""
+        _log.warning(
+            "ATTACK ALERT episode started %s (%d hit frame(s) in the window)",
+            episode.started.isoformat(),
+            episode.peak,
+        )
+
+    def notify_attack_ended(self, episode: AttackEpisode) -> None:
+        """Log the episode summary: start, end, peak and total hit frames."""
+        _log.info(
+            "attack episode ended %s -> %s peak=%d hit_frames=%d",
+            episode.started.isoformat(),
+            episode.ended.isoformat() if episode.ended else "?",
+            episode.peak,
+            episode.hit_frames,
         )

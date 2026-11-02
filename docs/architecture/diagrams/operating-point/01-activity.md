@@ -39,3 +39,6 @@ flowchart TD
 - ACT is the only outcome that may drive an actuator (ADR-0014); in v1 it raises the hornet alert.
 - On test-v1 with RF-DETR Small the rule gives 0.45 (`docs/research/operating-point-test-v1.md`).
 - The threshold is provisional until the field set (M5) is measured.
+- The COUNT point (ADR-0031) is measured after ACT by the same script: the lowest threshold with
+  image precision ≥ 0.80, rejected if above ACT; it feeds the attack episodes
+  ([attack-alert](../attack-alert/01-state.md)).

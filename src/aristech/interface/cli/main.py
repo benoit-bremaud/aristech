@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, cast
 import yaml
 
 if TYPE_CHECKING:
+    from aristech.application.attack_episode import EpisodeRule
     from aristech.application.ports import HornetDetector
     from aristech.domain import Detection, VideoFrame
 
@@ -23,6 +24,9 @@ _DEFAULT_DETECTOR_FLOOR = 0.1
 # Default operating threshold per detector (ADR-0030). The RF-DETR value is the ACT point of
 # ADR-0029, measured on test-v1 for the checkpoint with this sha256 only.
 _DEFAULT_CONFIDENCE = {"vespai": 0.5, "rfdetr": 0.45}
+# Default COUNT point per detector (ADR-0031), same checkpoint caveat; VespAI has none
+# measured, so it counts at its ACT point.
+_DEFAULT_COUNT_CONFIDENCE = {"vespai": 0.5, "rfdetr": 0.15}
 _RFDETR_MEASURED_SHA256 = "3df5a250d9cf3dc837a86376b62b634d0f693d202288a782bd46cb8cf992fcab"
 
 
@@ -146,8 +150,17 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=None,
         help=(
-            "Detector confidence floor (0-1, <= --confidence). "
-            "Default: min(0.1, --confidence). See ADR-0009."
+            "Detector confidence floor (0-1, <= --count-confidence). "
+            "Default: min(0.1, --count-confidence). See ADR-0009."
+        ),
+    )
+    parser.add_argument(
+        "--count-confidence",
+        type=float,
+        default=None,
+        help=(
+            "COUNT point feeding the attack episodes (0-1, <= --confidence), see ADR-0031. "
+            "Default: 0.15 for rfdetr, 0.5 for vespai (capped at --confidence)."
         ),
     )
     args = parser.parse_args(argv)
@@ -181,7 +194,31 @@ def main(argv: list[str] | None = None) -> int:
         log.warning("No video source (--video): nothing to analyse.")
         return 0
 
+    try:
+        args.episode_rule = _episode_rule(config.get("alert") or {})
+    except (TypeError, ValueError):
+        log.exception("Invalid alert configuration")
+        return 2
     return _run_visual_detection(args, log)
+
+
+def _episode_rule(alert: dict[str, Any]) -> "EpisodeRule":
+    """Build the attack episode rule from the `alert` section of the config (ADR-0031)."""
+    from datetime import timedelta
+
+    from aristech.application.attack_episode import EpisodeRule
+
+    default = EpisodeRule()
+    min_hit_frames = alert.get("min_hit_frames", default.min_hit_frames)
+    if isinstance(min_hit_frames, bool) or not isinstance(min_hit_frames, int):
+        raise TypeError(f"alert.min_hit_frames must be an integer (got {min_hit_frames!r})")
+    return EpisodeRule(
+        min_hit_frames=min_hit_frames,
+        window=timedelta(seconds=float(alert.get("window_s", default.window.total_seconds()))),
+        cooldown=timedelta(
+            seconds=float(alert.get("cooldown_s", default.cooldown.total_seconds()))
+        ),
+    )
 
 
 def _model_args_present(args: argparse.Namespace, log: logging.Logger) -> bool:
@@ -231,16 +268,26 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         log.error("--confidence must be in [0, 1] (got %s).", args.confidence)
         return 2
 
+    if args.count_confidence is None:
+        args.count_confidence = min(_DEFAULT_COUNT_CONFIDENCE[args.detector], args.confidence)
+    if not 0.0 <= args.count_confidence <= args.confidence:
+        log.error(
+            "--count-confidence must be in [0, --confidence] (got %s, --confidence %s).",
+            args.count_confidence,
+            args.confidence,
+        )
+        return 2
+
     floor = (
-        min(_DEFAULT_DETECTOR_FLOOR, args.confidence)
+        min(_DEFAULT_DETECTOR_FLOOR, args.count_confidence)
         if args.detector_floor is None
         else args.detector_floor
     )
-    if not 0.0 <= floor <= args.confidence:
+    if not 0.0 <= floor <= args.count_confidence:
         log.error(
-            "--detector-floor must be in [0, --confidence] (got %s, --confidence %s).",
+            "--detector-floor must be in [0, --count-confidence] (got %s, --count-confidence %s).",
             floor,
-            args.confidence,
+            args.count_confidence,
         )
         return 2
 
@@ -258,7 +305,11 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     if not _model_files_ok(args, log):
         return 2
     log.info(
-        "Detector %s, ACT threshold %s, detector floor %s.", args.detector, args.confidence, floor
+        "Detector %s, ACT threshold %s, COUNT threshold %s, detector floor %s.",
+        args.detector,
+        args.confidence,
+        args.count_confidence,
+        floor,
     )
 
     from aristech.application.use_cases import (
@@ -273,7 +324,11 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
         video=OpenCVVideoSource(source),
         detector=detector,
         notifier=LoggingNotifier(),
-        config=DetectHornetVisualConfig(confidence_threshold=args.confidence),
+        config=DetectHornetVisualConfig(
+            confidence_threshold=args.confidence,
+            count_threshold=args.count_confidence,
+            episode_rule=args.episode_rule,
+        ),
     )
     start = time.perf_counter()
     try:
@@ -281,9 +336,10 @@ def _run_visual_detection(args: argparse.Namespace, log: logging.Logger) -> int:
     finally:
         _log_timing(log, detector.latencies, time.perf_counter() - start)
     log.info(
-        "Analysis done: %d threat(s), %d abstention(s) below the threshold.",
+        "Analysis done: %d threat(s), %d abstention(s) below the threshold, %d attack episode(s).",
         result.threats,
         result.abstentions,
+        result.episodes,
     )
     return 0
 
