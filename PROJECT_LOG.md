@@ -422,3 +422,10 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Laptop CPU baseline (i9-13900H, 60-frame sample made from test-v1 images): 16–44 FPS, p50 18–37 ms, warm-up 9–17 s; the spread follows machine load (`docs/research/live-fps-laptop-cpu.md`).
   - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL green.
   - **Next**: measure on the idle bench Pi 5 once it arrives; `config/logging.yaml` file handler fails without a `logs/` folder (pre-existing).
+
+- **PR #145 merged** (`2d06513`, merge commit on `main`) — `chore(release): promote dev to main (second promotion)`. Issue #144.
+  - Second `dev` → `main` promotion under ADR-0025: the eleven commits from PR #129 to PR #142 (C1 microphone EOL check and bench order list, QA checklist, M4 operating point ADR-0029, live RF-DETR detection ADR-0030).
+  - **Verification**: `just gate` on `721e14a` (295 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
+  - The documented venv setup (`uv pip install -e . --no-deps pytest …`) misses `pluggy` and `numpy` on a fresh worktree; to fix separately.
+  - No tag yet: the signed `v*` tag is the owner's call.
+  - **Next**: owner orders the bench hardware; #143 (`logs/` folder).
