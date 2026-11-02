@@ -37,7 +37,7 @@ Q6). Order:
 | Aug–Nov 2027 | **Capture season** with C1 (extend to neighbouring hives if C1 is stable) | segments collected with metadata |
 | Autumn 2027 | **A0** acoustic feasibility ([spec](architecture/specs/acoustic-feasibility.md)) | role decided on data |
 | Autumn 2027 | **M5 own model** ([spec](architecture/specs/own-vision-model.md)) + **M4 two operating points** (ADR-0014) | beats VespAI; zero bees at ACT |
-| With M6 | **Attack alert** ([spec](architecture/specs/attack-alert.md)) | one alert per episode — episode rule and COUNT point built (#149, ADR-0031); push with M6 |
+| With M6 | **Attack alert** ([spec](architecture/specs/attack-alert.md)) | one alert per episode — episode rule and COUNT point built (#149, ADR-0031); Telegram push built (#152, ADR-0032) |
 
 Brick order (owner, Q12): **C1 first**, right after this dossier; the M3 report is slotted in
 while C1 hardware ships. The first C1 unit goes to the home hives (mains, Wi-Fi), a second one to

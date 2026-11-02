@@ -255,3 +255,19 @@ def test_empty_alert_section_uses_the_defaults(argv, tmp_path, caplog):
     (tmp_path / "config.yaml").write_text("app:\n  version: test\nalert:\n", encoding="utf-8")
     _run(argv, caplog)
     assert "0 attack episode(s)" in caplog.text
+
+
+def test_push_without_secrets_stops_before_running(argv, caplog, monkeypatch):
+    monkeypatch.delenv("ARISTECH_TELEGRAM_TOKEN", raising=False)
+    monkeypatch.delenv("ARISTECH_TELEGRAM_CHAT_ID", raising=False)
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        assert main([*argv, "--push", "telegram"]) == 2
+    assert "Push channel unusable" in caplog.text
+    assert _FakeDetector.created == []
+
+
+def test_push_wraps_the_log_sink(argv, caplog, monkeypatch):
+    monkeypatch.setenv("ARISTECH_TELEGRAM_TOKEN", "tok")
+    monkeypatch.setenv("ARISTECH_TELEGRAM_CHAT_ID", "42")
+    _run([*argv, "--push", "telegram"], caplog)
+    assert "Analysis done" in caplog.text
