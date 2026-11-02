@@ -429,3 +429,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - The documented venv setup (`uv pip install -e . --no-deps pytest …`) misses `pluggy` and `numpy` on a fresh worktree; to fix separately.
   - No tag yet: the signed `v*` tag is the owner's call.
   - **Next**: owner orders the bench hardware; #143 (`logs/` folder).
+
+- **PR #147 merged** (`720a996`) — `fix(logging): create the logs folder before the file handler opens it`. Issue #143.
+  - MCDA: create the parent folder of each file handler in the CLI (475) over committing `logs/.gitkeep` (295) or `delay=True` (230); A stays first with simplicity weighted 40.
+  - `_ensure_log_dirs` runs before `dictConfig`; the basicConfig fallback is unchanged. A unit test runs the CLI in an empty folder and checks `logs/app.log` (red without the fix).
+  - **Verification**: `just gate` green (296 tests, coverage 97.7 %, SonarQube gate passed); QA on a fresh clone: CLI exits 0 and writes `logs/app.log`; CodeQL green.
+  - **Next**: brick C, COUNT point and attack alert (ADR-0014, spec attack-alert).
