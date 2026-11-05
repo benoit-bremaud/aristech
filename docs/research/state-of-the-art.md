@@ -225,7 +225,7 @@ on GitHub (vespCV org).
 | [Ultralytics YOLOv8n/s][b1]   | Strong small-object performance, mature ONNX/TFLite/Edge TPU export, large fine-tune community.    | **AGPL-3.0**      |
 | [YOLOv10n][b2]            | Lower-latency NMS-free head; already proven on Raspberry Pi for V. velutina (`vespCV/hornet3000`).   | AGPL-3.0          |
 | [YOLOv9-c][b3]            | Best mAP/latency tradeoff among the YOLO line at small-object scales.                                | GPL-3.0           |
-| [RT-DETR / RF-DETR][b4]   | Transformer-based, no NMS, strong on cluttered hive entrances.                                       | Apache-2.0        |
+| [RT-DETR / RF-DETR][b4]   | Transformer-based, no NMS, strong on cluttered hive entrances.                                       | Apache-2.0 (RF-DETR N/S/M/L only; other sizes PML 1.0) |
 | [Grounding-DINO][b5] (Swin-T) | Open-vocabulary detector — zero-shot pre-labelling ("yellow-legged hornet") before any labels. mIoU 0.642 vs 0.503 for YOLO-World in ecology benchmarks. | Apache-2.0        |
 | [YOLO-World][b6]          | Real-time open-vocabulary YOLOv8-based — fastest path to a pre-labelling pipeline.                   | GPL-3.0           |
 
@@ -235,6 +235,11 @@ on GitHub (vespCV org).
 [b4]: https://huggingface.co/PekingU/rtdetr_r50vd
 [b5]: https://huggingface.co/IDEA-Research/grounding-dino-tiny
 [b6]: https://huggingface.co/spaces/stevengrove/YOLO-World
+
+> **Update 2026-11-05 (#168)**: permissive bases (RF-DETR, D-FINE, DEIM, RT-DETRv2/v4, YOLOX),
+> licence-checked datasets and free training GPUs are surveyed in
+> [the M5 survey](2026-11-05-m5-models-and-free-gpus.md); RF-DETR stays the base (ADR-0022). RF-DETR weights are Apache-2.0
+> for sizes N/S/M/L only (other sizes PML 1.0); the YOLO rows above are excluded by licence (ADR-0015).
 
 ### Academic + HuggingFace — synthesis
 

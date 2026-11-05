@@ -1,7 +1,8 @@
 # Spec — own vision model (M5)
 
 > **Status**: Proposed (needs brainstorm 2026-10-16) · **Milestone**: M5, autumn 2027 (first
-> public-data model during winter 2026–27) · **Related**: ADR-0015, ADR-0014, ADR-0001, UC8, UC9
+> public-data model during winter 2026–27) · **Related**: ADR-0015, ADR-0014, ADR-0001, UC8, UC9 ·
+> **Survey**: [M5 models and free GPUs](../../research/2026-11-05-m5-models-and-free-gpus.md) (2026-11-05)
 
 ## Need
 
