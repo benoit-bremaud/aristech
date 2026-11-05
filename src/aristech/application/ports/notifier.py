@@ -3,6 +3,7 @@
 from typing import Protocol
 
 from aristech.application.attack_episode import AttackEpisode
+from aristech.application.health import Fault, Heartbeat
 from aristech.domain import Detection
 
 
@@ -23,4 +24,12 @@ class Notifier(Protocol):
 
     def notify_attack_ended(self, episode: AttackEpisode) -> None:
         """The episode closed: its summary (duration, peak, total), never a new alert."""
+        ...
+
+    def notify_heartbeat(self, heartbeat: Heartbeat) -> None:
+        """The unit is alive: the periodic message of ADR-0033."""
+        ...
+
+    def notify_fault(self, fault: Fault) -> None:
+        """A fault the unit detected and can still deliver (ADR-0006, ADR-0033)."""
         ...

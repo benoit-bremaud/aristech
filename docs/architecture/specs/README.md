@@ -10,3 +10,5 @@ code):
 [deterrence-field-test](deterrence-field-test.md) (a field protocol, not code).
 
 Accepted (gate signed 2026-10-19): [annotation-pipeline](annotation-pipeline.md).
+
+Accepted and built (gate signed 2026-11-02): [health-push](health-push.md).

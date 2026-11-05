@@ -10,6 +10,8 @@ opening five of them.
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | [README.md](../README.md)                   | Top-level project pitch and quick-start.                                                                            |
 | [PROJECT_LOG.md](../PROJECT_LOG.md)         | Chronological operational logbook — one entry per merged PR, tag, or significant decision. Authority on _when / why_. |
+| [CHANGELOG.md](../CHANGELOG.md)             | Release notes per version (Keep a Changelog); source of the GitHub release body. |
+| [.github/tag-protection.md](../.github/tag-protection.md) | Ruleset protecting the signed `v*` release tags. |
 | [LICENSE](../LICENSE)                       | MIT.                                                                                                                |
 | [pyproject.toml](../pyproject.toml)         | Packaging and tooling configuration (PEP 621).                                                                       |
 | [Makefile](../Makefile)                     | Common dev commands (`make test-unit`, `make lock`, etc.).                                                            |

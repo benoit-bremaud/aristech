@@ -4,12 +4,13 @@ except the stdlib sender test, which talks to a local HTTP stub."""
 import json
 import logging
 import threading
-from datetime import datetime
+from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
 from aristech.application.attack_episode import AttackEpisode
+from aristech.application.health import Fault, FaultKind, Heartbeat
 from aristech.domain import BoundingBox, Detection, Species
 from aristech.infrastructure.notify.telegram_notifier import (
     MAX_PENDING,
@@ -47,6 +48,12 @@ class _RecordingNotifier:
 
     def notify_attack_ended(self, episode: AttackEpisode) -> None:
         self.events.append("ended")
+
+    def notify_heartbeat(self, heartbeat: Heartbeat) -> None:
+        self.events.append("heartbeat")
+
+    def notify_fault(self, fault: Fault) -> None:
+        self.events.append("fault")
 
 
 @pytest.fixture
@@ -152,3 +159,40 @@ def test_http_sender_posts_send_message_to_the_bot_api():
     assert [path for path, _ in received] == ["/bottok/sendMessage"]
     assert received[0][1]["chat_id"] == "42"
     assert received[0][1]["text"].startswith("Hornet attack under way")
+
+
+BEAT = Heartbeat(
+    at=datetime(2026, 11, 3, 8, tzinfo=UTC),
+    up_since=datetime(2026, 11, 2, 8, tzinfo=UTC),
+    frames=1200,
+    episodes=2,
+)
+
+
+def test_heartbeat_is_logged_and_pushed(inner, channel):
+    TelegramNotifier(inner, channel).notify_heartbeat(BEAT)
+    assert inner.events == ["heartbeat"]
+    assert channel.sent == [
+        "Unit alive at 2026-11-03 08:00 UTC, up since 2026-11-02 08:00 UTC: "
+        "1200 frame(s), 2 attack episode(s)."
+    ]
+
+
+def test_fault_is_pushed_without_its_detail(inner, channel):
+    fault = Fault(FaultKind.LOOP_ERROR, datetime(2026, 11, 2, 9, tzinfo=UTC), "/secret", 3)
+    TelegramNotifier(inner, channel).notify_fault(fault)
+    assert inner.events == ["fault"]
+    assert channel.sent == [
+        "Unit fault at 2026-11-02 09:00:00 UTC: loop_error (3 more muted since the last one)."
+    ]
+    assert "/secret" not in channel.sent[0]
+
+
+def test_fault_pushed_while_down_is_delayed(inner, channel):
+    notifier = TelegramNotifier(inner, channel)
+    channel.down = True
+    notifier.notify_fault(Fault(FaultKind.SOURCE_ENDED, datetime(2026, 11, 2, tzinfo=UTC), ""))
+    channel.down = False
+    notifier.notify_heartbeat(BEAT)
+    assert channel.sent[0] == "[delayed] Unit fault at 2026-11-02 00:00:00 UTC: source_ended."
+    assert channel.sent[1].startswith("Unit alive")

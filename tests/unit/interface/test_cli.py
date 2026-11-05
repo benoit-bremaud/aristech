@@ -5,12 +5,13 @@ neither cv2 nor torch and run in CI."""
 import logging
 from pathlib import Path
 
+from aristech import __version__
 from aristech.interface.cli.main import main
 
 
 def _config(tmp_path: Path) -> Path:
     cfg = tmp_path / "config.yaml"
-    cfg.write_text("app:\n  version: test\n", encoding="utf-8")
+    cfg.write_text("", encoding="utf-8")
     return cfg
 
 
@@ -23,12 +24,20 @@ def test_no_video_is_a_noop(tmp_path):
     assert main(_common(tmp_path)) == 0
 
 
+def test_logs_the_package_version(tmp_path, caplog):
+    # The start-up line reports the version actually running, not a value copied into the YAML.
+    with caplog.at_level(logging.INFO, logger="aristech"):
+        main(_common(tmp_path))
+    assert f"aristech started, version {__version__}" in caplog.text
+
+
 def test_creates_missing_log_folder(tmp_path, monkeypatch, caplog):
     # Fresh checkout: no logs/ folder, file handler path relative to the cwd (#143).
     monkeypatch.chdir(tmp_path)
     log_cfg = tmp_path / "logging.yaml"
     log_cfg.write_text(
         "version: 1\n"
+        "disable_existing_loggers: false\n"  # as config/logging.yaml: keeps `aristech` alive
         "handlers:\n"
         "  file:\n"
         "    class: logging.FileHandler\n"

@@ -40,3 +40,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`.
 | [ADR-0030](ADR-0030-live-detector-choice-and-default-threshold.md) | Live detector choice and per-detector default ACT threshold | Accepted |
 | [ADR-0031](ADR-0031-count-point-and-attack-episode-rule.md) | COUNT point at 80 % image precision, one alert per attack episode | Accepted |
 | [ADR-0032](ADR-0032-attack-alert-push-channel.md) | Telegram bot as the push channel of the attack alert | Accepted |
+| [ADR-0033](ADR-0033-fault-and-heartbeat-push.md) | Fault and heartbeat pushes on the alert channel | Accepted |
