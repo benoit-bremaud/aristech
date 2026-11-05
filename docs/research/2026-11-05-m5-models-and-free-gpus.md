@@ -102,7 +102,7 @@ The totals are computed by [`../decisions/mcda/research_2026_11_05_m5_models_fre
 
 The ranking is fragile on the edge-deployment weight, as in ADR-0022: it flips as soon as the Hailo path weighs 30. That is M6's measured decision.
 
-**Decision: keep RF-DETR.** ADR-0022 stands, and no new ADR is needed. M6 starts with a check that the RF-DETR ONNX export compiles with the Hailo Dataflow Compiler. YOLOX-S, trained as `yolox_s_leaky`, stays the fallback.
+**Decision: keep RF-DETR, under one condition.** ADR-0022 stands, and no new ADR is needed. The condition is a prerequisite, not an open follow-up: before an M5 model is trained for the product, the Objects365 provenance of the RF-DETR checkpoint must be checked and recorded in the licence register. If those terms restrict commercial use, ADR-0015 is not met, and an ADR superseding ADR-0022 is written with the next option. M6 starts with a check that the RF-DETR ONNX export compiles with the Hailo Dataflow Compiler. YOLOX-S, trained as `yolox_s_leaky`, stays the fallback.
 
 ### D2 — training compute
 
@@ -126,8 +126,8 @@ The ranking is fragile on the edge-deployment weight, as in ADR-0022: it flips a
 
 ## 5. Follow-ups
 
-- **M6:** compile the RF-DETR ONNX export with the Hailo Dataflow Compiler on the bench Pi 5 with Hailo-8L.
-- **Objects365:** check the Objects365 pre-training terms of RF-DETR and of LW-DETR.
+- **M6:** compile the RF-DETR ONNX export to a HEF file with the Hailo Dataflow Compiler on an x86 Linux host, since the compiler does not run on ARM. Then load the HEF with HailoRT on the bench Pi 5 with Hailo-8L.
+- **Objects365 (prerequisite for M5 product training):** check the Objects365 pre-training terms of RF-DETR and of LW-DETR, and record the result in the licence register.
 - **Pre-field manifest:** compare Zenodo 15622033 with the Sledevič set before adding it.
 - **Before the first cloud run:** read the Kaggle and Modal terms (outputs, private data), then write the cloud-training ADR.
 - **Roboflow Universe:** re-check licences image by image, in a signed-in browser, before using any set not yet in the manifest.
