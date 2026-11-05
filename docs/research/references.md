@@ -45,7 +45,7 @@ project progresses — this is the single index to come back to.
 
 ---
 
-## 1. Vespa velutina detection — datasets and competitions (Kaggle)
+## 1. Vespa velutina detection — datasets and competitions (Kaggle and open repositories)
 
 | Type     | Source                                                                                                       | Year | Relevance | Notes                                                       |
 | -------- | ------------------------------------------------------------------------------------------------------------ | ---- | --------- | ----------------------------------------------------------- |

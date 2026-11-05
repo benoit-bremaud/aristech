@@ -30,6 +30,11 @@ Verdict: Must 4 · Should 11 · Nice 4 · Disagree 1. `just check` green.
 Out of scope (pre-existing): Hornet3000+ and `vespCV/vespcv` licence rows in `references.md` —
 listed as a follow-up in the note.
 
-## Round 2 — verification
+## Round 2 — verification on `63d8b3a`
 
-See below.
+All 4 Must, 11 Should and 4 Nice findings verified fixed (S1 accepted on the recorded browser
+re-read; the reviewer has no web access). MCDA rerun matches every table; `just check` green.
+New Nice: § 1 heading of `references.md` said Kaggle only (fixed: renamed); compute subsection
+placement under § 8 and note line wrapping (kept as is).
+
+**Push gate: open — 0 Must open.**
