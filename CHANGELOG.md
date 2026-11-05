@@ -8,12 +8,7 @@ the same version (`1.0.0rc1`).
 
 ## [Unreleased]
 
-### Fixed
-
-- The start-up log line reports the package version; `app` section removed from
-  `config/config.yaml` (#161).
-
-## [1.0.0-rc.1] - 2026-11-02
+## [1.0.0-rc.1] - 2026-11-05
 
 First release candidate of v1, "detection + alert" (Epic #19). Stable `1.0.0` follows once the
 candidate passes a test on a real Telegram bot and the QA pass on the bench Raspberry Pi 5.
@@ -41,6 +36,8 @@ candidate passes a test on a real Telegram bot and the QA pass on the bench Rasp
 ### Fixed
 
 - The CLI creates the `logs/` folder before the file handler opens it (#143).
+- The start-up log line reports the package version; `app` section removed from
+  `config/config.yaml` (#161).
 
 ### Known limits
 

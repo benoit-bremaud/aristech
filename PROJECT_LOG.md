@@ -471,17 +471,20 @@ Audit session continued past midnight: closed the planning and hygiene work open
 
 - **PR #163 merged** (`a9065b9`) — `docs: reference the v1.0.0-rc.1 release in the dossier`. Issue #161.
   - INDEX, ROADMAP v1 row and CONTRIBUTING release step point to the release candidate and its exit criteria.
+  - **Verification**: `just gate` green; markdownlint clean.
+
+## 2026-11-05
 
 - **PR #166 merged** (`c578cf5`) — `fix(cli): log the package version instead of a copy in config.yaml`. Issue #161.
   - Found in review of the promotion PR: the start-up line read `app.version` (`0.1.0`) from `config/config.yaml`. The CLI now logs `aristech.__version__`; the unread `app` section leaves the config; a test pins `__version__` to `pyproject.toml`.
   - Pre-push review: 0 Must, 2 Should and 3 Nice fixed, among them a test that passed only by test order (a logging fixture disabled the `aristech` logger).
-  - **Verification**: `just gate` green (366 tests, coverage 98 %, SonarQube gate passed); CodeQL and dependency review green.
+  - **Verification**: `just check` green (366 tests, coverage 98 %); `just gate` on the merged SHA `c578cf5` (PR #165); CodeQL and dependency review green.
 
 - **PR #165 merged** (`6ada973`, merge commit on `main`) — `chore(release): promote dev to main (fourth promotion)`. Issue #161.
   - Fourth `dev` → `main` promotion under ADR-0025: the six commits from PR #157 to PR #166 (fault and heartbeat pushes ADR-0033, release preparation, version log fix).
   - **Verification**: `just gate` on `c578cf5` (366 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
 
-- **Release `v1.0.0-rc.1`** (2026-11-05) — first release candidate of v1, detection + alert. Issue #161; Epic #19 closed.
+- **Release `v1.0.0-rc.1`** — first release candidate of v1, detection + alert. Issue #161; Epic #19 closed.
   - Signed tag on `6ada973` (SSH signature, verified by GitHub), cut by the owner; GitHub pre-release published from the `CHANGELOG.md` section.
-  - The repository had no signing configuration, so `git tag -s` fell back to GPG without a key; it now signs with SSH like the owner's other repositories (local config only).
+  - The repository had no signing configuration, so `git tag -s` fell back to GPG without a key; it now signs with SSH (local config only; prerequisite added to CONTRIBUTING step 9).
   - **Next**: stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).
