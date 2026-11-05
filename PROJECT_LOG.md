@@ -488,3 +488,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Signed tag on `6ada973` (SSH signature, verified by GitHub), cut by the owner; GitHub pre-release published from the `CHANGELOG.md` section.
   - The repository had no signing configuration, so `git tag -s` fell back to GPG without a key; it now signs with SSH (local config only; prerequisite added to CONTRIBUTING step 9).
   - **Next**: align the published release notes with the `CHANGELOG.md` section (it gained the #166 fix after publication; owner OK); stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).
+
+- **PR #169 merged** (`db176da`) — `docs(research): survey pre-trained detectors and free training GPUs for M5`. Issue #168.
+  - Research note `docs/research/2026-11-05-m5-models-and-free-gpus.md` with an MCDA script. No product-usable pre-trained hornet model exists; datasets in use are confirmed and Zenodo 15622033 (CC BY, bees only) is a new candidate.
+  - Base detector (MCDA): RF-DETR 400 over YOLOX-S 370, RT-DETR 330, D-FINE/DEIM 320; ADR-0022 stands. The ranking flips when the Hailo path weighs 30. Prerequisite before M5 product training: check the Objects365 terms of the RF-DETR weights. M6 starts by compiling RF-DETR for Hailo-8L on an x86 host; YOLOX-S (`yolox_s_leaky`) is the fallback.
+  - Training compute (MCDA): local RTX 4070 450, Kaggle 390, Modal 365, Colab 360. Local by default; Kaggle then Modal only above 8 GB. Cloud training needs an ADR before the first run.
+  - Pre-push review: 4 Must and 11 Should fixed; 2 hosted review findings fixed (Objects365 prerequisite, Hailo compile host).
+  - **Verification**: `just gate` green on `88b3ad7` (SonarQube gate passed); CodeQL green.
+  - **Next**: bench Pi 5 / C1 acceptance criteria.
