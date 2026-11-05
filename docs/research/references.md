@@ -54,6 +54,7 @@ project progresses — this is the single index to come back to.
 | Dataset  | [BeeImage Dataset](https://www.kaggle.com/datasets/jenny18/honey-bee-annotated-images)                       | n/a  | medium    | A. mellifera only. Useful as negative-class supplement.     |
 | Notebook | [2022 UC Asian Hornet Detection — YOLOv5](https://www.kaggle.com/code/lucaordronneau/2022-uc-asianhornetdetection-yolov5) | 2022 | medium    | YOLOv5 on Hornet3000+.                                      |
 | Notebook | [Asian Hornet Detection — Swin Transformer / MMDet](https://www.kaggle.com/code/johanmoncouti/asian-hornet-detection-swin-transformer-mmdet) | 2022 | medium    | Swin-T on Hornet3000+.                                      |
+| Dataset  | [Zenodo 15622033 — honeybee fanning at the hive entrance](https://zenodo.org/records/15622033) — added 2026-11-05 | n/a  | medium | CC BY 4.0; ≈ 57.6 k bee instances, no hornets ([M5 survey](2026-11-05-m5-models-and-free-gpus.md)). |
 | Competition | [iNaturalist FGVC 2021](https://www.kaggle.com/c/inaturalist-2021)                                       | 2021 | low       | Generic species recognition, not V. velutina.               |
 
 ## 2. Vespa velutina detection — code repositories (GitHub)
@@ -130,13 +131,24 @@ project progresses — this is the single index to come back to.
 | [Ultralytics YOLOv8](https://docs.ultralytics.com)                                                  | **AGPL-3.0**  | Strong small-object, mature exports. Licence has commercial implications.                 |
 | [YOLOv10 (THU-MIG)](https://github.com/THU-MIG/yolov10)                                             | AGPL-3.0      | NMS-free head. Already proven on Pi for V. velutina (vespCV).                            |
 | [YOLOv9 (WongKinYiu)](https://github.com/WongKinYiu/yolov9)                                         | GPL-3.0       | Best mAP/latency at small-object scales.                                                  |
-| [RT-DETR / RF-DETR](https://huggingface.co/PekingU/rtdetr_r50vd)                                    | **Apache-2.0**| Transformer, NMS-free, strong on cluttered scenes. **Most aristech-compatible license.**  |
+| [RT-DETR / RF-DETR](https://huggingface.co/PekingU/rtdetr_r50vd)                                    | **Apache-2.0** (RF-DETR N/S/M/L only — see row below)| Transformer, NMS-free, strong on cluttered scenes. **Most aristech-compatible license.**  |
 | [Grounding-DINO (IDEA-Research)](https://huggingface.co/IDEA-Research/grounding-dino-tiny)          | Apache-2.0    | Open-vocabulary. Zero-shot pre-labelling pipeline.                                        |
 | [YOLO-World](https://huggingface.co/spaces/stevengrove/YOLO-World)                                  | GPL-3.0       | Real-time open-vocabulary YOLOv8-based.                                                   |
 | [RF-DETR (Roboflow)](https://github.com/roboflow/rf-detr) — added 2026-11-05 | **Apache-2.0** (N/S/M/L); PML 1.0 other sizes | Chosen base (ADR-0022). Survey: [M5 survey](2026-11-05-m5-models-and-free-gpus.md). |
 | [D-FINE](https://github.com/Peterande/D-FINE) / [DEIM](https://github.com/ShihuaHuang95/DEIM) — added 2026-11-05 | Apache-2.0; Objects365 caveat on weights | Not in the Hailo Model Zoo. DEIMv2 weights are non-commercial. |
-| [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) — added 2026-11-05 | Apache-2.0 | Compiled for Hailo-8L ([Hailo Model Zoo](https://github.com/hailo-ai/hailo_model_zoo)); M6 fallback. |
-| [Zenodo 15622033 — honeybee fanning at the hive entrance](https://zenodo.org/records/15622033) — added 2026-11-05 | CC BY 4.0 | 57,597 bee instances, no hornets; bee/background candidate. |
+| [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) — added 2026-11-05 | Apache-2.0 (weights licence not stated) | Compiled for Hailo-8L ([Hailo Model Zoo](https://github.com/hailo-ai/hailo_model_zoo)); M6 fallback. |
+
+### Training data counts and free training compute (added 2026-11-05)
+
+| Source | Notes |
+| --- | --- |
+| [GBIF occurrence API](https://api.gbif.org/v1/occurrence/search) | Licence-filtered occurrence counts for the M5 survey. |
+| [Kaggle — efficient GPU usage](https://www.kaggle.com/docs/efficient-gpu-usage) | 30 h/week GPU quota. |
+| [Kaggle — notebooks doc](https://www.kaggle.com/docs/notebooks) | 12 h sessions, 20 GB `/kaggle/working`. |
+| [Modal pricing](https://modal.com/pricing) | 30 $/month free credit, GPU prices. |
+| [Colab FAQ](https://research.google.com/colaboratory/faq.html) | Dynamic limits, ≤ 12 h sessions. |
+| [Lightning AI pricing](https://lightning.ai/pricing) | Free credits, 4 h Studio restart. |
+| [Hailo Model Zoo — Hailo-8L detectors](https://github.com/hailo-ai/hailo_model_zoo/blob/master/docs/public_models/HAILO8L/HAILO8L_object_detection.rst) | YOLOX compiled; no RT-DETR / RF-DETR entry. |
 
 ## 9. Auto-aim turret prior art
 
