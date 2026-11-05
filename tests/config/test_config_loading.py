@@ -10,9 +10,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_config_yaml_has_expected_sections():
     config = yaml.safe_load((ROOT / "config" / "config.yaml").read_text())
+    # No `app` section: the running version is the package's (`aristech.__version__`).
     assert set(config) == {"alert", "health"}
-    # The running version comes from the package (`aristech.__version__`), never from the YAML.
-    assert "app" not in config
 
 
 def test_package_version_matches_pyproject():

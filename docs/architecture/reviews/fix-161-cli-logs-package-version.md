@@ -1,14 +1,12 @@
-# Pre-push review — fix/161-cli-logs-package-version
+# Local review — aristech (issue #161, CLI logs the package version)
 
-Review of the diff against `dev` (issue #161) before the first push: the CLI start-up line logs
-`aristech.__version__` instead of `app.version` copied into `config/config.yaml` (hosted review
-finding on the promotion PR #165).
-
-## Checks
-
-- `just check`: green (366 tests, coverage 98 %).
-- Adversarial review (fresh agent, round 1): 0 Must, 2 Should, 3 Nice; gate open. Verification
-  round on the fix commit: see the table.
+- Date: 2026-11-05
+- Scope: branch diff `dev...fix/161-cli-logs-package-version` — the start-up line logs
+  `aristech.__version__` instead of `app.version` copied into `config/config.yaml` (hosted
+  review finding on the promotion PR #165)
+- Checks run: `just check` (366 tests, coverage 98 %) · adversarial review round 1 (0 Must,
+  2 Should, 3 Nice) · verification round on `407d202`: 5/5 fixed, 0 regressed
+- Verdict: ship · Must 0 · Should 2 (fixed) · Nice 3 (fixed)
 
 ## Findings
 
