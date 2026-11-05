@@ -2,7 +2,6 @@
 # Detection settings are CLI flags (`aristech --help`); dataset paths live in `.env`.
 app:
   name: "Aristech"
-  version: "0.1.0"
 # Attack episode rule (ADR-0031): provisional values, to be set from field data (M5).
 alert:
   min_hit_frames: 3   # frames with a counted V. velutina that open an episode...
