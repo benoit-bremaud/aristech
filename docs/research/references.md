@@ -133,6 +133,10 @@ project progresses — this is the single index to come back to.
 | [RT-DETR / RF-DETR](https://huggingface.co/PekingU/rtdetr_r50vd)                                    | **Apache-2.0**| Transformer, NMS-free, strong on cluttered scenes. **Most aristech-compatible license.**  |
 | [Grounding-DINO (IDEA-Research)](https://huggingface.co/IDEA-Research/grounding-dino-tiny)          | Apache-2.0    | Open-vocabulary. Zero-shot pre-labelling pipeline.                                        |
 | [YOLO-World](https://huggingface.co/spaces/stevengrove/YOLO-World)                                  | GPL-3.0       | Real-time open-vocabulary YOLOv8-based.                                                   |
+| [RF-DETR (Roboflow)](https://github.com/roboflow/rf-detr) — added 2026-11-05 | **Apache-2.0** (N/S/M/L); PML 1.0 other sizes | Chosen base (ADR-0022). Survey: [M5 survey](2026-11-05-m5-models-and-free-gpus.md). |
+| [D-FINE](https://github.com/Peterande/D-FINE) / [DEIM](https://github.com/ShihuaHuang95/DEIM) — added 2026-11-05 | Apache-2.0; Objects365 caveat on weights | Not in the Hailo Model Zoo. DEIMv2 weights are non-commercial. |
+| [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) — added 2026-11-05 | Apache-2.0 | Compiled for Hailo-8L ([Hailo Model Zoo](https://github.com/hailo-ai/hailo_model_zoo)); M6 fallback. |
+| [Zenodo 15622033 — honeybee fanning at the hive entrance](https://zenodo.org/records/15622033) — added 2026-11-05 | CC BY 4.0 | 57,597 bee instances, no hornets; bee/background candidate. |
 
 ## 9. Auto-aim turret prior art
 

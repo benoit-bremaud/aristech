@@ -236,6 +236,10 @@ on GitHub (vespCV org).
 [b5]: https://huggingface.co/IDEA-Research/grounding-dino-tiny
 [b6]: https://huggingface.co/spaces/stevengrove/YOLO-World
 
+> **Update 2026-11-05 (#168)**: permissive bases (RF-DETR, D-FINE, DEIM, RT-DETRv2/v4, YOLOX),
+> licence-checked datasets and free training GPUs are surveyed in
+> [the M5 survey](2026-11-05-m5-models-and-free-gpus.md); RF-DETR stays the base (ADR-0022).
+
 ### Academic + HuggingFace — synthesis
 
 The field is **sparse but converging**:

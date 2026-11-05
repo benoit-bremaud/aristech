@@ -127,6 +127,8 @@ images ([report](research/operating-point-test-v1.md)). Re-measured on the field
 Capture with C1 → annotation pipeline → frozen test set → fine-tune a permissively licensed
 pre-trained detector (ADR-0015) → compare with VespAI → measure both operating points (ADR-0014).
 No longer optional: VespAI's recall does not transfer and its licence blocks a product.
+Base and compute survey (2026-11-05): RF-DETR kept, local GPU first, Kaggle/Modal as overflow —
+[M5 survey](research/2026-11-05-m5-models-and-free-gpus.md).
 
 **🚪 Gate** — own model beats VespAI on the frozen set; zero bees at the ACT point.
 
