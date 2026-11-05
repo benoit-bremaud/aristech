@@ -463,3 +463,25 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Known limits: the rate limit is per process (restart delay must be ≥ cool-down); a stream URL ends like a file.
   - **Verification**: `just gate` green (364 tests, coverage 98 %, SonarQube gate passed); pre-push review without Must; checks green.
   - **Next**: owner test on a real Telegram bot (alert, heartbeat, fault); bench hardware.
+
+- **PR #162 merged** (`8f49338`) — `chore(release): prepare v1.0.0-rc.1`. Issue #161.
+  - Owner choice (MCDA): release candidate `v1.0.0-rc.1` (425) over no tag yet (365) and stable `v1.0.0` (305); the stable version waits for a test on a real Telegram bot and the QA pass on the bench Pi 5.
+  - `pyproject.toml` and `__version__` set to `1.0.0rc1` (PEP 440 form of the tag); `CHANGELOG.md` in Keep a Changelog format; `.github/tag-protection.md` documents the live `protect-release-tags` ruleset.
+  - **Verification**: `just gate` green (364 tests, SonarQube gate passed).
+
+- **PR #163 merged** (`a9065b9`) — `docs: reference the v1.0.0-rc.1 release in the dossier`. Issue #161.
+  - INDEX, ROADMAP v1 row and CONTRIBUTING release step point to the release candidate and its exit criteria.
+
+- **PR #166 merged** (`c578cf5`) — `fix(cli): log the package version instead of a copy in config.yaml`. Issue #161.
+  - Found in review of the promotion PR: the start-up line read `app.version` (`0.1.0`) from `config/config.yaml`. The CLI now logs `aristech.__version__`; the unread `app` section leaves the config; a test pins `__version__` to `pyproject.toml`.
+  - Pre-push review: 0 Must, 2 Should and 3 Nice fixed, among them a test that passed only by test order (a logging fixture disabled the `aristech` logger).
+  - **Verification**: `just gate` green (366 tests, coverage 98 %, SonarQube gate passed); CodeQL and dependency review green.
+
+- **PR #165 merged** (`6ada973`, merge commit on `main`) — `chore(release): promote dev to main (fourth promotion)`. Issue #161.
+  - Fourth `dev` → `main` promotion under ADR-0025: the six commits from PR #157 to PR #166 (fault and heartbeat pushes ADR-0033, release preparation, version log fix).
+  - **Verification**: `just gate` on `c578cf5` (366 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green. The gate stands in for the staging QA pass until the Pi 5 bench exists.
+
+- **Release `v1.0.0-rc.1`** (2026-11-05) — first release candidate of v1, detection + alert. Issue #161; Epic #19 closed.
+  - Signed tag on `6ada973` (SSH signature, verified by GitHub), cut by the owner; GitHub pre-release published from the `CHANGELOG.md` section.
+  - The repository had no signing configuration, so `git tag -s` fell back to GPG without a key; it now signs with SSH like the owner's other repositories (local config only).
+  - **Next**: stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).
