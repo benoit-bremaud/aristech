@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Any, cast
 
 import yaml
 
+from aristech import __version__
+
 if TYPE_CHECKING:
     from aristech.application.attack_episode import EpisodeRule
     from aristech.application.health import HealthRule
@@ -199,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     config = _load_yaml(args.config)
-    log.info("aristech started, version %s", config.get("app", {}).get("version", "?"))
+    log.info("aristech started, version %s", __version__)
 
     if args.video is None:
         log.warning("No video source (--video): nothing to analyse.")
