@@ -11,7 +11,7 @@ from aristech.interface.cli.main import main
 
 def _config(tmp_path: Path) -> Path:
     cfg = tmp_path / "config.yaml"
-    cfg.write_text("app:\n  name: test\n", encoding="utf-8")
+    cfg.write_text("", encoding="utf-8")
     return cfg
 
 
@@ -37,6 +37,7 @@ def test_creates_missing_log_folder(tmp_path, monkeypatch, caplog):
     log_cfg = tmp_path / "logging.yaml"
     log_cfg.write_text(
         "version: 1\n"
+        "disable_existing_loggers: false\n"  # as config/logging.yaml: keeps `aristech` alive
         "handlers:\n"
         "  file:\n"
         "    class: logging.FileHandler\n"
