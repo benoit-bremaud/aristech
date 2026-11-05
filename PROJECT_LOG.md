@@ -487,4 +487,4 @@ Audit session continued past midnight: closed the planning and hygiene work open
 - **Release `v1.0.0-rc.1`** — first release candidate of v1, detection + alert. Issue #161; Epic #19 closed.
   - Signed tag on `6ada973` (SSH signature, verified by GitHub), cut by the owner; GitHub pre-release published from the `CHANGELOG.md` section.
   - The repository had no signing configuration, so `git tag -s` fell back to GPG without a key; it now signs with SSH (local config only; prerequisite added to CONTRIBUTING step 9).
-  - **Next**: stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).
+  - **Next**: align the published release notes with the `CHANGELOG.md` section (it gained the #166 fix after publication; owner OK); stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).

@@ -6,7 +6,7 @@
 - Checks run: `just check` · adversarial review round 1 (2 Must, 3 Should, 2 Nice) ·
   verification round on the fix commit · SHAs `8f49338`, `a9065b9`, `c578cf5`, `6ada973`
   resolve; tag `v1.0.0-rc.1` points to `6ada973`, SSH signature verified on GitHub
-- Verdict: ship once the verification round is clean
+- Verdict: ship · verification round on `f3b757b`: 7/7 fixed, 0 regressed; release notes edit tracked in the log (owner OK)
 
 ## Findings
 

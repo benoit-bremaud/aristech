@@ -96,7 +96,7 @@ version and is the only trigger of GitHub Actions.
 9. Release: a release PR to `dev` bumps `pyproject.toml` and `__version__` (PEP 440 form,
    `1.0.0rc1`) and adds the `CHANGELOG.md` section (SemVer form, `1.0.0-rc.1`); it is promoted,
    then the owner signs the tag on the `main` merge commit (`git tag -s v1.0.0-rc.1`; prerequisite:
-   SSH signing configured, `gpg.format ssh`, `user.signingkey`, `tag.gpgSign true`). A release
+   SSH signing configured, `gpg.format ssh` and `user.signingkey`). A release
    candidate becomes stable with only the version and changelog bump on top of the tested rc.
 
 ## Code standards
