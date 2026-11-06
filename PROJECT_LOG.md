@@ -523,3 +523,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Pre-push review: 1 Must, 7 Should and 5 Nice handled over two rounds; 1 Should deferred.
   - **Verification**: `just gate` green on `2732c8f` (372 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
   - **Next**: BA5 on the bench (check the GOP there); follow-ups #178 (clip reopened within one ring), #179 (clip start from the sensor timestamp), #180 (flush the ring on shutdown), #181 (`timedatectl` out of the tick).
+
+- **PR #187 merged** (`8bf5183`) — `fix(capture): keep the end of a clip closed less than one ring before the next opens`. Issue #178.
+  - A closed clip keeps receiving frames for one ring (8 s); when the next clip opens sooner (motion back within 8 s, or the 5 min cap), the camera closes the old file at the new clip's start, but its sidecar `end_utc` said the close tick (error up to 7 s).
+  - Fix (MCDA): defer the video sidecar 460 over merging the clips and deferring 430, merging only 345 and delaying the new clip 280 (loses the pre-roll). The sidecar is written when the ring elapses (end = stop tick), when the next clip opens (end = its start), or on `close()` (end = release − ring, #180); kept through faults with its end and retried on a write error; rotation runs before the retry.
+  - Spec, sequence and state diagrams updated; unit tests with fakes for reopen, cap, fault, write error and release.
+  - Pre-push review: 1 Must, 2 Should and 7 Nice handled over two rounds, 2 Nice declined; 1 hosted review finding fixed (track the new clip before the old sidecar is written).
+  - **Verification**: `just gate` green on `1f08e38` (380 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL green.
+  - **Next**: follow-ups #184 (pending close after a camera loss), #185 (sidecar for a clip abandoned on a fault), #186 (spec says monotonic clock), #180 comment on waiting for the pending close.
