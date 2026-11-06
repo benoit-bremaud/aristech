@@ -496,3 +496,13 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Pre-push review: 4 Must, 11 Should and 4 Nice handled; 2 hosted review findings fixed (Objects365 prerequisite, Hailo compile host).
   - **Verification**: `just gate` green on `88b3ad7` (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: acceptance criteria for the C1 capture rig on the bench Pi 5.
+
+## 2026-11-06
+
+- **PR #172 merged** (`908c667`) — `docs(c1): add acceptance criteria for the C1 rig on the bench Pi 5`. Issue #171.
+  - New spec `docs/architecture/specs/bench-acceptance.md`: 20 criteria (BA1–BA20) on capture, recording, detection latency, alert and health push, power and heat, each with a threshold, a procedure and the evidence to keep.
+  - Criteria in a new spec (MCDA 435) over a section in capture-rig (340) and spread over four specs (325). Detection latency target on the Pi 5 CPU (MCDA): p95 ≤ 500 ms and ≥ 2 FPS (455) over ≤ 1 s / 1 FPS and ≤ 200 ms / 5 FPS (425 each) and measure only (260), on a clip of at least 5 min; heat limit 75 °C with no throttling flag; supply checked on the since-boot under-voltage bit. `requirements.md` states the latency target as proposed.
+  - Follow-ups named in the spec: a service unit that starts the recorder at boot (BA7 and BA10 blocked until then), and a pre-roll possibly shorter than 5 s (motion checked once per second).
+  - Pre-push review: 8 Must, 10 Should and 11 Nice handled over two rounds; 1 hosted review finding fixed (minimum clip length for the p95).
+  - **Verification**: `just gate` green on `3905aa9` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: run the bench pass once the hardware is delivered; follow-ups #173 (recorder service unit) and #174 (pre-roll).
