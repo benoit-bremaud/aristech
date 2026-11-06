@@ -187,10 +187,10 @@ class RecordCampaign:
             if self._clip is None:
                 path = self._store.path_for("video", now)
                 self._camera.start_clip(path)
-                # The previous clip ends where this one starts: the ring holds its last frames.
-                self._flush_closing(now - self._config.ring)
                 start = now - self._config.ring
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
+                # The previous clip ends where this one starts: the ring holds its last frames.
+                self._flush_closing(start)
         clip = self._clip
         if clip is None or self._last_motion is None:
             return
@@ -235,8 +235,10 @@ class RecordCampaign:
         closing = self._closing
         if closing is not None:
             end = min(closing.closed_at, ends_by)
+            # Kept with its end on a write error, retried at the next tick.
+            self._closing = _ClosingClip(closing.segment, end, closing.settings)
             self._write_sidecar(closing.segment, "video", end, closing.settings)
-            self._closing = None  # kept on a write error, retried at the next tick
+            self._closing = None
 
     def _write_sidecar(
         self,

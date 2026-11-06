@@ -304,6 +304,20 @@ def test_closing_clip_sidecar_is_retried_after_a_write_error() -> None:
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
+def test_failed_sidecar_at_reopen_keeps_the_end_dated_at_the_next_clip() -> None:
+    rig = _closed_clip_rig()
+    rig.clock.advance(1)
+    rig.camera.motion = True
+    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
+
+    assert rig.campaign.tick() is RigState.FAULT  # + 9 s: the next clip opened, write failed
+    del rig.store.write_sidecar
+    rig.camera.motion = False
+    rig.run(1)
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
+
+
 def _raise(*_: object) -> NoReturn:
     raise OSError("disk I/O error")
 
