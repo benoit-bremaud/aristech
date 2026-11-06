@@ -49,3 +49,9 @@ commit.
 | N11 | Nice | 75 °C heat limit is new | Put to the owner with the PR |
 
 `just check` green on `f936902`.
+
+## Hosted review on PR #172
+
+| # | Level | Finding | Resolution |
+|---|---|---|---|
+| H1 | Should | BA12 accepted a clip too short for a meaningful p95 | Fixed: clip of at least 5 min, at least 600 steady-state detections per run |

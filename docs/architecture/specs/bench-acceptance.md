@@ -85,7 +85,7 @@ so the run is repeatable.
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA12** Latency and throughput | On each of three runs of the same clip: p95 detect latency ≤ 500 ms, ≥ 2 FPS end to end, warm-up ≤ 60 s | `aristech --video <clip.mp4> --detector rfdetr --checkpoint <path>`, three times on the idle board | The three `Timing:` lines |
+| **BA12** Latency and throughput | On each of three runs of the same clip: p95 detect latency ≤ 500 ms, ≥ 2 FPS end to end, warm-up ≤ 60 s | `aristech --video <clip.mp4> --detector rfdetr --checkpoint <path>`, three times on the idle board; the clip lasts at least 5 min, so each run has at least 600 steady-state detections at 2 FPS (a short clip would give a p95 of a handful of frames) | The three `Timing:` lines |
 | **BA13** Live source | The live camera opens and the same thresholds hold over 10 min | Stop `aristech-record`; run `aristech --video 0 --detector rfdetr --checkpoint <path>` (under `libcamerify` if OpenCV cannot open the camera directly, noted); press Ctrl-C after 10 min | The `Timing:` line |
 
 **Why 500 ms / 2 FPS** — a hornet hovers in front of the entrance for seconds, and an episode opens
