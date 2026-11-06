@@ -63,6 +63,16 @@
 - Nice · a close racing the pending close within tens of ms could date a sidecar late
   (unmeasured) · **Noted**: fix only if bench data shows it (needs a port change).
 
+## Hosted review (round 3)
+
+- A clip closed by a camera loss was flushed when the adapter released the camera, yet a
+  shutdown within one ring moved its end to the release · **Fixed**: the closing clip carries
+  `on_ring`, False after a camera loss or once a sidecar write was attempted (its output has
+  closed); only a clip still on the ring is extended; test added.
+- The release end is read before the audio close and the encoder stop, so the file may hold a
+  few frames past it · **Kept**: the sidecar then never claims footage the file lacks, the same
+  precision as the stop-tick rule; an exact end needs the encoder's last frame time (port change).
+
 ## Out of scope (follow-ups)
 
 - #190: `_close_pending_now()` racing a pending close already firing when the next clip opens.

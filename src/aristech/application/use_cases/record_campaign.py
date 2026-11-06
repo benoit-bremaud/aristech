@@ -14,7 +14,7 @@ clip opens sooner (#178): the old file then ends at the ring front, one ring bef
 (never after the new clip's start), and the frames up to the new clip's first keyframe (under
 one GOP) are in neither file. `close()` releases the camera, which writes the ring into a
 clip stopped less than one ring before (#180): that clip ends at the release; one whose output
-already closed keeps its end.
+already closed (ring elapsed, next clip opened, camera lost) keeps its end.
 """
 
 import logging
@@ -77,6 +77,9 @@ class _ClosingClip:
     segment: _OpenSegment
     closed_at: datetime
     settings: Settings
+    # Its output still takes the ring's frames: False once the camera was lost or the output
+    # closed (ring elapsed, next clip opened), so a release cannot extend it (#180).
+    on_ring: bool = True
 
 
 class RecordCampaign:
@@ -156,7 +159,7 @@ class RecordCampaign:
         self._camera.close()
         self._audio.close()
         closing = self._closing
-        if closing is not None and now - closing.closed_at < self._config.ring:
+        if closing is not None and closing.on_ring and now - closing.closed_at < self._config.ring:
             # Still on the ring: the release wrote it into the file up to now (#180).
             self._closing = replace(closing, closed_at=now)
         self._flush_closing(now)
@@ -192,8 +195,8 @@ class RecordCampaign:
             self._audio_segment = _OpenSegment(path, now, "continuous", set(missing))
 
     def _step_video(self, now: datetime, camera_ok: bool, missing: tuple[str, ...]) -> None:
-        if not camera_ok:
-            self._close_clip(now)
+        if not camera_ok:  # the adapter released the camera, flushing the ring, at the loss
+            self._close_clip(now, on_ring=False)
             return
         if self._camera.motion_detected():
             self._last_motion = now
@@ -248,11 +251,11 @@ class RecordCampaign:
         self._write_sidecar(self._audio_segment, "audio", end, self._audio.settings())
         self._audio_segment = None
 
-    def _close_clip(self, now: datetime) -> None:
+    def _close_clip(self, now: datetime, on_ring: bool = True) -> None:
         if self._clip is None:
             return
         self._camera.stop_clip()
-        self._closing = _ClosingClip(self._clip, now, self._camera.settings())
+        self._closing = _ClosingClip(self._clip, now, self._camera.settings(), on_ring)
         self._clip = None
 
     def _flush_closing(self, ends_by: datetime) -> None:
@@ -261,7 +264,8 @@ class RecordCampaign:
         if closing is not None:
             end = min(closing.closed_at, ends_by)
             # Kept with its end on a write error, retried at the next tick.
-            self._closing = _ClosingClip(closing.segment, end, closing.settings)
+            # Its output has closed by now (ring elapsed or next clip opened).
+            self._closing = _ClosingClip(closing.segment, end, closing.settings, on_ring=False)
             self._write_sidecar(closing.segment, "video", end, closing.settings)
             self._closing = None
 

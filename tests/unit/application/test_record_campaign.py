@@ -307,6 +307,20 @@ def test_close_keeps_the_end_of_a_clip_closed_by_a_reopen_whose_sidecar_failed()
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
 
 
+def test_close_keeps_the_end_of_a_clip_closed_by_a_camera_loss() -> None:
+    # The adapter flushed the ring when it released the lost camera: the file ends at the loss.
+    rig = _closed_clip_rig()
+    rig.camera.motion = True
+    rig.run(1)  # + 8 s: a new clip opens
+    rig.camera.ok = False
+    rig.run(1)  # + 9 s: camera lost, clip closed
+    rig.clock.advance(2)
+
+    rig.campaign.close()  # + 12 s, within one ring of the loss
+
+    assert rig.store.sidecars["video-3"].end_utc == _NOON + timedelta(seconds=9)
+
+
 def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:
     rig = _closed_clip_rig()
     rig.store.free_fraction = _raise  # type: ignore[method-assign]
