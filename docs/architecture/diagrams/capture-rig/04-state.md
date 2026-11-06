@@ -6,7 +6,7 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> SelfCheck: power on / start
+    [*] --> SelfCheck: boot or service restart
     SelfCheck --> Idle: checks done, outside daylight
     SelfCheck --> Recording: checks done, in daylight
     Idle --> SelfCheck: daylight window opens
@@ -34,4 +34,6 @@ stateDiagram-v2
   re-enters *Degraded*.
 - *Degraded* keeps recording the remaining streams (spec A2, A3); the gap goes in the sidecars.
 - Audio streams continuously in both *Buffering* and *SavingClip*.
-- Power loss from any state restarts at *SelfCheck* (spec A5).
+- Power loss or a process exit from any state restarts at *SelfCheck* (spec A5): the systemd
+  unit `deploy/systemd/aristech-record.service` starts the recorder at boot and restarts it
+  10 s after any exit (see [05-deployment](05-deployment.md)).

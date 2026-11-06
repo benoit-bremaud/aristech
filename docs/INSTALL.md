@@ -75,6 +75,55 @@ python3 -m venv --system-site-packages .venv
 
 Picamera2 comes from apt (it needs the system libcamera), hence `--system-site-packages`.
 
+### Run the recorder as a service
+
+`deploy/systemd/aristech-record.service` starts `aristech-record` at boot, refuses to start until
+the SSD is mounted at `/mnt/ssd` (it retries about every 40 s, so it never writes to the SD card),
+restarts it 10 s after any exit and stops it with SIGINT so the open segment is closed (spec
+capture-rig A5, bench BA7 and BA10). The code lives in `/opt/aristech`, owned by the operator;
+only the segment folder belongs to the `aristech` service user.
+
+1. Mount the SSD at boot (`nofail`: the Pi still boots without it). The first time only, partition
+   and format it (this wipes it): `sudo parted -s /dev/nvme0n1 mklabel gpt mkpart aristech ext4 0% 100%`,
+   then `sudo mkfs.ext4 -L aristech-ssd /dev/nvme0n1p1`. Find the UUID with
+   `lsblk -f`, add this line to `/etc/fstab`, then run `sudo mkdir -p /mnt/ssd`,
+   `sudo systemctl daemon-reload` and `sudo mount /mnt/ssd`:
+
+   ```text
+   UUID=<ssd-uuid> /mnt/ssd ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2
+   ```
+
+2. Install the code and the service:
+
+   ```bash
+   sudo install -d -o "$USER" /opt/aristech
+   git clone https://github.com/benoit-bremaud/aristech.git /opt/aristech
+   cd /opt/aristech
+   python3 -m venv --system-site-packages .venv
+   .venv/bin/pip install -e ".[capture]"
+   sudo useradd --system --no-create-home --shell /usr/sbin/nologin --groups audio,video aristech
+   sudo install -d -o aristech -g aristech /mnt/ssd/segments
+   sudo install -D -m 640 -g aristech deploy/systemd/record.env.example /etc/aristech/record.env
+   sudoedit /etc/aristech/record.env   # rig, hive, site, latitude, longitude, output
+   sudo cp deploy/systemd/aristech-record.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now aristech-record
+   journalctl -u aristech-record -f
+   ```
+
+3. After every `git pull`, write the new SHA into the sidecars' version and restart:
+
+   ```bash
+   sudo sed -i "s/^ARISTECH_SOFTWARE_VERSION=.*/ARISTECH_SOFTWARE_VERSION=$(git -C /opt/aristech rev-parse --short HEAD)/" /etc/aristech/record.env
+   sudo systemctl restart aristech-record
+   ```
+
+`sudo systemctl stop aristech-record` frees the camera until the next boot (`disable` keeps it
+off); killing the process is not enough, systemd restarts it. A recorder restarting in a loop
+(a missing env key, the SSD absent) shows in `journalctl -u aristech-record`.
+
+The env file holds no secret, but stays out of git: it is per rig.
+
 ## Dataset registry (annotation pipeline)
 
 Stdlib only, no extra needed (spec `docs/architecture/specs/annotation-pipeline.md`,

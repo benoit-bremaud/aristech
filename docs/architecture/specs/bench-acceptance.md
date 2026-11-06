@@ -39,7 +39,9 @@ the threshold, the bench row points to it and adds only the bench procedure.
   [live-fps-laptop-cpu](../../research/live-fps-laptop-cpu.md)).
 - Code from the head of `dev` being promoted, run from the repository root (the default
   `config/config.yaml` path is relative); extras `capture`, `vision` and `train` installed.
-- Runs that need the camera stop `aristech-record` first: the camera has one owner at a time.
+- Runs that need the camera run `sudo systemctl stop aristech-record` first: the camera has one
+  owner at a time, and a killed recorder is restarted by the service (it also comes back at the
+  next boot; `disable` keeps it off).
 - A spare USB webcam for BA16 (not in the BOM; BA16 is `BLOCKED` without it).
 - A bot token and chat ID for a test Telegram chat, held in the environment, never in a file
   under version control (ADR-0032).
@@ -66,11 +68,11 @@ named follow-up exists.
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
 | **BA5** Pre-roll | ≥ 5 s between a clip's first frame and the first frame showing motion, on 10 of 10 clips (capture-rig AC7) | Film a running stopwatch, then trigger 10 motion events ≥ 30 s apart; find the first frame where the motion shows, by eye or frame by frame, and read the offset from the clip start (the sidecar `start_utc` is set from the pre-roll, so reading it would prove nothing) | Table of 10 offsets |
-| **BA6** Sidecars | Every segment and clip has the keys of `SegmentMetadata.to_dict` (`rig_id`, `hive_id`, `site`, `kind`, `trigger`, `start_utc`, `end_utc`, `clock_source`, `software_version`, `settings`, `missing_inputs`, `flagged`); `clock_source` is `ntp`, except the first segment after a boot, which may be `rtc` (capture-rig AC3) | Run the key check over every file of BA7, or of a run of at least one day started by hand while BA7 is blocked | Script output: files checked, files failing |
-| **BA7** Unattended bench run | 72 h with no manual action; every daylight minute is covered by an audio segment, apart from the open segment at a restart | Start a campaign as a service, leave it, then compare segment minutes with the expected daylight minutes. *Needs a follow-up*: a service unit that starts `aristech-record` at boot and restarts it on exit | Segment count vs expected, log excerpt |
-| **BA8** Disk rates | Audio within ± 30 % of 0.5 GB per daylight hour (ADR-0017: ~6 GB per 12 h for two channels); video within ± 30 % of 3.6 GB per motion hour (~8 Mbit/s). The 13 GB/day of ADR-0017 is then re-derived from the measured rates and the field motion time | On one day of BA7 (or of the hand-started run of BA6), `du` the audio and the video folders; sum the daylight hours and the clip durations | `du` output, hours, the two rates |
+| **BA6** Sidecars | Every segment and clip has the keys of `SegmentMetadata.to_dict` (`rig_id`, `hive_id`, `site`, `kind`, `trigger`, `start_utc`, `end_utc`, `clock_source`, `software_version`, `settings`, `missing_inputs`, `flagged`); `clock_source` is `ntp`, except the first segment after a boot, which may be `rtc` (capture-rig AC3) | Run the key check over every file of BA7, or of a run of at least one day of the service while BA7 is not yet run | Script output: files checked, files failing |
+| **BA7** Unattended bench run | 72 h with no manual action; every daylight minute is covered by an audio segment, apart from the open segment at a restart | Start the campaign with the `aristech-record` service (docs/INSTALL.md § Capture rig), leave it, then compare segment minutes with the expected daylight minutes | Segment count vs expected, log excerpt |
+| **BA8** Disk rates | Audio within ± 30 % of 0.5 GB per daylight hour (ADR-0017: ~6 GB per 12 h for two channels); video within ± 30 % of 3.6 GB per motion hour (~8 Mbit/s). The 13 GB/day of ADR-0017 is then re-derived from the measured rates and the field motion time | On one day of BA7 (or of the one-day service run of BA6), `du` the audio and the video folders; sum the daylight hours and the clip durations | `du` output, hours, the two rates |
 | **BA9** Disk full (A1) | Below 10 % free: the oldest non-flagged segments are deleted and a fault is logged; below 2 % free: the rig enters *Fault* and stops (capture-rig AC8) | Run last, after the BA6–BA8 evidence is copied off: every non-flagged segment on the target will be deleted. Point `--output` at a small dedicated filesystem (a 2 GB loop file) and fill it with a placeholder file to each threshold during a campaign | Log excerpts, `df` before and after |
-| **BA10** Power loss (A5) | After a pulled plug, recording resumes without manual action within 3 min of power-on; at most the open segment is lost (capture-rig AC8). *Needs a follow-up*: the service unit of BA7 | Pull the plug mid-segment, plug it back, wait | Log with the two timestamps, segment list |
+| **BA10** Power loss (A5) | After a pulled plug, recording resumes without manual action within 3 min of power-on; at most the open segment is lost (capture-rig AC8); the `aristech-record` service of BA7 restarts the recorder at boot | Pull the plug mid-segment, plug it back, wait | Log with the two timestamps, segment list |
 | **BA11** Device absent at start (A2, A3) | With one mic, then the camera, disconnected before power-on: the other streams record, the missing input is logged and written in `missing_inputs` (capture-rig AC8) | Power off, disconnect one mic, power on, record 2 min; power off, reconnect; repeat with the camera ribbon | Log excerpts, sidecars |
 
 Unplugging a ribbon or an I²S wire on a powered Pi can damage it, so BA11 changes wiring with the
@@ -86,7 +88,7 @@ so the run is repeatable.
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
 | **BA12** Latency and throughput | On each of three runs of the same clip: p95 detect latency ≤ 500 ms, ≥ 2 FPS end to end, warm-up ≤ 60 s | `aristech --video <clip.mp4> --detector rfdetr --checkpoint <path>`, three times on the idle board; the clip lasts at least 5 min, so each run has at least 600 steady-state detections at 2 FPS (a short clip would give a p95 of a handful of frames) | The three `Timing:` lines |
-| **BA13** Live source | The live camera opens and the same thresholds hold over 10 min | Stop `aristech-record`; run `aristech --video 0 --detector rfdetr --checkpoint <path>` (under `libcamerify` if OpenCV cannot open the camera directly, noted); press Ctrl-C after 10 min | The `Timing:` line |
+| **BA13** Live source | The live camera opens and the same thresholds hold over 10 min | `sudo systemctl stop aristech-record`; run `aristech --video 0 --detector rfdetr --checkpoint <path>` (under `libcamerify` if OpenCV cannot open the camera directly, noted); press Ctrl-C after 10 min | The `Timing:` line |
 
 **Why 500 ms / 2 FPS** — a hornet hovers in front of the entrance for seconds, and an episode opens
 on 3 counted frames in a 10 s window (`alert` section of `config/config.yaml`): 2 FPS gives about
@@ -129,7 +131,6 @@ keeps a margin for the closed enclosure and a summer day outdoors.
 
 ## Follow-ups this spec needs
 
-- A service unit that starts `aristech-record` at boot and restarts it on exit (BA7, BA10).
 - The motion check runs once per second, so the pre-roll before the first motion frame may be
   shorter than 5 s; BA5 is expected to show it, and a fix (a longer ring or a faster check) follows
   the measurement.

@@ -84,7 +84,8 @@ rotation), software version (git SHA). Weather is added offline from a public so
 - **A4 Clock unsynchronised** (no NTP, RTC not set) → recording goes on, sidecars carry
   `clock_source: unsynced`; the Researcher fixes it at the next visit.
 - **A5 Power loss** → on restart the rig resumes the campaign by itself; at most the open segment
-  is lost (segments are closed every 10 min).
+  is lost (segments are closed every 10 min). The systemd unit
+  `deploy/systemd/aristech-record.service` starts the recorder at boot and restarts it after any exit.
 - **A6 Human voices captured** → trimmed before any sharing (privacy); never published raw.
 
 ## Acceptance criteria
