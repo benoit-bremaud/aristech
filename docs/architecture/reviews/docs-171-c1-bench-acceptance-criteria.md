@@ -34,3 +34,18 @@ Verdict: Must 8 · Should 9 · Nice 7 · Disagree 1. `just check` green.
 Out of scope (pre-existing): the once-per-second motion check may make the pre-roll shorter than
 5 s (listed as a follow-up in the spec); `system_clock.py` reports `rtc` whenever `/dev/rtc0`
 exists; `specs/README.md` and the UC7 matrix row still call built features "Proposed" / "planned".
+
+## Round 2 — verification on `f936902`
+
+All 24 round-1 findings verified fixed; gate open. New: Should 1 · Nice 4, all fixed in the next
+commit.
+
+| # | Level | Finding | Resolution |
+|---|---|---|---|
+| S10 | Should | USB webcam may not be `/dev/video0` on the Pi 5; not in the preconditions | Fixed: index from `v4l2-ctl --list-devices`; webcam added to the preconditions |
+| N8 | Nice | No block size is set in the code | Fixed: ± 4 096 samples (≈ 85 ms) |
+| N9 | Nice | BA6 and BA8 blocked with BA7 | Fixed: may run on a hand-started run of at least one day |
+| N10 | Nice | Sample clip is not in the repo | Fixed: link to the attack-alert recipe |
+| N11 | Nice | 75 °C heat limit is new | Put to the owner with the PR |
+
+`just check` green on `f936902`.
