@@ -33,25 +33,30 @@ the threshold, the bench row points to it and adds only the bench procedure.
 
 - Bench assembled per the [order list](../../research/2026-11-02-bench-order-list.md): Pi 5 8 GB,
   27 W supply, active cooler, Camera Module 3, 2 × ICS-43434 on I²S, 512 GB NVMe on the M.2 HAT+,
-  OS on the microSD; time from NTP (the RTC battery is optional on the bench).
+  OS on the microSD, no enclosure; time from NTP (the RTC battery is optional on the bench).
 - Indoors, ambient 18–25 °C, recorded with each run; the board idle except for the run under test
   (the laptop runs showed that load skews latency, see
   [live-fps-laptop-cpu](../../research/live-fps-laptop-cpu.md)).
-- Code from the head of `dev` being promoted; extras `capture`, `vision` and `train` installed.
+- Code from the head of `dev` being promoted, run from the repository root (the default
+  `config/config.yaml` path is relative); extras `capture`, `vision` and `train` installed.
+- Runs that need the camera stop `aristech-record` first: the camera has one owner at a time.
 - A bot token and chat ID for a test Telegram chat, held in the environment, never in a file
   under version control (ADR-0032).
+- The board is rebooted before each run that reads `vcgencmd get_throttled`, so the "since boot"
+  flags belong to that run.
 
 ## Acceptance criteria
 
 Each row has an ID, a threshold, a procedure and the evidence to keep. A row that cannot run is
-`BLOCKED` with the reason, never `PASS`.
+`BLOCKED` with the reason, never `PASS`. A row marked *needs a follow-up* is `BLOCKED` until the
+named follow-up exists.
 
 ### Capture
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA1** Camera stream | 1920×1080 at 30 fps; ≥ 99 % of the expected frames delivered over 10 min (≥ 17 820 of 18 000) | Start a campaign in the daylight window, wave a hand at 1 Hz in front of the lens for 10 min, count the frames from the clip timestamps | Frame count script output |
-| **BA2** Audio stream | Both channels at 48 kHz / 24 bit; no ALSA overrun and no gap > 1 sample period in a 10-min segment; neither channel flat | Record one 10-min segment; check the sidecar, the FLAC header and the log; compare the RMS of both channels while tapping each mic | Sidecar, `soundfile` info, log excerpt |
+| **BA1** Camera stream | Clips at 1920×1080, 30 fps; each clip holds ≥ 99 % of `duration × 30` frames | In the daylight window, wave a hand at 1 Hz in front of the lens for 10 min (clips are capped at 5 min, so expect several); count the frames of each clip with `ffprobe -count_frames` | Per-clip table: duration, expected, counted |
+| **BA2** Audio stream | Both channels at 48 kHz / 24 bit; per 10-min segment, FLAC frame count within one block (4 096 samples) of `(end_utc − start_utc) × 48 000`; neither channel flat | Record one segment while tapping each mic in turn; read the FLAC header and the sidecar; compare both channels' RMS | `soundfile` info, frame-count check, RMS of both channels |
 | **BA3** Audio–video offset | ≤ 33 ms at the start and the end of a 10-min segment (capture-rig AC1) | Clap test at both ends of a segment; compare the clap frame time with the audio onset in each channel | Two frame grabs, two waveform plots, the four offsets |
 | **BA4** Pixels on target | ≥ 30 px across a 30 mm object 10–50 cm in front of the camera (capture-rig AC6) | Ruler test with a 30 mm printed square at 10, 30 and 50 cm | Three frame grabs with the measured width |
 
@@ -59,27 +64,28 @@ Each row has an ID, a threshold, a procedure and the evidence to keep. A row tha
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA5** Pre-roll | ≥ 5 s before the first motion frame on 10 of 10 clips (capture-rig AC7) | Trigger 10 motion events ≥ 30 s apart; read each clip's first-motion offset | Table of 10 offsets |
-| **BA6** Sidecars | 100 % of the segments and clips have every field of the capture-rig spec, `clock_source: ntp` (capture-rig AC3) | Run the sidecar check over every file of BA7 | Script output: files checked, files failing |
-| **BA7** Unattended bench run | 72 h with no manual action; every daylight minute is covered by an audio segment, apart from the open segment at a restart | Start a campaign, leave it, then compare segment minutes with the expected daylight minutes | Segment count vs expected, log excerpt |
-| **BA8** Disk budget | Daily volume within 13 GB ± 30 % (9–17 GB) on a day of BA7, with the motion share noted (ADR-0017 estimate) | `du` of one day's folder on the SSD | `du` output, motion minutes |
-| **BA9** Disk full (A1) | Below 10 % free: oldest non-flagged segments are deleted and a fault is logged; below 2 % free: the rig enters *Fault* and stops (capture-rig AC8) | Fill the SSD with a placeholder file to each threshold during a campaign | Log excerpts, `df` before and after |
-| **BA10** Power loss (A5) | After a pulled plug, recording resumes without manual action within 3 min of power-on; at most the open segment is lost (capture-rig AC8) | Pull the plug mid-segment, plug it back, wait | Log with the two timestamps, segment list |
-| **BA11** Device loss (A2, A3) | A pulled mic or camera ribbon: the other streams go on, the fault is logged within 10 s, the camera is retried every second and comes back when re-plugged (capture-rig AC8) | Power off, unplug one mic, power on, record 2 min; then the same with the camera; re-plug the camera during the run | Log excerpts, sidecar gap fields |
+| **BA5** Pre-roll | ≥ 5 s between a clip's first frame and the first frame showing motion, on 10 of 10 clips (capture-rig AC7) | Film a running stopwatch, then trigger 10 motion events ≥ 30 s apart; find the first frame where the motion shows, by eye or frame by frame, and read the offset from the clip start (the sidecar `start_utc` is set from the pre-roll, so reading it would prove nothing) | Table of 10 offsets |
+| **BA6** Sidecars | Every segment and clip has the keys of `SegmentMetadata.to_dict` (`rig_id`, `hive_id`, `site`, `kind`, `trigger`, `start_utc`, `end_utc`, `clock_source`, `software_version`, `settings`, `missing_inputs`, `flagged`); `clock_source` is `ntp`, except the first segment after a boot, which may be `rtc` (capture-rig AC3) | Run the key check over every file of BA7 | Script output: files checked, files failing |
+| **BA7** Unattended bench run | 72 h with no manual action; every daylight minute is covered by an audio segment, apart from the open segment at a restart | Start a campaign as a service, leave it, then compare segment minutes with the expected daylight minutes. *Needs a follow-up*: a service unit that starts `aristech-record` at boot and restarts it on exit | Segment count vs expected, log excerpt |
+| **BA8** Disk rates | Audio within ± 30 % of 0.5 GB per daylight hour (ADR-0017: ~6 GB per 12 h for two channels); video within ± 30 % of 3.6 GB per motion hour (~8 Mbit/s). The 13 GB/day of ADR-0017 is then re-derived from the measured rates and the field motion time | On one day of BA7, `du` the audio and the video folders; sum the daylight hours and the clip durations | `du` output, hours, the two rates |
+| **BA9** Disk full (A1) | Below 10 % free: the oldest non-flagged segments are deleted and a fault is logged; below 2 % free: the rig enters *Fault* and stops (capture-rig AC8) | Run last, after the BA6–BA8 evidence is copied off: every non-flagged segment on the target will be deleted. Point `--output` at a small dedicated filesystem (a 2 GB loop file) and fill it with a placeholder file to each threshold during a campaign | Log excerpts, `df` before and after |
+| **BA10** Power loss (A5) | After a pulled plug, recording resumes without manual action within 3 min of power-on; at most the open segment is lost (capture-rig AC8). *Needs a follow-up*: the service unit of BA7 | Pull the plug mid-segment, plug it back, wait | Log with the two timestamps, segment list |
+| **BA11** Device absent at start (A2, A3) | With one mic, then the camera, disconnected before power-on: the other streams record, the missing input is logged and written in `missing_inputs` (capture-rig AC8) | Power off, disconnect one mic, power on, record 2 min; power off, reconnect; repeat with the camera ribbon | Log excerpts, sidecars |
 
-Unplugging a ribbon or I²S wire on a powered Pi can damage it, so BA11 unplugs with the power off
-and the failure is present from start. The mid-run camera case stays a unit test with fakes.
+Unplugging a ribbon or an I²S wire on a powered Pi can damage it, so BA11 changes wiring with the
+power off only. A device lost mid-run and the camera retry every second stay covered by the unit
+tests with fakes (capture-rig AC8); the retry logs only at DEBUG, so a bench run would not show it.
 
 ### Detection latency
 
-Measured by the CLI's own figures (ADR-0030: warm-up apart, then p50 / p95 of `detect`, and FPS
-end to end), with RF-DETR Small at the ACT threshold, on a clip recorded by the rig itself so the
-run is repeatable.
+Measured by the CLI's own `Timing:` line (ADR-0030: the warm-up apart, then p50 / p95 of `detect`,
+and FPS end to end), with RF-DETR Small at the ACT threshold, on a clip recorded by the rig itself
+so the run is repeatable.
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA12** Latency and throughput | p95 detect latency ≤ 500 ms and ≥ 2 FPS end to end on three runs of the same clip; warm-up ≤ 60 s | `aristech --video <clip.mp4> --detector rfdetr --checkpoint <path>` three times on the idle board | The three log lines (warm-up, FPS, p50, p95) |
-| **BA13** Live source | The live camera opens and the same figures are logged after 10 min | `aristech --video 0 …` for 10 min (if OpenCV cannot open the camera directly, under `libcamerify`, noted) | Log lines |
+| **BA12** Latency and throughput | On each of three runs of the same clip: p95 detect latency ≤ 500 ms, ≥ 2 FPS end to end, warm-up ≤ 60 s | `aristech --video <clip.mp4> --detector rfdetr --checkpoint <path>`, three times on the idle board | The three `Timing:` lines |
+| **BA13** Live source | The live camera opens and the same thresholds hold over 10 min | Stop `aristech-record`; run `aristech --video 0 --detector rfdetr --checkpoint <path>` (under `libcamerify` if OpenCV cannot open the camera directly, noted); press Ctrl-C after 10 min | The `Timing:` line |
 
 **Why 500 ms / 2 FPS** — a hornet hovers in front of the entrance for seconds, and an episode opens
 on 3 counted frames in a 10 s window (`alert` section of `config/config.yaml`): 2 FPS gives about
@@ -87,29 +93,31 @@ on 3 counted frames in a 10 s window (`alert` section of `config/config.yaml`): 
 is what deterrence will need, and that is the accelerator's job in M6; a looser one (≤ 1 s, 1 FPS)
 leaves only 10 frames per window. Totals and sensitivity:
 [`mcda/spec_2026_11_06_bench_acceptance.py`](../../decisions/mcda/spec_2026_11_06_bench_acceptance.py)
-(D2: C 455, A 425, B 425, measure only 260; C stays first when the achievability weight or the M6
-weight rises). These are estimates: there is no Pi 5 measurement yet. If BA12 fails, open an issue
-with the figures (smaller input, fewer threads, another runtime). Do not loosen the threshold
-in place.
+(D1, where these criteria live: a new spec 435, a section in capture-rig 340, spread over four
+specs 325; D2: C 455, A 425, B 425, measure only 260). C stays first when the achievability or
+the M6 weight rises, but only by 5 points (445 vs 440), and the achievability scores are estimates:
+there is no Pi 5 measurement yet. If BA12 fails, open an issue with the figures (smaller input,
+fewer threads, another runtime). Do not loosen the threshold in place.
 
 ### Alert and health push
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA14** Attack alert | One push per episode, received ≤ 10 s after the frame that opens it; no push for a clip without hornets (attack-alert AC1, AC5) | Replay with `--push` a clip with a hornet episode, then a bees-only clip | Phone screenshot with time, log with the opening frame time |
-| **BA15** Heartbeat | Received within ± 60 s of the period, set to 300 s for the test (health-push AC1, AC5) | Copy the config with `health.heartbeat_s: 300`, run 20 min with `--push` | Four messages with their times |
-| **BA16** Fault push | A live camera that ends is pushed once as a fault; a second fault of the same kind in the cool-down is muted and counted (health-push AC3, AC4) | Run `--video 0 --push`, stop the camera stream twice inside the cool-down | One message, log with the muted count |
-| **BA17** Channel down | With the network cut, detection goes on and the failure is logged; no secret appears in the log (attack-alert AC8, health-push AC6) | Pull the network during a BA14 replay | Log excerpt, `grep` for the token returns nothing |
+| **BA14** Attack alert | Exactly one alert and one summary per episode; the alert reaches the phone ≤ 10 s after the wall-clock time of the "attack started" log line; no push for a bees-only clip (attack-alert AC1, AC2) | Replay with `--push telegram` the 80-s sample clip of the #149/#152 verification, then a bees-only clip. On a replay, frame times follow the video, not the wall clock, so the delay is measured from the log line's time stamp | Phone screenshot with times, log excerpt |
+| **BA15** Heartbeat | Four heartbeats in 21 min, each within ± 60 s of `start + k × 300 s` (health-push AC1, AC5) | Copy the config with `health.heartbeat_s: 300`; `aristech --config <copy> --video 0 --detector rfdetr --checkpoint <path> --push telegram` for 21 min | Four messages with their times |
+| **BA16** Fault push | The end of the live source is pushed once as a `source_ended` fault (health-push AC3) | Run BA15's command with a spare USB webcam (any model) as `--video 0` instead of the Camera Module 3, and unplug its USB cable, which is safe while powered (a CSI ribbon is not; Ctrl-C does not count, it ends the run without a fault). The mute and count of repeated faults (health-push AC4) needs two faults in one process and stays covered by `test_health.py` | One message, log excerpt |
+| **BA17** Channel down | With the network cut, detection goes on and the failure is logged; the bot token never appears in the log (attack-alert AC8, health-push AC6) | Pull the network during a BA14 replay; `grep` the log for the token | Log excerpt, empty `grep` |
 
 ### Power and heat
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA18** Power | Mean and peak power over 24 h of recording measured and recorded, as input to the solar sizing (capture-rig AC9); mean also measured for 1 h of detection | FNB58 between the supply and the Pi, logging to CSV | CSV and a summary in `docs/research/` |
-| **BA19** Heat | SoC ≤ 80 °C and `vcgencmd get_throttled` = `0x0` after 1 h of recording and detection at the same time, with the case closed | Run `aristech-record` and, at the same time, the BA12 replay repeated in a shell loop for 1 h; sample `vcgencmd measure_temp` every minute | Temperature CSV, final `get_throttled` |
-| **BA20** Supply | No under-voltage flag (bit 0 of `get_throttled`) during BA7, BA18 and BA19 | Read `get_throttled` at the end of each run | Three readings |
+| **BA18** Power | Mean and peak power over 24 h of recording measured and recorded, as input to the solar sizing (capture-rig AC9); mean also measured for 1 h of detection | FNB58 between the supply and the Pi, logging to CSV; check with `vcgencmd get_config usb_max_current_enable` that the meter keeps the 5 A negotiation | CSV and a summary in `docs/research/` |
+| **BA19** Heat | SoC ≤ 75 °C and no throttling flag (`get_throttled` bits 1–3 and 17–19 clear) after 1 h of recording and detection at the same time, bare board with the active cooler | Inside the daylight window with the rig in *Recording*: run `aristech-record` and, at the same time, the BA12 replay repeated in a shell loop for 1 h; sample `vcgencmd measure_temp` every minute | Temperature CSV, final `get_throttled` |
+| **BA20** Supply | No under-voltage since boot (`get_throttled` bit 16 clear) at the end of BA7, BA18 and BA19 | Read `get_throttled` at the end of each run, after the reboot of the preconditions | Three readings |
 
-The Pi 5 starts to throttle at 85 °C; 80 °C keeps a margin for a summer day outdoors.
+The Pi 5 firmware starts to throttle the CPU from about 80 °C and throttles harder at 85 °C; 75 °C
+keeps a margin for the closed enclosure and a summer day outdoors.
 
 ## Running a bench pass
 
@@ -117,6 +125,13 @@ The Pi 5 starts to throttle at 85 °C; 80 °C keeps a margin for a summer day ou
    `docs/architecture/qa/<date>-bench-pi5.md`, level `full`, environment `staging, Pi`.
 2. List BA1–BA20 as planned checks, run them, attach the evidence.
 3. Commit the checklist and the BA18 summary; every FAIL becomes an issue.
+
+## Follow-ups this spec needs
+
+- A service unit that starts `aristech-record` at boot and restarts it on exit (BA7, BA10).
+- The motion check runs once per second, so the pre-roll before the first motion frame may be
+  shorter than 5 s; BA5 is expected to show it, and a fix (a longer ring or a faster check) follows
+  the measurement.
 
 ## Alternative outcomes
 
