@@ -33,7 +33,7 @@ def test_unit_restarts_always_and_starts_at_boot() -> None:
 
 def test_unit_never_starts_without_the_ssd() -> None:
     service = _unit()["Service"]
-    assert service["ExecStartPre"] == "/usr/bin/mountpoint -q /mnt/ssd"
+    assert service["ExecStartPre"] == "+/usr/bin/mountpoint -q /mnt/ssd"
     assert service["ReadWritePaths"] == "/mnt/ssd"
     assert _env_example()["ARISTECH_OUTPUT"].startswith("/mnt/ssd/")
 

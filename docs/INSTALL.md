@@ -83,8 +83,10 @@ restarts it 10 s after any exit and stops it with SIGINT so the open segment is 
 capture-rig A5, bench BA7 and BA10). The code lives in `/opt/aristech`, owned by the operator;
 only the segment folder belongs to the `aristech` service user.
 
-1. Mount the SSD at boot (`nofail`: the Pi still boots without it). Find the UUID with
-   `lsblk -f`, then add this line to `/etc/fstab` and run `sudo mount /mnt/ssd`:
+1. Mount the SSD at boot (`nofail`: the Pi still boots without it). The first time only, format
+   it (this wipes it): `sudo mkfs.ext4 -L aristech-ssd /dev/nvme0n1p1`. Find the UUID with
+   `lsblk -f`, add this line to `/etc/fstab`, then run `sudo mkdir -p /mnt/ssd`,
+   `sudo systemctl daemon-reload` and `sudo mount /mnt/ssd`:
 
    ```text
    UUID=<ssd-uuid> /mnt/ssd ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2

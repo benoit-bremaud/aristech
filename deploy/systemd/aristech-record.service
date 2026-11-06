@@ -4,7 +4,9 @@
 Description=aristech capture rig recorder
 # Best effort only: the clock source is recorded per segment (spec A4), so no network wait.
 After=time-sync.target
-RequiresMountsFor=/mnt/ssd
+# Wants, not Requires: a missing SSD must not fail the start for good (Restart retries).
+Wants=mnt-ssd.mount
+After=mnt-ssd.mount
 # Never give up restarting: a 72 h unattended run must survive any number of exits.
 StartLimitIntervalSec=0
 
@@ -15,7 +17,8 @@ Group=aristech
 WorkingDirectory=/opt/aristech
 EnvironmentFile=/etc/aristech/record.env
 # Never write to the SD card: until the SSD is mounted, this fails and Restart retries.
-ExecStartPre=/usr/bin/mountpoint -q /mnt/ssd
+# "+" runs it outside the sandbox: ReadWritePaths bind-mounts /mnt/ssd onto itself inside.
+ExecStartPre=+/usr/bin/mountpoint -q /mnt/ssd
 ExecStart=/opt/aristech/.venv/bin/aristech-record \
     --rig-id ${ARISTECH_RIG_ID} \
     --hive-id ${ARISTECH_HIVE_ID} \
