@@ -5,7 +5,8 @@
   returns the first frame's UTC time, Picamera2 first-frame tap, `RecordCampaign` clip start,
   tests, sequence diagram)
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: push gate open after round 3; round 4 after the hosted review · Must 4 (fixed) · Should 4 (fixed) · Nice 6 (fixed)
+- Verdict: push gate open after round 3; round 4 after the hosted review ·
+  Must 4 (fixed) · Should 4 (fixed) · Nice 6 (fixed)
 
 ## Pre-push checks
 
