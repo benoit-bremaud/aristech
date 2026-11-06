@@ -63,9 +63,10 @@ sequenceDiagram
 - A closed clip's sidecar waits one ring: if the next clip opens sooner (motion back within 8 s,
   or the 5 min cap during continuous motion), the camera closes the old file where the new one
   opens: the old file ends at the ring front, `t_next − 8 s` (#178), and the frames up to the new
-  clip's first keyframe, `t_start`, are in neither file (a gap under one GOP). A fault
-  or the end of the window during that ring changes nothing; releasing the camera (`close()`)
-  drops the ring at once, so there the clip ends 8 s before the release (#180).
+  clip's first keyframe, `t_start`, are in neither file (a gap under one GOP; the old end is
+  capped at `t_start`). A fault or the end of the window during that ring changes nothing;
+  releasing the camera (`close()`) drops the ring at once, so there the clip ends 8 s before the
+  release (#180).
 - A clip starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) after
   `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so
   the sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). The

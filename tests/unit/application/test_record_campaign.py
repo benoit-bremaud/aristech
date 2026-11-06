@@ -526,3 +526,17 @@ def test_first_frame_time_just_before_the_ring_front_is_kept() -> None:
     rig.run(15)
 
     assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=8.05)
+
+
+def test_reopened_clip_starting_before_the_ring_front_does_not_overlap_the_old_one() -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(9)  # closed at _NOON + 5 s, still in the ring
+    rig.camera.first_frame = _NOON + timedelta(seconds=1.95)  # 50 ms before the ring front
+    rig.camera.motion = True
+
+    rig.run(1)  # opens at _NOON + 10 s
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1.95)

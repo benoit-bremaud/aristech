@@ -62,3 +62,9 @@
 - A close timer firing while a clip reopens can make `close_output` / `open_output` raise
   (from #178) and back-to-back clips lose up to one GOP of frames: follow-up issues.
 - Spec and ADR-0017 still say "shared monotonic clock" (#186; the ADR is superseded, not edited).
+
+## Hosted review (after push)
+
+- `record_campaign.py` · a new start inside the one-GOP slack below the ring front came before
+  the old clip's end (`now − ring`), so the sidecars overlapped · **Fixed**: the old end is
+  capped at the new start; test added.

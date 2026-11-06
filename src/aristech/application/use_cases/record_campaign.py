@@ -196,8 +196,9 @@ class RecordCampaign:
                 path = self._store.path_for("video", now)
                 start = self._clip_start(now, self._camera.start_clip(path))
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
-                # The old output closed when this one opened: its last frame was the ring front.
-                self._flush_closing(now - self._config.ring)
+                # The old output closed when this one opened: its last frame was the ring front,
+                # never after this clip's first frame (a latency-early start, #179).
+                self._flush_closing(min(now - self._config.ring, start))
         clip = self._clip
         if clip is None or self._last_motion is None:
             return
