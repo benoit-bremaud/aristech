@@ -531,3 +531,11 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Pre-push review: 1 Must, 2 Should and 8 Nice handled over two rounds; 2 Nice declined; 1 hosted review finding fixed (track the new clip before the old sidecar is written).
   - **Verification**: `just gate` green on `1f08e38` (380 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
   - **Next**: follow-ups #184 (pending close after a camera loss), #185 (sidecar for a clip abandoned on a fault), #186 (spec says monotonic clock), #180 comment on waiting for the pending close.
+
+- **PR #189 merged** (`827b35e`) — `fix(capture): date a clip from its first frame's sensor timestamp`. Issue #179.
+  - A clip's sidecar `start_utc` was tick − ring, but the file starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) later, against AC1 (≤ 33 ms).
+  - Fix (MCDA): the camera port's `start_clip` returns the first frame's UTC time (450) over a query method read at sidecar time (385), a callback (350) and keeping tick − ring with a documented bound (325); matrix in the plan validated by the owner with a 0.5 s wait and the old end at the new start, which review changed to 1.2 s and the ring front. The Picamera2 adapter taps the clip output and maps that keyframe's sensor time (CLOCK_BOOTTIME) to UTC, waiting up to 1.2 s; it relies on a private attribute of the picamera2 ring, so a missing attribute or a time outside [tick − ring − one GOP, tick] falls back to tick − ring.
+  - The previous clip (#178) ends at the ring front, capped at the new clip's start; the frames up to the new first keyframe are in neither file (gap under one GOP). One wording for the clock rule in the port, the use case and the sequence diagram.
+  - Pre-push review: 4 Must, 4 Should and 6 Nice handled over three rounds; 1 hosted review finding fixed (sidecars could overlap inside the one-GOP slack), checked by a fourth round (1 Should and 2 Nice fixed).
+  - **Verification**: `just gate` green on `52d35d5` (393 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
+  - **Next**: check the first-frame time on the bench (clap test, AC1); follow-ups #190 (close timer racing a reopen), #191 (frames lost between back-to-back clips).

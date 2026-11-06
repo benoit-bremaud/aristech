@@ -5,7 +5,8 @@
   returns the first frame's UTC time, Picamera2 first-frame tap, `RecordCampaign` clip start,
   tests, sequence diagram)
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: push gate open after round 3 · Must 4 (fixed) · Should 4 (fixed) · Nice 6 (fixed)
+- Verdict: push gate open after round 3; round 4 after the hosted review ·
+  Must 4 (fixed) · Should 4 (fixed) · Nice 6 (fixed)
 
 ## Pre-push checks
 
@@ -61,11 +62,13 @@
 ## Out of scope (pre-existing)
 
 - A close timer firing while a clip reopens can make `close_output` / `open_output` raise
-  (from #178) and back-to-back clips lose up to one GOP of frames: follow-up issues.
+  (from #178, #190) and back-to-back clips lose up to one GOP of frames (#191).
 - Spec and ADR-0017 still say "shared monotonic clock" (#186; the ADR is superseded, not edited).
 
 ## Hosted review (after push)
 
 - `record_campaign.py` · a new start inside the one-GOP slack below the ring front came before
   the old clip's end (`now − ring`), so the sidecars overlapped · **Fixed**: the old end is
-  capped at the new start; test added. Docstring and diagram arrow follow.
+  capped at the new start; test added.
+- Round 4 (verify of that fix): push gate open · Should 1 (docstring and diagram arrow gave the
+  old end without the cap) and Nice 2 (rewraps) · **Fixed**.
