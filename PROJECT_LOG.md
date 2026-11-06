@@ -393,14 +393,14 @@ Audit session continued past midnight: closed the planning and hygiene work open
 - **PR #130 merged** (`59c770e`) — `docs(c1): record ICS-43434 EOL check and microphone fallback`. Issue #84.
   - The ICS-43434 chip is end of life (TDK PCN-000772: last-time buy 2026-06-15, last-time ship 2027-01-15); the Adafruit 6049 breakout is still in stock.
   - ADR-0017 stands (MCDA A 410 / B 330 / C 285): keep the ICS-43434 and order 4 breakouts (2 + 2 spares, +24 €). Fallback for later units: TDK T5848 (I²S, 1.8 V I/O, needs a level shifter); it ranks first only if longevity weighs 35.
-  - **Verification**: `just gate` green on `509a3a2` (SonarQube gate passed); CodeQL green.
+  - **Verification**: `just gate` green on `509a3a2` (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: order list for the bench Pi 5 (separate issue).
 
 - **PR #133 merged** (`a83c1ab`) — `docs(c1): add priced bench Pi 5 hardware order list`. Issue #132.
   - Bill of materials for the bench rig (also the staging device, ADR-0025), every price and stock status read live on 2026-11-02: 666.32 EUR incl. VAT, shipping excluded, against ~369 EUR estimated in ADR-0017 (Pi 5 8 GB 213 EUR, SSD 146 EUR: 2026 memory prices).
   - Storage (MCDA C 390 / B 380 / A 375 / D 345): M.2 HAT+ with a 512 GB 2230 SSD for the bench; 1 TB ranks first only if capacity weighs 35. ADR-0017 stands.
   - Unpriced: RTC battery (out of stock), insect mesh (buy in store). No order placed: the owner orders.
-  - **Verification**: `just gate` green (SonarQube gate passed); CodeQL green.
+  - **Verification**: `just gate` green (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: owner orders the bench hardware; #134 (QA checklist).
 
 - **PR #136 merged** (`1886461`) — `chore(qa): add a QA checklist that tracks the test matrix and executed checks`. Issue #134.
@@ -420,7 +420,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - ADR-0030 (MCDA B 475 / D 385 / C 345 / A 280; B first in 99 % of weight vectors): `--detector {vespai,rfdetr}` with `--checkpoint`; `--confidence` defaults to 0.45 for RF-DETR (ADR-0029) and 0.5 for VespAI; a warning when the checkpoint sha256 is not the measured model. The ADR-0009 floor is unchanged.
   - Every run logs the warm-up, FPS and detect latency p50 / p95, also on failure; ignored species are logged at debug level.
   - Laptop CPU baseline (i9-13900H, 60-frame sample made from test-v1 images): 16–44 FPS, p50 18–37 ms, warm-up 9–17 s; the spread follows machine load (`docs/research/live-fps-laptop-cpu.md`).
-  - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL green.
+  - **Verification**: `just gate` green (295 tests, coverage 97.8 %, SonarQube gate passed); end-to-end `--video` run with the real checkpoint: 16 ACT, 48 ABSTAIN; CodeQL and dependency review green.
   - **Next**: measure on the idle bench Pi 5 once it arrives; `config/logging.yaml` file handler fails without a `logs/` folder (pre-existing).
 
 - **PR #145 merged** (`2d06513`, merge commit on `main`) — `chore(release): promote dev to main (second promotion)`. Issue #144.
@@ -433,7 +433,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
 - **PR #147 merged** (`720a996`) — `fix(logging): create the logs folder before the file handler opens it`. Issue #143.
   - MCDA: create the parent folder of each file handler in the CLI (475) over committing `logs/.gitkeep` (295) or `delay=True` (230); A stays first with simplicity weighted 40.
   - `_ensure_log_dirs` runs before `dictConfig`; the basicConfig fallback is unchanged. A unit test runs the CLI in an empty folder and checks `logs/app.log` (red without the fix).
-  - **Verification**: `just gate` green (296 tests, coverage 97.7 %, SonarQube gate passed); QA on a fresh clone: CLI exits 0 and writes `logs/app.log`; CodeQL green.
+  - **Verification**: `just gate` green (296 tests, coverage 97.7 %, SonarQube gate passed); QA on a fresh clone: CLI exits 0 and writes `logs/app.log`; CodeQL and dependency review green.
   - **Next**: brick C, COUNT point and attack alert (ADR-0014, spec attack-alert).
 
 - **PR #150 merged** (`be5a83a`) — `feat(alert): measure the COUNT point and raise one attack alert per episode`. Issue #149, ADR-0031.
@@ -447,7 +447,7 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Channel MCDA: Telegram bot (410) over self-hosted ntfy (395) and email (295); Telegram first in 79 % of weight vectors, ntfy passes it once privacy weighs 35. Pushed content is minimal (time, counts, no image or location).
   - `TelegramNotifier` decorates the log notifier and pushes only episode start and end (AC5); `--push telegram`; token and chat id from the environment only; API URL https (or http on 127.0.0.1 for a stub), parsed so look-alike hosts are refused.
   - A3: a failed push is logged as `FAULT push channel` with the token masked, never raised. A1: bounded in-memory queue replayed as `[delayed]`. Push is synchronous (3-s timeout); a persistent queue and a background sender wait for M6.
-  - **Verification**: `just gate` green (339 tests, coverage 96.75 %, SonarQube gate passed); 80-s sample clip with RF-DETR Small against a local Bot API stub: 1 alert + 1 summary; stub down: FAULT logged, run exits 0; CodeQL green.
+  - **Verification**: `just gate` green (339 tests, coverage 96.75 %, SonarQube gate passed); 80-s sample clip with RF-DETR Small against a local Bot API stub: 1 alert + 1 summary; stub down: FAULT logged, run exits 0; CodeQL and dependency review green.
   - **Next**: owner test on a real bot; fault and heartbeat pushes (ADR-0006) can reuse the adapter.
 
 - **PR #156 merged** (`cc34500`, merge commit on `main`) — `chore(release): promote dev to main (third promotion)`. Issue #155.
@@ -490,9 +490,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Next**: align the published release notes with the `CHANGELOG.md` section (it gained the #166 fix after publication; owner OK); stable `v1.0.0` after a test on a real Telegram bot and the QA pass on the bench Pi 5; then the M5 preparation brick (pre-trained models and free training GPUs).
 
 - **PR #169 merged** (`db176da`) — `docs(research): survey pre-trained detectors and free training GPUs for M5`. Issue #168.
-  - Research note `docs/research/2026-11-05-m5-models-and-free-gpus.md` with an MCDA script. No product-usable pre-trained hornet model exists; datasets in use are confirmed and Zenodo 15622033 (CC BY, bees only) is a new candidate.
+  - Research note `docs/research/2026-11-05-m5-models-and-free-gpus.md` with an MCDA script. No product-usable pre-trained hornet model was found (Hugging Face Hub and GitHub searches); datasets in use are confirmed and Zenodo 15622033 (CC BY, bees only) is a new candidate.
   - Base detector (MCDA): RF-DETR 400 over YOLOX-S 370, RT-DETR 330, D-FINE/DEIM 320; ADR-0022 stands. The ranking flips when the Hailo path weighs 30. Prerequisite before M5 product training: check the Objects365 terms of the RF-DETR weights. M6 starts by compiling RF-DETR for Hailo-8L on an x86 host; YOLOX-S (`yolox_s_leaky`) is the fallback.
   - Training compute (MCDA): local RTX 4070 450, Kaggle 390, Modal 365, Colab 360. Local by default; Kaggle then Modal only above 8 GB. Cloud training needs an ADR before the first run.
-  - Pre-push review: 4 Must and 11 Should fixed; 2 hosted review findings fixed (Objects365 prerequisite, Hailo compile host).
-  - **Verification**: `just gate` green on `88b3ad7` (SonarQube gate passed); CodeQL green.
-  - **Next**: bench Pi 5 / C1 acceptance criteria.
+  - Pre-push review: 4 Must, 11 Should and 4 Nice handled; 2 hosted review findings fixed (Objects365 prerequisite, Hailo compile host).
+  - **Verification**: `just gate` green on `88b3ad7` (SonarQube gate passed); CodeQL and dependency review green.
+  - **Next**: acceptance criteria for the C1 capture rig on the bench Pi 5.
