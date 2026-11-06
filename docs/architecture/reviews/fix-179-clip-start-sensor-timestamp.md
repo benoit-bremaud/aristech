@@ -38,7 +38,7 @@
   `start` / `_add_stream` / `stop`, delivers the keyframe on a timer, and the test asserts the
   frames reach the wrapped output; a test delivers it after 0.9 s.
 - No check on the adapter's time, which depends on picamera2 internals · **Fixed**: a time
-  outside `[now − ring, now]` is logged and replaced by the fallback.
+  outside `[now − ring, now]` is logged and replaced by the fallback (widened by one GOP in the verify round).
 - This report was missing · **Fixed**.
 - Verify round: two test names still said the old clip ends where the next starts · **Fixed**:
   renamed to the ring-front rule.

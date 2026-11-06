@@ -69,7 +69,8 @@ sequenceDiagram
 - A clip starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) after
   `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so
   the sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). The
-  tick waits up to 1.2 s for it (one GOP and a few frames); if it is unknown or outside
-  `[t_tick − 9 s, t_tick]` (one GOP of slack for the pipeline latency), the sidecar falls back to `t_tick − 8 s`. libcamera documents the
-  sensor time as CLOCK_BOOTTIME; the Pi never suspends, so it equals CLOCK_MONOTONIC there.
+  tick waits up to 1.2 s for it (one GOP and a few frames); if it is unknown or outside `[t_tick −
+  9 s, t_tick]` (one GOP of slack for the pipeline latency), the sidecar falls back to `t_tick − 8
+  s`. libcamera documents the sensor time as CLOCK_BOOTTIME; the Pi never suspends, so it equals
+  CLOCK_MONOTONIC there.
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).
