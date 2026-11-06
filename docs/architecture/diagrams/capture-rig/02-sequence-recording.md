@@ -60,5 +60,7 @@ sequenceDiagram
   alone (no motion) still triggers rotation (spec A1).
 - A closed clip's sidecar waits one ring: if the next clip opens sooner (motion back within 8 s,
   or the 5 min cap during continuous motion), the camera closes the old file where the new one
-  starts, so both sidecars meet at `t_next − 8 s` with no gap and no overlap (#178).
+  starts, so both sidecars meet at `t_next − 8 s` with no gap and no overlap (#178). A fault
+  or the end of the window during that ring changes nothing; releasing the camera (`close()`)
+  drops the ring at once, so there the clip ends 8 s before the release (#180).
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).

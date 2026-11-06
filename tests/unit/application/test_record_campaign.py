@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from typing import NoReturn
 
 import pytest
 
@@ -244,46 +245,66 @@ def test_clip_reopened_after_one_ring_keeps_its_close_tick() -> None:
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
-@pytest.mark.parametrize("stop", ["close", "night", "camera_lost", "fault"])
-def test_closing_clip_sidecar_is_written_when_the_rig_stops(stop: str) -> None:
+def _closed_clip_rig() -> _Rig:
+    """A rig whose clip `video-2` was stopped at the tick _NOON + 5 s; the clock is at + 8 s."""
     rig = _Rig()
     rig.camera.motion = True
     rig.run(1)
     rig.camera.motion = False
     rig.run(7)
+    return rig
 
-    if stop == "close":
-        rig.campaign.close()
-    elif stop == "night":
+
+@pytest.mark.parametrize("stop", ["night", "camera_lost", "disk_error"])
+def test_closing_clip_sidecar_is_written_once_the_ring_elapses(stop: str) -> None:
+    rig = _closed_clip_rig()
+
+    if stop == "night":
         rig.clock.current = _NOON.replace(hour=23)
-        rig.campaign.tick()
     elif stop == "camera_lost":
         rig.camera.ok = False
-        rig.run(6)  # written once the ring has elapsed, camera or not
     else:
         rig.store.free_fraction = _raise  # type: ignore[method-assign]
-        rig.campaign.tick()
+    rig.run(6)
 
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
-def test_closing_clip_sidecar_failure_in_fault_does_not_block_recovery() -> None:
-    rig = _Rig()
-    rig.camera.motion = True
-    rig.run(1)
-    rig.camera.motion = False
-    rig.run(7)
-    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
+def test_close_ends_the_closing_clip_one_ring_before_the_release() -> None:
+    # Releasing the camera closes the pending output at once (#180 tracks flushing the ring).
+    rig = _closed_clip_rig()
+
+    rig.campaign.close()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON
+
+
+def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:
+    rig = _closed_clip_rig()
     rig.store.free_fraction = _raise  # type: ignore[method-assign]
+    assert rig.campaign.tick() is RigState.FAULT  # + 8 s
+    del rig.store.free_fraction
+    rig.clock.advance(1)
+    rig.camera.motion = True
 
+    rig.campaign.tick()  # + 9 s: the next clip opens
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
+
+
+def test_closing_clip_sidecar_is_retried_after_a_write_error() -> None:
+    rig = _closed_clip_rig()
+    rig.run(5)  # the clock reaches + 13 s, one ring after the stop
+    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
     assert rig.campaign.tick() is RigState.FAULT
-    del rig.store.write_sidecar, rig.store.free_fraction
-    rig.run(10)
-    assert "video-2" not in rig.store.sidecars
+    del rig.store.write_sidecar
+    rig.clock.advance(1)
+
     assert rig.campaign.tick() is RigState.RECORDING
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
-def _raise(*_: object) -> float:
+def _raise(*_: object) -> NoReturn:
     raise OSError("disk I/O error")
 
 
