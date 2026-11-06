@@ -61,7 +61,8 @@ Every audio segment and video clip is a file plus a JSON sidecar: `rig_id`, `hiv
 `site`, start/end timestamps (UTC, ns, from the shared monotonic clock mapped to UTC once per
 segment; a clip followed by another within one ring ends where the next one starts, #178),
 sample rate / resolution / fps, camera exposure and gain, clock source (NTP / RTC), light level
-(camera lux estimate), `trigger` (`continuous` / `motion`), `flagged` (kept from rotation), software version (git SHA). Weather is added offline from a public source by date.
+(camera lux estimate), `trigger` (`continuous` / `motion`), `flagged` (kept from rotation),
+software version (git SHA). Weather is added offline from a public source by date.
 
 ## Main scenario — record a campaign (UC7)
 

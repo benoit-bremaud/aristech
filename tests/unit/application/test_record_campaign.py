@@ -255,7 +255,7 @@ def _closed_clip_rig() -> _Rig:
     return rig
 
 
-@pytest.mark.parametrize("stop", ["night", "camera_lost", "disk_error"])
+@pytest.mark.parametrize("stop", ["night", "camera_lost", "disk_full"])
 def test_closing_clip_sidecar_is_written_once_the_ring_elapses(stop: str) -> None:
     rig = _closed_clip_rig()
 
@@ -264,7 +264,7 @@ def test_closing_clip_sidecar_is_written_once_the_ring_elapses(stop: str) -> Non
     elif stop == "camera_lost":
         rig.camera.ok = False
     else:
-        rig.store.free_fraction = _raise  # type: ignore[method-assign]
+        rig.store.free = 0.01
     rig.run(6)
 
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)

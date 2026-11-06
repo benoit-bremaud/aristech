@@ -113,9 +113,10 @@ class RecordCampaign:
             return self._enter(RigState.FAULT, "recording step failed")
 
     def _tick(self, now: datetime) -> RigState:
+        space_ok = self._enough_space()  # rotation first, so a full disk can still recover
         if self._closing is not None and now - self._closing.closed_at >= self._config.ring:
             self._flush_closing(self._closing.closed_at)
-        if not self._enough_space():
+        if not space_ok:
             self._stop_all(now)
             return self._enter(RigState.FAULT, "free space below the stop threshold")
         start, end = daylight_window(
@@ -144,8 +145,8 @@ class RecordCampaign:
         now = self._clock.now()
         self._stop_all(now)
         self._camera.close()
-        self._flush_closing(now - self._config.ring)
         self._audio.close()
+        self._flush_closing(now - self._config.ring)
 
     def _enough_space(self) -> bool:
         while self._store.free_fraction() < self._config.rotate_below:
