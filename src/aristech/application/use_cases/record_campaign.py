@@ -2,7 +2,9 @@
 
 `tick()` is called about once a second by the composition root. Each tick is the self-check of
 the state diagram: it re-reads free space, the daylight window and device health, then opens or
-closes segments. All timestamps come from one `Clock`.
+closes segments. All timestamps come from one `Clock`, except a clip's start: the camera
+reports its first frame's sensor time, mapped to UTC, since the file starts on a keyframe up to
+one GOP after the ring front (#179).
 
 A closed clip keeps receiving frames for one ring (the camera delays every frame by it), so its
 sidecar is written only when the clip really ends: one ring after the close, or when the next
@@ -186,8 +188,8 @@ class RecordCampaign:
             self._last_motion = now
             if self._clip is None:
                 path = self._store.path_for("video", now)
-                self._camera.start_clip(path)
-                start = now - self._config.ring
+                first_frame = self._camera.start_clip(path)
+                start = now - self._config.ring if first_frame is None else first_frame
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
                 # The previous clip ends where this one starts: the ring holds its last frames.
                 self._flush_closing(start)

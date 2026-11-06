@@ -2,12 +2,13 @@ import sys
 import threading
 import time
 import types
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import numpy
 import pytest
 
-from aristech.infrastructure.capture import Picamera2Recorder
+from aristech.infrastructure.capture import Picamera2Recorder, picamera2_recorder
 
 
 class _FakeCircular:
@@ -15,10 +16,13 @@ class _FakeCircular:
         self.buffer_duration_ms = buffer_duration_ms
         self.outputs: list[str] = []
         self.open = False
+        self._time_offset = 3_000_000  # the first keyframe written, from the encoder origin
 
     def open_output(self, output: Any) -> None:
         self.outputs.append(output.path)
         self.open = True
+        output.outputframe(b"audio", True, 0, None, True)
+        output.outputframe(b"key", True, 0)  # the ring rebases its first keyframe to zero
 
     def close_output(self) -> None:
         self.open = False
@@ -59,15 +63,26 @@ class _FakeCamera:
         return {"ExposureTime": 1000, "AnalogueGain": 1.5}
 
 
+class _FakePyav:
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.frames: list[bytes] = []
+
+    def outputframe(
+        self, frame: bytes, keyframe: bool, timestamp: int, packet: Any, audio: bool
+    ) -> None:
+        self.frames.append(frame)
+
+
 @pytest.fixture
 def camera(monkeypatch: pytest.MonkeyPatch) -> _FakeCamera:
     fake = _FakeCamera()
     package = types.ModuleType("picamera2")
     package.Picamera2 = lambda: fake  # type: ignore[attr-defined]
-    encoders = types.SimpleNamespace(H264Encoder=lambda iperiod: f"h264/{iperiod}")
-    outputs = types.SimpleNamespace(
-        CircularOutput2=_FakeCircular, PyavOutput=lambda path: types.SimpleNamespace(path=path)
+    encoders = types.SimpleNamespace(
+        H264Encoder=lambda iperiod: types.SimpleNamespace(iperiod=iperiod, firsttimestamp=1_000_000)
     )
+    outputs = types.SimpleNamespace(CircularOutput2=_FakeCircular, PyavOutput=_FakePyav)
     monkeypatch.setitem(sys.modules, "picamera2", package)
     monkeypatch.setitem(sys.modules, "picamera2.encoders", encoders)
     monkeypatch.setitem(sys.modules, "picamera2.outputs", outputs)
@@ -97,7 +112,7 @@ def test_starts_1080p30_with_a_ring_and_a_one_second_gop(camera: _FakeCamera) ->
     assert camera.config["main"] == {"size": (1920, 1080)}
     assert camera.config["controls"] == {"FrameRate": 30}
     assert camera.output.buffer_duration_ms == 8_000
-    assert camera.encoder == "h264/30"
+    assert camera.encoder.iperiod == 30
     recorder.close()
 
 
@@ -198,3 +213,54 @@ def test_camera_lost_mid_run_is_reported_once_then_retried(camera: _FakeCamera) 
     camera.frames = [_frame(100)] * 1000
     assert recorder.healthy() is True
     recorder.close()
+
+
+def test_start_clip_returns_the_first_frame_sensor_time_in_utc(
+    camera: _FakeCamera, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    epoch = datetime(2026, 6, 1, 12, tzinfo=UTC)
+    monkeypatch.setattr(
+        picamera2_recorder, "_boot_to_utc", lambda us: epoch + timedelta(microseconds=us)
+    )
+    camera.frames = [_frame(100)] * 10_000
+    recorder = _recorder()
+    recorder.healthy()
+
+    first_frame = recorder.start_clip("c.mp4")
+
+    # encoder origin 1 s + ring offset 3 s: the keyframe the clip starts on
+    assert first_frame == epoch + timedelta(seconds=4)
+    recorder.close()
+
+
+def test_first_frame_time_is_unknown_if_the_ring_offset_is_missing(camera: _FakeCamera) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = _recorder()
+    recorder.healthy()
+    del camera.output._time_offset
+
+    assert recorder.start_clip("c.mp4") is None
+    assert camera.output.outputs == ["c.mp4"]
+    recorder.close()
+
+
+def test_first_frame_time_is_unknown_if_no_frame_arrives(
+    camera: _FakeCamera, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(picamera2_recorder, "_FIRST_FRAME_TIMEOUT", 0.01)
+    monkeypatch.setattr(_FakeCircular, "open_output", lambda self, output: None)
+    camera.frames = [_frame(100)] * 10_000
+    recorder = _recorder()
+    recorder.healthy()
+
+    assert recorder.start_clip("c.mp4") is None
+    recorder.close()
+
+
+def test_boot_time_maps_to_utc_by_its_age(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(picamera2_recorder.time, "clock_gettime_ns", lambda clock: 10_000_000_000)
+    before = datetime.now(UTC)
+
+    utc = picamera2_recorder._boot_to_utc(8_000_000)  # 2 s before the boot clock's now
+
+    assert before - timedelta(seconds=2) <= utc <= datetime.now(UTC) - timedelta(seconds=2)

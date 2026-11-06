@@ -32,8 +32,12 @@ class CameraRecorder(Protocol):
         """True if the region of interest changed since the last call."""
         ...
 
-    def start_clip(self, path: str) -> None:
-        """Write the buffered pre-roll to `path`, then keep writing live frames."""
+    def start_clip(self, path: str) -> datetime | None:
+        """Write the buffered pre-roll to `path`, then keep writing live frames.
+
+        Return the UTC time of the clip's first frame (its sensor timestamp), or None if it
+        is not known; the use case then dates the clip one ring before the tick (spec AC1).
+        """
         ...
 
     def stop_clip(self) -> None:

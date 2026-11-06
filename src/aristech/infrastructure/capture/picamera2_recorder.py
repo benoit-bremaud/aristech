@@ -7,6 +7,12 @@ frames reach the file only once they leave the buffer. Closing must therefore wa
 If a new clip starts during that wait, the old output is closed at once: the frames it had not
 received yet are exactly the new clip's pre-roll, and `RecordCampaign` dates its end there (#178).
 
+`start_clip` returns the UTC time of the clip's first frame (#179): the ring writes from its first
+keyframe old enough, then rebases timestamps to it, so the tap reads that keyframe's sensor time
+(encoder origin + the ring's offset, CLOCK_BOOTTIME per libcamera) when the first frame reaches
+the file, and maps it to UTC against the boot clock. The offset is a private attribute of
+`CircularOutput2`: if it is missing the time is unknown and the use case falls back.
+
 Motion is checked by a background thread at `motion_hz` (mean absolute difference of the lores
 luma plane above `motion_threshold`) and latched until `motion_detected()` reads it, so a short
 visit between two one-second ticks is not missed. Picamera2 is imported lazily (extra
@@ -15,11 +21,53 @@ visit between two one-second ticks is not missed. Picamera2 is imported lazily (
 
 import logging
 import threading
+import time
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 _log = logging.getLogger("aristech.capture")
 _MAIN_SIZE = (1920, 1080)
 _LORES_SIZE = (320, 240)
+# The first frame leaves the ring at the next encoded frame (33 ms at 30 fps); beyond this the
+# clip start is reported unknown rather than stalling the tick.
+_FIRST_FRAME_TIMEOUT = 0.5
+
+
+def _boot_to_utc(sensor_us: int) -> datetime:
+    """Map a CLOCK_BOOTTIME time in microseconds to UTC against the current wall time."""
+    age_us = time.clock_gettime_ns(time.CLOCK_BOOTTIME) // 1000 - sensor_us
+    return datetime.now(UTC) - timedelta(microseconds=age_us)
+
+
+class _FirstFrameTap:
+    """Wrap a clip's output; on its first video frame, record that frame's sensor time in UTC."""
+
+    def __init__(self, output: Any, encoder: Any, circular: Any) -> None:
+        self._output = output
+        self._encoder = encoder
+        self._circular = circular
+        self.first_frame: datetime | None = None
+        self.written = threading.Event()
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._output, name)
+
+    def outputframe(
+        self,
+        frame: Any,
+        keyframe: bool = True,
+        timestamp: int | None = None,
+        packet: Any = None,
+        audio: bool = False,
+    ) -> None:
+        if not audio and not self.written.is_set():
+            try:
+                origin = self._encoder.firsttimestamp + self._circular._time_offset
+                self.first_frame = _boot_to_utc(int(origin) + (timestamp or 0))
+            except (AttributeError, TypeError):  # picamera2 internals changed: start unknown
+                _log.warning("clip first-frame time unavailable", exc_info=True)
+            self.written.set()
+        self._output.outputframe(frame, keyframe, timestamp, packet, audio)
 
 
 class Picamera2Recorder:
@@ -39,6 +87,7 @@ class Picamera2Recorder:
         self._motion_period = 1.0 / motion_hz
         self._camera: Any | None = None
         self._circular: Any | None = None
+        self._encoder: Any | None = None
         self._clip_open = False
         self._pending_close: threading.Timer | None = None
         self._lock = threading.Lock()
@@ -74,11 +123,12 @@ class Picamera2Recorder:
             circular = CircularOutput2(buffer_duration_ms=int(self._ring_seconds * 1000))
             # One keyframe a second: a clip starts on a keyframe, so this bounds the pre-roll lost
             # to GOP alignment (CampaignConfig.pre_roll_margin).
-            camera.start_recording(H264Encoder(iperiod=self._fps), circular)
+            encoder = H264Encoder(iperiod=self._fps)
+            camera.start_recording(encoder, circular)
         except Exception:  # any camera error means "not healthy", retried
             _log.debug("camera unavailable", exc_info=True)
             return False
-        self._camera, self._circular = camera, circular
+        self._camera, self._circular, self._encoder = camera, circular, encoder
         self._stop.clear()
         self._watcher = threading.Thread(target=self._watch, args=(camera,), daemon=True)
         self._watcher.start()
@@ -117,15 +167,22 @@ class Picamera2Recorder:
             motion, self._motion = self._motion, False
         return motion
 
-    def start_clip(self, path: str) -> None:
-        """Open an MP4 at `path` on the ring: buffered pre-roll first, then live frames."""
+    def start_clip(self, path: str) -> datetime | None:
+        """Open an MP4 at `path` on the ring; return the UTC time of its first frame.
+
+        The buffered pre-roll goes first, then live frames. None if no clip was opened or the
+        first frame did not arrive within `_FIRST_FRAME_TIMEOUT`.
+        """
         if self._circular is None or self._clip_open:
-            return
+            return None
         self._close_pending_now()
         from picamera2.outputs import PyavOutput
 
-        self._circular.open_output(PyavOutput(path))
+        tap = _FirstFrameTap(PyavOutput(path), self._encoder, self._circular)
+        self._circular.open_output(tap)
         self._clip_open = True
+        tap.written.wait(_FIRST_FRAME_TIMEOUT)
+        return tap.first_frame
 
     def stop_clip(self) -> None:
         """Close the clip once the ring has flushed the frames up to now."""
@@ -177,6 +234,7 @@ class Picamera2Recorder:
             watcher.join(timeout=2)
         camera, self._camera = self._camera, None
         self._circular = None
+        self._encoder = None
         self._clip_open = False
         if camera is not None:
             try:

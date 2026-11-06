@@ -37,11 +37,12 @@ sequenceDiagram
         CA-->>UC: motion latched (t_first), read at the next tick t_tick ≈ t_first + 1 s + tick work
         UC->>CA: save_clip(from t_tick − 8 s)
         Note over CA: ring from its first keyframe (5 s pre-roll + 3 s margin), then live frames
+        CA-->>UC: t_start = first frame's sensor time in UTC (or none: t_tick − 8 s)
         CA-->>UC: motion ended (t_last)
         UC->>CA: stop_clip(at t_close = t_last + 5 s)
         Note over CA: the ring still flushes the clip's last frames for 8 s
         alt next clip opens at t_next < t_close + 8 s
-            UC->>ST: clip sidecar, end = t_next − 8 s (its tail is the next clip's pre-roll)
+            UC->>ST: clip sidecar, end = t_start of the next clip (its tail is the next pre-roll)
         else 8 s elapse first
             UC->>ST: clip sidecar, end = t_close
         end
@@ -60,7 +61,11 @@ sequenceDiagram
   alone (no motion) still triggers rotation (spec A1).
 - A closed clip's sidecar waits one ring: if the next clip opens sooner (motion back within 8 s,
   or the 5 min cap during continuous motion), the camera closes the old file where the new one
-  starts, so both sidecars meet at `t_next − 8 s` with no gap and no overlap (#178). A fault
+  starts, so both sidecars meet at the next clip's `t_start` with no gap and no overlap (#178). A fault
   or the end of the window during that ring changes nothing; releasing the camera (`close()`)
   drops the ring at once, so there the clip ends 8 s before the release (#180).
+- A clip starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) after
+  `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so
+  the sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). If
+  the time is not known within 0.5 s, the sidecar falls back to `t_tick − 8 s`.
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).

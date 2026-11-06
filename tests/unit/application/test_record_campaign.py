@@ -32,6 +32,7 @@ class _FakeCamera:
         self.motion = False
         self.clips: list[str] = []
         self.open_clip: str | None = None
+        self.first_frame: datetime | None = None
         self.closed = False
 
     def healthy(self) -> bool:
@@ -40,9 +41,10 @@ class _FakeCamera:
     def motion_detected(self) -> bool:
         return self.motion
 
-    def start_clip(self, path: str) -> None:
+    def start_clip(self, path: str) -> datetime | None:
         self.clips.append(path)
         self.open_clip = path
+        return self.first_frame
 
     def stop_clip(self) -> None:
         self.open_clip = None
@@ -468,3 +470,32 @@ def test_audio_segment_is_dated_from_the_samples_written() -> None:
 
     sidecar = rig.store.sidecars["audio-1"]
     assert (sidecar.start_utc, sidecar.end_utc) == (first, last)
+
+
+def test_clip_starts_at_its_first_frame_when_the_camera_reports_it() -> None:
+    # #179: the file starts on a keyframe up to one GOP after the ring front.
+    rig = _Rig()
+    rig.camera.first_frame = _NOON - timedelta(seconds=7.4)
+    rig.camera.motion = True
+    rig.campaign.tick()
+    rig.camera.motion = False
+    rig.run(15)
+
+    assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=7.4)
+
+
+def test_clip_reopened_within_one_ring_ends_at_the_next_first_frame() -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(9)  # closed at _NOON + 5 s, still in the ring
+    rig.camera.first_frame = _NOON + timedelta(seconds=2.6)
+    rig.camera.motion = True
+
+    rig.run(1)  # opens at _NOON + 10 s
+
+    old, new = rig.store.sidecars["video-2"], rig.camera.clips[1]
+    assert old.end_utc == _NOON + timedelta(seconds=2.6)
+    rig.campaign.close()
+    assert rig.store.sidecars[new].start_utc == old.end_utc
