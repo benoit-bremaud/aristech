@@ -3,10 +3,9 @@
 [Unit]
 Description=aristech capture rig recorder
 # Best effort only: the clock source is recorded per segment (spec A4), so no network wait.
-After=time-sync.target
 # Wants, not Requires: a missing SSD must not fail the start for good (Restart retries).
 Wants=mnt-ssd.mount
-After=mnt-ssd.mount
+After=mnt-ssd.mount time-sync.target
 # Never give up restarting: a 72 h unattended run must survive any number of exits.
 StartLimitIntervalSec=0
 
