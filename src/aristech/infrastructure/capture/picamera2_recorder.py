@@ -6,6 +6,9 @@ frames reach the file only once they leave the buffer. Closing must therefore wa
 `ring_seconds` after the stop request, or the tail of the event is lost.
 If a new clip starts during that wait, the old output is closed at once: the frames it had not
 received yet are exactly the new clip's pre-roll, and `RecordCampaign` dates its end there (#178).
+On `close()` a clip still within its ring keeps its output: the pending close is dropped and
+stopping the encoder stops `CircularOutput2`, which flushes the whole ring into it, so that clip
+ends at the release (#180).
 
 `start_clip` returns the UTC time of the clip's first frame (#179): the ring writes from its first
 keyframe old enough, then rebases timestamps to it, so the tap reads that keyframe's sensor time
@@ -230,11 +233,13 @@ class Picamera2Recorder:
         return values
 
     def close(self) -> None:
-        """Flush the last clip, stop recording and release the camera."""
-        if self._clip_open and self._circular is not None:
-            self._circular.close_output()
-            self._clip_open = False
-        self._close_pending_now()
+        """Flush the ring into the last clip, stop recording and release the camera."""
+        timer, self._pending_close = self._pending_close, None
+        if timer is not None:
+            timer.cancel()
+            # Already firing: the timer is a daemon thread, so wait for it to finish the file
+            # before the process may exit.
+            timer.join(timeout=1)
         self._release()
 
     def _release(self) -> None:
@@ -246,9 +251,12 @@ class Picamera2Recorder:
         self._circular = None
         self._encoder = None
         self._clip_open = False
-        if camera is not None:
+        if camera is None:
+            return
+        # stop_recording() stops the camera first and skips the encoder if that raises, leaving
+        # the clip unfinished: stop the encoder first (it flushes the ring and finishes the file).
+        for step in (camera.stop_encoder, camera.stop, camera.close):
             try:
-                camera.stop_recording()
-                camera.close()
-            except Exception:  # releasing a dead camera; nothing else to do
-                _log.debug("camera release failed", exc_info=True)
+                step()
+            except Exception:  # releasing a dead camera: go on with the next step
+                _log.warning("camera release step %s failed", step.__name__, exc_info=True)

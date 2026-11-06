@@ -19,6 +19,7 @@ class _FakeCircular:
         self._time_offset = 3_000_000  # the first keyframe written, from the encoder origin
         self.keyframe_delay = 0.0  # the ring drops frames until a keyframe is one ring old
         self.output: Any = None
+        self.recording = True  # started by start_recording
 
     def open_output(self, output: Any) -> None:
         output.start()
@@ -31,9 +32,22 @@ class _FakeCircular:
         self.timer.start()
 
     def close_output(self) -> None:
+        if not self.open:
+            raise RuntimeError("No underlying output has been opened")
         self.timer.cancel()
+        self.open = False  # detached before stopping, as upstream
         self.output.stop()
-        self.open = False
+
+    def stop(self) -> None:
+        # CircularOutput2.stop() flushes the whole ring into the attached output, then stops it.
+        if not self.recording:
+            raise RuntimeError("Circular output was not started")
+        self.recording = False
+        if self.open:
+            self.timer.cancel()
+            self.output.outputframe(b"ring", True, 0, None, False)
+            self.output.stop()
+            self.open = False
 
 
 class _FakeCamera:
@@ -54,10 +68,14 @@ class _FakeCamera:
         self.output = output
         self.recording = True
 
-    def stop_recording(self) -> None:
+    def stop_encoder(self) -> None:
+        self.output.stop()
+
+    def stop(self) -> None:
         self.recording = False
 
     def close(self) -> None:
+        self.stop()  # Picamera2.close() stops the camera first
         self.closed = True
 
     def capture_array(self, stream: str) -> Any:
@@ -186,6 +204,95 @@ def test_new_clip_during_flush_closes_the_old_one_at_once(camera: _FakeCamera) -
     assert camera.output.open is False
 
 
+def test_close_flushes_the_ring_into_the_open_clip(camera: _FakeCamera) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = Picamera2Recorder(ring_seconds=5, motion_hz=10)
+    recorder.healthy()
+    recorder.start_clip("a.mp4")
+    clip = camera.output.output
+
+    recorder.close()
+
+    assert clip.frames[-1] == b"ring"
+    assert clip.calls.count("stop") == 1
+
+
+def test_close_flushes_the_ring_into_a_clip_pending_close(camera: _FakeCamera) -> None:
+    # #180: the shutdown drops the pending close instead of cutting the last ring.
+    camera.frames = [_frame(100)] * 10_000
+    recorder = Picamera2Recorder(ring_seconds=5, motion_hz=10)
+    recorder.healthy()
+    recorder.start_clip("a.mp4")
+    recorder.stop_clip()
+    clip = camera.output.output
+
+    recorder.close()
+
+    assert clip.frames[-1] == b"ring"
+    assert clip.calls.count("stop") == 1
+
+
+def test_close_after_the_pending_close_fired_stops_nothing_twice(camera: _FakeCamera) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = Picamera2Recorder(ring_seconds=0.05, motion_hz=10)
+    recorder.healthy()
+    recorder.start_clip("a.mp4")
+    recorder.stop_clip()
+    clip = camera.output.output
+    time.sleep(0.2)
+
+    recorder.close()
+
+    assert b"ring" not in clip.frames
+    assert clip.calls.count("stop") == 1
+
+
+def test_close_waits_for_a_pending_close_already_finishing_the_file(
+    camera: _FakeCamera,
+) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = Picamera2Recorder(ring_seconds=0.01, motion_hz=10)
+    recorder.healthy()
+    recorder.start_clip("a.mp4")
+    clip = camera.output.output._output
+    entered, release = threading.Event(), threading.Event()
+
+    def slow_stop() -> None:
+        entered.set()
+        release.wait(2)
+        clip.calls.append("stop")
+
+    clip.stop = slow_stop
+    recorder.stop_clip()
+    assert entered.wait(2)
+    closer = threading.Thread(target=recorder.close)
+    closer.start()
+
+    closer.join(0.1)
+    assert closer.is_alive()  # still waiting for the file to be finished
+    release.set()
+    closer.join(2)
+    assert not closer.is_alive()
+    assert clip.calls.count("stop") == 1
+
+
+def test_release_goes_on_when_stopping_the_camera_fails(camera: _FakeCamera) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = Picamera2Recorder(ring_seconds=5, motion_hz=10)
+    recorder.healthy()
+    recorder.start_clip("a.mp4")
+    clip = camera.output.output
+
+    def dead() -> None:
+        raise RuntimeError("camera gone")
+
+    camera.stop = dead  # type: ignore[method-assign]
+    recorder.close()
+
+    assert clip.frames[-1] == b"ring"  # the encoder stopped first and finished the file
+    assert not camera.closed  # close() stops the dead camera again and fails too: logged
+
+
 def test_settings_carry_exposure(camera: _FakeCamera) -> None:
     camera.frames = [_frame(100)] * 1000
     recorder = Picamera2Recorder()
@@ -250,7 +357,7 @@ def test_start_clip_returns_the_first_frame_sensor_time_in_utc(
     assert first_frame == epoch + timedelta(seconds=4)
     recorder.close()
     pyav = camera.output.output._output
-    assert pyav.frames == [b"audio", b"key"]
+    assert pyav.frames == [b"audio", b"key", b"ring"]
     assert pyav.calls == ["start", "add_stream", "stop"]
 
 

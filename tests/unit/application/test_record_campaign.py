@@ -274,13 +274,53 @@ def test_closing_clip_sidecar_is_written_once_the_ring_elapses(stop: str) -> Non
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
-def test_close_ends_the_closing_clip_one_ring_before_the_release() -> None:
-    # Releasing the camera closes the pending output at once (#180 tracks flushing the ring).
+def test_close_ends_the_closing_clip_at_the_release() -> None:
+    # #180: releasing the camera writes the ring into the closing clip first.
     rig = _closed_clip_rig()
 
     rig.campaign.close()
 
-    assert rig.store.sidecars["video-2"].end_utc == _NOON
+    assert rig.store.sidecars["video-2"].end_utc == rig.clock.now()
+
+
+def test_close_keeps_the_end_of_a_clip_whose_output_already_closed() -> None:
+    # The ring elapsed (+13 s) but no tick wrote the sidecar yet: the file ends at the stop.
+    rig = _closed_clip_rig()
+    rig.clock.advance(5)
+
+    rig.campaign.close()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
+
+
+def test_close_keeps_the_end_of_a_clip_closed_by_a_reopen_whose_sidecar_failed() -> None:
+    rig = _closed_clip_rig()
+    rig.clock.advance(1)
+    rig.camera.motion = True
+    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
+    assert rig.campaign.tick() is RigState.FAULT  # + 9 s: reopen, the old sidecar failed
+    del rig.store.write_sidecar
+    rig.clock.advance(0.5)
+
+    rig.campaign.close()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
+
+
+@pytest.mark.parametrize("audio_lost", [False, True])
+def test_close_keeps_the_end_of_a_clip_closed_by_a_camera_loss(audio_lost: bool) -> None:
+    # The adapter flushed the ring when it released the lost camera: the file ends at the loss.
+    rig = _closed_clip_rig()
+    rig.camera.motion = True
+    rig.run(1)  # + 8 s: a new clip opens
+    rig.camera.ok = False
+    rig.audio.ok = not audio_lost  # both lost: the FAULT branch closes the clip
+    rig.run(1)  # + 9 s: camera lost, clip closed
+    rig.clock.advance(2)
+
+    rig.campaign.close()  # + 12 s, within one ring of the loss
+
+    assert rig.store.sidecars["video-3"].end_utc == _NOON + timedelta(seconds=9)
 
 
 def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:
