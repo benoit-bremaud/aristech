@@ -75,6 +75,7 @@ class _FakeCamera:
         self.recording = False
 
     def close(self) -> None:
+        self.stop()  # Picamera2.close() stops the camera first
         self.closed = True
 
     def capture_array(self, stream: str) -> Any:
@@ -289,7 +290,7 @@ def test_release_goes_on_when_stopping_the_camera_fails(camera: _FakeCamera) -> 
     recorder.close()
 
     assert clip.frames[-1] == b"ring"  # the encoder stopped first and finished the file
-    assert camera.closed
+    assert not camera.closed  # close() stops the dead camera again and fails too: logged
 
 
 def test_settings_carry_exposure(camera: _FakeCamera) -> None:

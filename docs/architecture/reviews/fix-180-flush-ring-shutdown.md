@@ -8,7 +8,7 @@
   stop flush the ring [445/500] over waiting for the pending close timer [370] and the status
   quo [325]
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: see the verify round below · Must 1 (fixed) · Should 3 (fixed) · Nice 3 (fixed)
+- Verdict: push gate open after round 2 · Must 1 (fixed) · Should 4 (fixed) · Nice 6 (5 fixed, 1 noted)
 
 ## Pre-push checks
 
@@ -51,6 +51,17 @@
 - Redundant `_clip_open = False` in `close()` · **Fixed**: removed (`_release` sets it).
 - Test asserted a private attribute · **Fixed**: removed, behaviour asserts kept.
 - Sequence diagram released audio before the camera, unlike the code · **Fixed**: order swapped.
+
+## Verify round (round 2)
+
+- All round-1 findings fixed; the encoder-then-camera stop order is safe upstream (the encoder
+  ignores frames once stopped).
+- Should · the reopen-with-failed-sidecar case had no test · **Fixed**: test added (the end stays
+  at the ring front).
+- Nice · the fake camera's `close()` did not stop it first, as upstream does · **Fixed**.
+- Nice · the sequence diagram showed the audio sidecar after the camera release · **Fixed**.
+- Nice · a close racing the pending close within tens of ms could date a sidecar late
+  (unmeasured) · **Noted**: fix only if bench data shows it (needs a port change).
 
 ## Out of scope (follow-ups)
 

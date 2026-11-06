@@ -293,6 +293,20 @@ def test_close_keeps_the_end_of_a_clip_whose_output_already_closed() -> None:
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
+def test_close_keeps_the_end_of_a_clip_closed_by_a_reopen_whose_sidecar_failed() -> None:
+    rig = _closed_clip_rig()
+    rig.clock.advance(1)
+    rig.camera.motion = True
+    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
+    assert rig.campaign.tick() is RigState.FAULT  # + 9 s: reopen, the old sidecar failed
+    del rig.store.write_sidecar
+    rig.clock.advance(0.5)
+
+    rig.campaign.close()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
+
+
 def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:
     rig = _closed_clip_rig()
     rig.store.free_fraction = _raise  # type: ignore[method-assign]

@@ -51,10 +51,11 @@ sequenceDiagram
             UC->>ST: delete oldest non-flagged
         end
     end
+    UC->>ST: close audio segment + sidecar, stop clip
     UC->>CA: close()
     Note over CA: stopping the encoder flushes the ring into a clip still within it (#180)
     UC->>AU: close()
-    UC->>ST: close open segment + sidecar (that clip ends at the release)
+    UC->>ST: clip sidecar (ends at the release if it was still within the ring)
 ```
 
 ## Notes
