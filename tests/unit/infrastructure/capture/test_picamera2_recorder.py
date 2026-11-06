@@ -27,9 +27,11 @@ class _FakeCircular:
         self.output, self.open = output, True
         output.outputframe(b"audio", True, 0, None, True)
         # The ring rebases its first keyframe to zero.
-        threading.Timer(self.keyframe_delay, output.outputframe, (b"key", True, 0)).start()
+        self.timer = threading.Timer(self.keyframe_delay, output.outputframe, (b"key", True, 0))
+        self.timer.start()
 
     def close_output(self) -> None:
+        self.timer.cancel()
         self.output.stop()
         self.open = False
 

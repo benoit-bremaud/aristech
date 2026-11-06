@@ -206,8 +206,8 @@ def test_continuous_motion_is_capped_at_five_minutes() -> None:
     assert len(rig.camera.clips) == 2
 
 
-def test_clip_reopened_within_one_ring_ends_where_the_next_starts() -> None:
-    # #178: the old output closes when the next clip opens; its tail is the new pre-roll.
+def test_clip_reopened_within_one_ring_ends_at_the_ring_front_without_camera_time() -> None:
+    # #178: the old output closes when the next clip opens, at the ring front (fallback start).
     rig = _Rig()
     rig.camera.motion = True
     rig.run(1)
@@ -224,7 +224,8 @@ def test_clip_reopened_within_one_ring_ends_where_the_next_starts() -> None:
     assert rig.store.sidecars[new].start_utc == old.end_utc
 
 
-def test_capped_clip_ends_where_the_next_one_starts() -> None:
+def test_capped_clip_ends_at_the_ring_front_of_the_next() -> None:
+    # Fallback start (no camera time): the ring front, where the old output closed.
     rig = _Rig()
     rig.camera.motion = True
 
@@ -503,7 +504,7 @@ def test_clip_reopened_within_one_ring_ends_at_the_ring_front() -> None:
     assert rig.store.sidecars[new].start_utc == _NOON + timedelta(seconds=2.6)
 
 
-@pytest.mark.parametrize("offset", [-8.1, 0.1])
+@pytest.mark.parametrize("offset", [-9.1, 0.1])
 def test_first_frame_time_outside_the_ring_falls_back(offset: float) -> None:
     rig = _Rig()
     rig.camera.first_frame = _NOON + timedelta(seconds=offset)
@@ -513,3 +514,15 @@ def test_first_frame_time_outside_the_ring_falls_back(offset: float) -> None:
     rig.run(15)
 
     assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=8)
+
+
+def test_first_frame_time_just_before_the_ring_front_is_kept() -> None:
+    # The pipeline latency can put a correct first frame slightly before tick − ring.
+    rig = _Rig()
+    rig.camera.first_frame = _NOON - timedelta(seconds=8.05)
+    rig.camera.motion = True
+    rig.campaign.tick()
+    rig.camera.motion = False
+    rig.run(15)
+
+    assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=8.05)

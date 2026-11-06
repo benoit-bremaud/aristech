@@ -5,7 +5,7 @@
   returns the first frame's UTC time, Picamera2 first-frame tap, `RecordCampaign` clip start,
   tests, sequence diagram)
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: see the verify round below
+- Verdict: push gate open after round 3 · Must 4 (fixed) · Should 4 (fixed) · Nice 6 (fixed)
 
 ## Pre-push checks
 
@@ -28,6 +28,10 @@
   diagram · **Fixed**: one sentence in all three (device time where it knows better, else the
   `Clock`; all UTC wall time).
 
+- Verify round: the plausibility check's lower bound `now − ring` rejected correct times, since
+  the ring ages frames against the newest one, which arrives a pipeline latency after its sensor
+  time · **Fixed**: one GOP of slack below; a test keeps a time 50 ms before the ring front.
+
 ## 🟡 Should Have
 
 - Adapter tests passed with a tap that never forwarded frames · **Fixed**: the fake ring calls
@@ -36,12 +40,16 @@
 - No check on the adapter's time, which depends on picamera2 internals · **Fixed**: a time
   outside `[now − ring, now]` is logged and replaced by the fallback.
 - This report was missing · **Fixed**.
+- Verify round: two test names still said the old clip ends where the next starts · **Fixed**:
+  renamed to the ring-front rule.
 
 ## 🔵 Nice to Have
 
 - The tap now forwards the frame in a `finally`, so the timing code never blocks the write ·
   **Fixed**.
 - Fallback wording in two use-case tests · **Fixed**.
+- Verify round: the first-frame event is set after the frame is forwarded; the docstring wrap
+  is fixed; the fake ring cancels its keyframe timer · **Fixed**.
 - CLOCK_BOOTTIME vs CLOCK_MONOTONIC note (equal on a Pi that never suspends) · **Fixed**.
 
 ## ⚪ Disagree / intentional

@@ -61,11 +61,16 @@ class _FirstFrameTap:
         packet: Any = None,
         audio: bool = False,
     ) -> None:
+        first = not audio and not self.written.is_set()
         try:
-            if not audio and not self.written.is_set():
+            if first:
                 self._record_first_frame(timestamp or 0)
         finally:  # the file write never depends on the timing code
-            self._output.outputframe(frame, keyframe, timestamp, packet, audio)
+            try:
+                self._output.outputframe(frame, keyframe, timestamp, packet, audio)
+            finally:  # set once the frame is in the file
+                if first:
+                    self.written.set()
 
     def _record_first_frame(self, timestamp: int) -> None:
         try:
@@ -73,8 +78,6 @@ class _FirstFrameTap:
             self.first_frame = _boot_to_utc(int(origin) + timestamp)
         except (AttributeError, TypeError):  # picamera2 internals changed: start unknown
             _log.warning("clip first-frame time unavailable", exc_info=True)
-        finally:
-            self.written.set()
 
 
 class Picamera2Recorder:

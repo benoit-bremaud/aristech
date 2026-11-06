@@ -5,14 +5,15 @@ the state diagram: it re-reads free space, the daylight window and device health
 closes segments. Segment times come from the device where it knows better (audio sample
 times, a clip's first-frame sensor time), otherwise from the `Clock`; all are UTC wall time. A
 clip's file starts on a keyframe up to one GOP after the ring front, hence the camera's time
-(#179); a time outside that window is rejected for the fallback, one ring before the tick.
+(#179); a time more than one GOP before the ring front or after the tick (wrong units or
+origin) is rejected for the fallback, one ring before the tick.
 
 A closed clip keeps receiving frames for one ring (the camera delays every frame by it), so its
 sidecar is written only when the clip really ends: one ring after the close, or when the next
 clip opens sooner (#178): the old file then ends at the ring front, one ring before the tick,
 and the frames up to the new clip's first keyframe (under one GOP) are in neither file.
-`close()` releases the camera,
-which drops the ring at once, so there the clip ends one ring before the release.
+`close()` releases the camera, which drops the ring at once, so there the clip ends one ring
+before the release.
 """
 
 import logging
@@ -29,6 +30,7 @@ from aristech.application.ports.capture import (
 from aristech.domain import RigState, SegmentMetadata, daylight_window
 
 _log = logging.getLogger("aristech.capture")
+_GOP = timedelta(seconds=1)  # the camera adapter pins one keyframe a second
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,7 +211,9 @@ class RecordCampaign:
         ring_front = now - self._config.ring
         if first_frame is None:
             return ring_front
-        if not ring_front <= first_frame <= now:
+        # One GOP of slack below: the ring ages frames against the newest one, which arrives a
+        # pipeline latency after its sensor time, so a correct time can predate `ring_front`.
+        if not ring_front - _GOP <= first_frame <= now:
             _log.warning("clip first-frame time %s outside the ring, ignored", first_frame)
             return ring_front
         return first_frame
