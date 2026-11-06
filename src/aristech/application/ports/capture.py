@@ -10,7 +10,11 @@ Settings = Mapping[str, str | int | float]
 
 
 class Clock(Protocol):
-    """The one clock that stamps both audio and video (spec AC1)."""
+    """UTC wall time for segments whose device has no better time (spec AC1).
+
+    Segment times come from the device where it knows better (audio sample times, a clip's
+    first-frame sensor time), otherwise from this clock; all are UTC wall time.
+    """
 
     def now(self) -> datetime:
         """Current time, timezone-aware UTC."""
@@ -32,8 +36,12 @@ class CameraRecorder(Protocol):
         """True if the region of interest changed since the last call."""
         ...
 
-    def start_clip(self, path: str) -> None:
-        """Write the buffered pre-roll to `path`, then keep writing live frames."""
+    def start_clip(self, path: str) -> datetime | None:
+        """Write the buffered pre-roll to `path`, then keep writing live frames.
+
+        Return the UTC time of the clip's first frame (its sensor timestamp), or None if it
+        is not known; the use case then dates the clip one ring before the tick (spec AC1).
+        """
         ...
 
     def stop_clip(self) -> None:
