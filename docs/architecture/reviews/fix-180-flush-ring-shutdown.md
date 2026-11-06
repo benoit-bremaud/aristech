@@ -67,8 +67,11 @@
 
 - A clip closed by a camera loss was flushed when the adapter released the camera, yet a
   shutdown within one ring moved its end to the release · **Fixed**: the closing clip carries
-  `on_ring`, False after a camera loss or once a sidecar write was attempted (its output has
-  closed); only a clip still on the ring is extended; test added.
+  `on_ring`, False after a camera loss (alone or with the audio, the FAULT branch) or once a
+  sidecar write was attempted (its output has closed); only a clip still on the ring is
+  extended; tests cover both loss branches. The port now states that `healthy()` is False
+  only after the camera was released, and the rule reads the same in the port, use case and
+  diagrams (verify round 3).
 - The release end is read before the audio close and the encoder stop, so the file may hold a
   few frames past it · **Kept**: the sidecar then never claims footage the file lacks, the same
   precision as the stop-tick rule; an exact end needs the encoder's last frame time (port change).

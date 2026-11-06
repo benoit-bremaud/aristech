@@ -307,12 +307,14 @@ def test_close_keeps_the_end_of_a_clip_closed_by_a_reopen_whose_sidecar_failed()
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=1)
 
 
-def test_close_keeps_the_end_of_a_clip_closed_by_a_camera_loss() -> None:
+@pytest.mark.parametrize("audio_lost", [False, True])
+def test_close_keeps_the_end_of_a_clip_closed_by_a_camera_loss(audio_lost: bool) -> None:
     # The adapter flushed the ring when it released the lost camera: the file ends at the loss.
     rig = _closed_clip_rig()
     rig.camera.motion = True
     rig.run(1)  # + 8 s: a new clip opens
     rig.camera.ok = False
+    rig.audio.ok = not audio_lost  # both lost: the FAULT branch closes the clip
     rig.run(1)  # + 9 s: camera lost, clip closed
     rig.clock.advance(2)
 

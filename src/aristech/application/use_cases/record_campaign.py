@@ -140,7 +140,7 @@ class RecordCampaign:
         camera_ok = self._camera.healthy()
         audio_ok = self._audio.healthy()
         if not camera_ok and not audio_ok:
-            self._stop_all(now)
+            self._stop_all(now, on_ring=False)  # the adapter released the lost camera
             return self._enter(RigState.FAULT, "all inputs lost")
         missing = self._missing_inputs(camera_ok, audio_ok)
         for segment in (self._audio_segment, self._clip):
@@ -227,9 +227,9 @@ class RecordCampaign:
             return ring_front
         return first_frame
 
-    def _stop_all(self, now: datetime) -> None:
+    def _stop_all(self, now: datetime, on_ring: bool = True) -> None:
         self._close_audio(now)
-        self._close_clip(now)
+        self._close_clip(now, on_ring)
 
     def _abandon_segments(self) -> None:
         """Best-effort release after a failed step; the next tick opens fresh segments."""

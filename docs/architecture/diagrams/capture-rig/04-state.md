@@ -40,7 +40,8 @@ stateDiagram-v2
   about 0.9 s (spec AC7, #174).
 - Leaving *SavingClip* stops the clip, but its file keeps receiving the ring for 8 s; its sidecar
   ends at the stop tick, or at the next clip's start if *SavingClip* is re-entered sooner (#178),
-  or at the release on `close()` within that ring, which writes the ring into it first (#180).
+  or at the release on `close()` within that ring, which writes the ring into it first, unless
+  the camera was lost (its file ended at the loss) (#180).
 - Power loss or a process exit from any state restarts at *SelfCheck* (spec A5): the systemd
   unit `deploy/systemd/aristech-record.service` starts the recorder at boot and restarts it
   10 s after any exit (see [05-deployment](05-deployment.md)).

@@ -29,7 +29,10 @@ class CameraRecorder(Protocol):
     """Camera with a RAM ring buffer; a clip starts with the buffered pre-roll."""
 
     def healthy(self) -> bool:
-        """True while frames arrive; opens the camera on first call."""
+        """True while frames arrive; opens the camera on first call.
+
+        False after a loss: the camera has been released, which writes the ring into an open clip.
+        """
         ...
 
     def motion_detected(self) -> bool:
@@ -55,8 +58,8 @@ class CameraRecorder(Protocol):
     def close(self) -> None:
         """Write the buffered frames to the last clip, then release the camera.
 
-        A clip stopped less than one ring before therefore ends at the release; safe to call more
-        than once.
+        A clip stopped less than one ring before, while the camera was healthy, therefore ends at
+        the release; safe to call more than once.
         """
         ...
 
