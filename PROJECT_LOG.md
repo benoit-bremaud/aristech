@@ -539,3 +539,12 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Pre-push review: 4 Must, 4 Should and 6 Nice handled over three rounds; 1 hosted review finding fixed (sidecars could overlap inside the one-GOP slack), checked by a fourth round (1 Should and 2 Nice fixed).
   - **Verification**: `just gate` green on `52d35d5` (393 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
   - **Next**: check the first-frame time on the bench (clap test, AC1); follow-ups #190 (close timer racing a reopen), #191 (frames lost between back-to-back clips).
+
+- **PR #193 merged** (`c4a5d95`) — `fix(capture): flush the ring into the open clip on shutdown`. Issue #180.
+  - On shutdown the camera adapter cut the open or pending clip at once and dropped the last ring (8 s); the sidecar dated the end at release − ring.
+  - Fix (MCDA): let the encoder stop flush the ring into the attached clip [445/500] over waiting for the pending close timer [370] and the status quo [325]; stable under ±10 on every weight. Upstream `CircularOutput2.stop()` flushes the whole ring into the attached output; `close_output()` drops it.
+  - The adapter cancels the pending close (joining it if it is already finishing the file) and releases in three steps (encoder, camera stop, camera close), each logged on failure, so the file is finished even on a dead camera. A clip stopped less than one ring before, with the camera healthy, ends at the release; a clip whose output already closed (ring elapsed, next clip opened, camera lost) keeps its end.
+  - Port contract (`healthy()` False after a loss means the camera was released), sequence and state diagrams updated; unit tests with fakes for each case.
+  - Pre-push review: 1 Must, 4 Should and 9 Nice handled over four rounds (1 Nice noted as a known limit); 2 hosted review findings: 1 fixed (clip closed by a camera loss, alone or with the audio), 1 kept (release end read slightly before the encoder stop, never over-claims).
+  - **Verification**: `just gate` green on `b13e20c` (400 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
+  - **Next**: check the shutdown flush on the bench; follow-ups #184 (pending close after a camera loss), #185 (sidecar for a clip abandoned on a fault), #190 (close timer racing a reopen).
