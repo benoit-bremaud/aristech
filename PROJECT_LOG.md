@@ -517,9 +517,9 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - **Next**: on the bench, check the hardening against libcamera (BA7 journal) and the ~40 s retry with the SSD unplugged (BA10); follow-up #174 (pre-roll).
 
 - **PR #182 merged** (`07bd91f`) — `fix(capture): guarantee 5 s of pre-roll before the first motion frame`. Issue #174.
-  - The motion latch is read once per tick and a clip starts on a keyframe, so a 5 s ring left 4–5 s of pre-roll (AC7, BA5).
-  - Fix (MCDA): ring = pre-roll + margin 490 over a faster check 275 and trimming the clip 220. `CampaignConfig.pre_roll_margin` 3 s (ring 8 s), sidecar `start_utc` dated from the ring, encoder GOP pinned to 1 s. Budget tick + latch + GOP leaves ≥ 5 s while a tick's work stays under about 0.9 s.
+  - The motion latch is read once per tick and a clip starts on a keyframe, so a 5 s ring could leave under 3 s of pre-roll (AC7, BA5).
+  - Fix (MCDA): ring = pre-roll + margin 490 over a faster motion check (10 Hz tick) 275 and trimming the clip start to 5 s 220 (matrix in the plan validated by the owner). `CampaignConfig.pre_roll_margin` 3 s (ring 8 s), sidecar `start_utc` dated from the ring, encoder GOP pinned to 1 s. Budget tick + latch + GOP leaves ≥ 5 s while a tick's work stays under about 0.9 s.
   - Spec, sequence and state diagrams, BA5 wording updated; worst-case unit test with fakes.
   - Pre-push review: 1 Must, 7 Should and 5 Nice handled over two rounds; 1 Should deferred.
-  - **Verification**: `just gate` green on `2732c8f` (372 tests, coverage 98 %, SonarQube gate passed); CodeQL green.
+  - **Verification**: `just gate` green on `2732c8f` (372 tests, coverage 98 %, SonarQube gate passed, no leaks); CodeQL and dependency review green.
   - **Next**: BA5 on the bench (check the GOP there); follow-ups #178 (clip reopened within one ring), #179 (clip start from the sensor timestamp), #180 (flush the ring on shutdown), #181 (`timedatectl` out of the tick).
