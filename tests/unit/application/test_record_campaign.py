@@ -158,31 +158,37 @@ def test_motion_clip_has_pre_roll_and_closes_after_post_roll() -> None:
     assert rig.camera.clips == ["video-2"]
     assert rig.camera.open_clip is None
     sidecar = rig.store.sidecars["video-2"]
-    assert sidecar.start_utc == _NOON - timedelta(seconds=7)
+    assert sidecar.start_utc == _NOON - timedelta(seconds=8)
     assert sidecar.end_utc == _NOON + timedelta(seconds=7)
     assert sidecar.trigger == "motion"
 
 
-def test_clip_holds_five_seconds_before_motion_seen_just_after_a_tick() -> None:
-    # Worst case (#174, AC7): motion just after a tick is only read at the next one.
+def test_clip_sidecar_starts_one_ring_before_the_tick_that_opened_it() -> None:
     rig = _Rig()
-    rig.run(1)
-    first_motion = rig.clock.now() - timedelta(seconds=1) + timedelta(microseconds=1)
     rig.camera.motion = True
+    rig.campaign.tick()
 
-    rig.run(1)
+    sidecar_path = rig.camera.clips[0]
     rig.camera.motion = False
-    rig.run(6)
+    rig.run(7)
 
-    sidecar = rig.store.sidecars[rig.camera.clips[0]]
-    assert first_motion - sidecar.start_utc >= timedelta(seconds=5)
+    assert rig.store.sidecars[sidecar_path].start_utc == _NOON - timedelta(seconds=8)
 
 
-def test_ring_is_the_pre_roll_plus_one_tick_of_margin() -> None:
-    config = CampaignConfig(rig_id="r", hive_id="h", site="s", latitude=0.0, longitude=0.0)
+def test_margin_covers_a_slow_tick_the_latch_and_one_gop() -> None:
+    # Worst case (#174, AC7): motion just after a tick that took 0.5 s of work is read at the
+    # next tick; the clip then starts up to one 1 s GOP after `start_utc`.
+    rig = _Rig()
+    rig.campaign.tick()
+    rig.clock.advance(1.5)
+    first_motion = rig.clock.now() - timedelta(seconds=1.5) + timedelta(seconds=0.1)
+    rig.camera.motion = True
+    rig.campaign.tick()
+    rig.camera.motion = False
+    rig.run(7)
 
-    assert config.ring - config.pre_roll >= timedelta(seconds=1)
-    assert config.ring == timedelta(seconds=7)
+    first_frame = rig.store.sidecars[rig.camera.clips[0]].start_utc + timedelta(seconds=1)
+    assert first_motion - first_frame >= timedelta(seconds=5)
 
 
 def test_continuous_motion_is_capped_at_five_minutes() -> None:

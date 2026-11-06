@@ -33,9 +33,10 @@ class CampaignConfig:
     software_version: str = "unknown"
     audio_segment: timedelta = timedelta(minutes=10)
     pre_roll: timedelta = timedelta(seconds=5)
-    # A clip opens at the tick after the motion, up to one tick (1 s) plus the tick's own work
-    # later: the ring holds that margin on top of the pre-roll, so AC7's 5 s always fit.
-    pre_roll_margin: timedelta = timedelta(seconds=2)
+    # Budget between the first motion frame and the clip's first frame (#174, AC7): one tick
+    # (1 s sleep + the tick's work) + the motion latch (0.1 s) + one GOP, since a clip starts on
+    # a keyframe (1 s, the adapter pins it). The ring holds this margin on top of the pre-roll.
+    pre_roll_margin: timedelta = timedelta(seconds=3)
     post_roll: timedelta = timedelta(seconds=5)
     max_clip: timedelta = timedelta(minutes=5)
     daylight_margin: timedelta = timedelta(minutes=30)

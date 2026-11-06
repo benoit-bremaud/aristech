@@ -24,7 +24,7 @@ sequenceDiagram
     R->>UC: start(campaign config)
     UC->>CK: now(), source()
     UC->>AU: open(2 ch, 48 kHz)
-    UC->>CA: open(1080p30, ring 7 s)
+    UC->>CA: open(1080p30, ring 8 s, GOP 1 s)
     loop while in daylight window
         AU-->>UC: audio block (t_start from Clock)
         UC->>ST: append audio block
@@ -34,9 +34,9 @@ sequenceDiagram
                 UC->>ST: delete oldest non-flagged
             end
         end
-        CA-->>UC: motion latched (t_first), read at the next tick t_tick ≤ t_first + 1 s
-        UC->>CA: save_clip(from t_tick − 7 s)
-        Note over CA: ring (5 s pre-roll + 2 s tick margin), then live frames: ≥ 5 s before t_first
+        CA-->>UC: motion latched (t_first), read at the next tick t_tick ≈ t_first + 1 s + tick work
+        UC->>CA: save_clip(from t_tick − 8 s)
+        Note over CA: ring from its first keyframe (5 s pre-roll + 3 s margin), then live frames
         CA-->>UC: motion ended (t_last)
         UC->>CA: stop_clip(at t_last + 5 s)
         UC->>ST: store clip + sidecar (same clock)

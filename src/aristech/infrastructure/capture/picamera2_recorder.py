@@ -28,11 +28,11 @@ class Picamera2Recorder:
     def __init__(
         self,
         fps: int = 30,
-        ring_seconds: float = 7.0,
+        ring_seconds: float = 8.0,
         motion_threshold: float = 8.0,
         motion_hz: float = 10.0,
     ) -> None:
-        """Threshold is in luma levels (0–255)."""
+        """Threshold is in luma levels (0–255); `ring_seconds` is `CampaignConfig.ring`."""
         self._fps = fps
         self._ring_seconds = ring_seconds
         self._motion_threshold = motion_threshold
@@ -72,7 +72,9 @@ class Picamera2Recorder:
             )
             camera.configure(config)
             circular = CircularOutput2(buffer_duration_ms=int(self._ring_seconds * 1000))
-            camera.start_recording(H264Encoder(), circular)
+            # One keyframe a second: a clip starts on a keyframe, so this bounds the pre-roll lost
+            # to GOP alignment (CampaignConfig.pre_roll_margin).
+            camera.start_recording(H264Encoder(iperiod=self._fps), circular)
         except Exception:  # any camera error means "not healthy", retried
             _log.debug("camera unavailable", exc_info=True)
             return False

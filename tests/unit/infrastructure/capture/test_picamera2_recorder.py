@@ -38,6 +38,7 @@ class _FakeCamera:
         self.config = config
 
     def start_recording(self, encoder: Any, output: Any) -> None:
+        self.encoder = encoder
         self.output = output
         self.recording = True
 
@@ -63,7 +64,7 @@ def camera(monkeypatch: pytest.MonkeyPatch) -> _FakeCamera:
     fake = _FakeCamera()
     package = types.ModuleType("picamera2")
     package.Picamera2 = lambda: fake  # type: ignore[attr-defined]
-    encoders = types.SimpleNamespace(H264Encoder=lambda: "h264")
+    encoders = types.SimpleNamespace(H264Encoder=lambda iperiod: f"h264/{iperiod}")
     outputs = types.SimpleNamespace(
         CircularOutput2=_FakeCircular, PyavOutput=lambda path: types.SimpleNamespace(path=path)
     )
@@ -87,7 +88,7 @@ def _wait_lost(recorder: Picamera2Recorder) -> None:
         time.sleep(0.01)
 
 
-def test_starts_1080p30_with_a_pre_roll_ring(camera: _FakeCamera) -> None:
+def test_starts_1080p30_with_a_ring_and_a_one_second_gop(camera: _FakeCamera) -> None:
     recorder = Picamera2Recorder()
     camera.frames = [_frame(100)] * 1000
 
@@ -95,7 +96,8 @@ def test_starts_1080p30_with_a_pre_roll_ring(camera: _FakeCamera) -> None:
     assert camera.recording
     assert camera.config["main"] == {"size": (1920, 1080)}
     assert camera.config["controls"] == {"FrameRate": 30}
-    assert camera.output.buffer_duration_ms == 7_000
+    assert camera.output.buffer_duration_ms == 8_000
+    assert camera.encoder == "h264/30"
     recorder.close()
 
 
