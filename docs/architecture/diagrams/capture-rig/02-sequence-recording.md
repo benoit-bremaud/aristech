@@ -56,7 +56,7 @@ sequenceDiagram
     UC->>CA: close()
     Note over CA: stopping the encoder flushes the ring into a clip still within it (#180)
     UC->>AU: close()
-    UC->>ST: clip sidecar (ends at the release if it was still within the ring)
+    UC->>ST: clip sidecar (ends at the release if still within the ring and the camera was not lost)
 ```
 
 ## Notes
