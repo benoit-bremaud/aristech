@@ -67,7 +67,7 @@ named follow-up exists.
 
 | AC | Threshold | Procedure | Evidence |
 |---|---|---|---|
-| **BA5** Pre-roll | ≥ 5 s between a clip's first frame and the first frame showing motion, on 10 of 10 clips (capture-rig AC7) | Film a running stopwatch, then trigger 10 motion events ≥ 30 s apart; find the first frame where the motion shows, by eye or frame by frame, and read the offset from the clip start (the sidecar `start_utc` is set from the pre-roll, so reading it would prove nothing) | Table of 10 offsets |
+| **BA5** Pre-roll | ≥ 5 s between a clip's first frame and the first frame showing motion, on 10 of 10 clips (capture-rig AC7) | Film a running stopwatch, then trigger 10 motion events ≥ 30 s apart; find the first frame where the motion shows, by eye or frame by frame, and read the offset from the clip start (the sidecar `start_utc` is computed as tick time − ring, not measured, so reading it would prove nothing) | Table of 10 offsets |
 | **BA6** Sidecars | Every segment and clip has the keys of `SegmentMetadata.to_dict` (`rig_id`, `hive_id`, `site`, `kind`, `trigger`, `start_utc`, `end_utc`, `clock_source`, `software_version`, `settings`, `missing_inputs`, `flagged`); `clock_source` is `ntp`, except the first segment after a boot, which may be `rtc` (capture-rig AC3) | Run the key check over every file of BA7, or of a run of at least one day of the service while BA7 is not yet run | Script output: files checked, files failing |
 | **BA7** Unattended bench run | 72 h with no manual action; every daylight minute is covered by an audio segment, apart from the open segment at a restart | Start the campaign with the `aristech-record` service (docs/INSTALL.md § Capture rig), leave it, then compare segment minutes with the expected daylight minutes | Segment count vs expected, log excerpt |
 | **BA8** Disk rates | Audio within ± 30 % of 0.5 GB per daylight hour (ADR-0017: ~6 GB per 12 h for two channels); video within ± 30 % of 3.6 GB per motion hour (~8 Mbit/s). The 13 GB/day of ADR-0017 is then re-derived from the measured rates and the field motion time | On one day of BA7 (or of the one-day service run of BA6), `du` the audio and the video folders; sum the daylight hours and the clip durations | `du` output, hours, the two rates |
@@ -131,9 +131,10 @@ keeps a margin for the closed enclosure and a summer day outdoors.
 
 ## Follow-ups this spec needs
 
-- The motion check runs once per second, so the pre-roll before the first motion frame may be
-  shorter than 5 s; BA5 is expected to show it, and a fix (a longer ring or a faster check) follows
-  the measurement.
+- Done (#174): the motion check runs once per second and a clip starts on a keyframe, so the
+  ring holds the 5 s pre-roll plus a 3 s margin (8 s) and the encoder emits one keyframe a
+  second; the budget (tick + latch + GOP) leaves ≥ 5 s with a tick under about 0.9 s of work,
+  and BA5 confirms it on the bench (check the GOP there too).
 
 ## Alternative outcomes
 

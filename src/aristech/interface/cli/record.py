@@ -31,7 +31,7 @@ def build_campaign(args: argparse.Namespace) -> RecordCampaign:
     return RecordCampaign(
         config,
         SystemClock(),
-        Picamera2Recorder(pre_roll_seconds=config.pre_roll.total_seconds()),
+        Picamera2Recorder(ring_seconds=config.ring.total_seconds()),
         SoundDeviceRecorder(device=args.audio_device),
         FileSegmentStore(Path(args.output)),
     )
