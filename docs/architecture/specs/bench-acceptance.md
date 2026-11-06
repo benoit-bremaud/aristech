@@ -131,9 +131,9 @@ keeps a margin for the closed enclosure and a summer day outdoors.
 
 ## Follow-ups this spec needs
 
-- The motion check runs once per second, so the pre-roll before the first motion frame may be
-  shorter than 5 s; BA5 is expected to show it, and a fix (a longer ring or a faster check) follows
-  the measurement.
+- Done (#174): the motion check runs once per second, so the ring now holds the 5 s pre-roll plus
+  a 2 s margin (7 s); the pre-roll before the first motion frame is ≥ 5 s by design (about 6–7 s), and BA5
+  confirms it on the bench.
 
 ## Alternative outcomes
 

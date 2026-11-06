@@ -33,11 +33,19 @@ class CampaignConfig:
     software_version: str = "unknown"
     audio_segment: timedelta = timedelta(minutes=10)
     pre_roll: timedelta = timedelta(seconds=5)
+    # A clip opens at the tick after the motion, up to one tick (1 s) plus the tick's own work
+    # later: the ring holds that margin on top of the pre-roll, so AC7's 5 s always fit.
+    pre_roll_margin: timedelta = timedelta(seconds=2)
     post_roll: timedelta = timedelta(seconds=5)
     max_clip: timedelta = timedelta(minutes=5)
     daylight_margin: timedelta = timedelta(minutes=30)
     rotate_below: float = 0.10
     stop_below: float = 0.02
+
+    @property
+    def ring(self) -> timedelta:
+        """Length of the camera ring buffer: what a clip holds before the tick that opened it."""
+        return self.pre_roll + self.pre_roll_margin
 
 
 @dataclass(slots=True)
@@ -159,7 +167,7 @@ class RecordCampaign:
             if self._clip is None:
                 path = self._store.path_for("video", now)
                 self._camera.start_clip(path)
-                start = now - self._config.pre_roll
+                start = now - self._config.ring
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
         clip = self._clip
         if clip is None or self._last_motion is None:

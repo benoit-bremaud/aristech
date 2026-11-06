@@ -1,8 +1,9 @@
 """`CameraRecorder` over Picamera2: H.264 into a ring buffer, motion on the lores stream.
 
-`CircularOutput2` delays every frame by `pre_roll_seconds`: opening an output writes the
-buffered pre-roll, and frames reach the file only once they leave the buffer. Closing must
-therefore wait `pre_roll_seconds` after the stop request, or the tail of the event is lost.
+`CircularOutput2` delays every frame by `ring_seconds`: opening an output writes the
+buffered frames (the pre-roll plus the margin for the tick that opened the clip, #174), and
+frames reach the file only once they leave the buffer. Closing must therefore wait
+`ring_seconds` after the stop request, or the tail of the event is lost.
 If a new clip starts during that wait, the old output is closed at once: the frames it had not
 received yet are exactly the new clip's pre-roll.
 
@@ -27,13 +28,13 @@ class Picamera2Recorder:
     def __init__(
         self,
         fps: int = 30,
-        pre_roll_seconds: float = 5.0,
+        ring_seconds: float = 7.0,
         motion_threshold: float = 8.0,
         motion_hz: float = 10.0,
     ) -> None:
         """Threshold is in luma levels (0–255)."""
         self._fps = fps
-        self._pre_roll_seconds = pre_roll_seconds
+        self._ring_seconds = ring_seconds
         self._motion_threshold = motion_threshold
         self._motion_period = 1.0 / motion_hz
         self._camera: Any | None = None
@@ -70,7 +71,7 @@ class Picamera2Recorder:
                 controls={"FrameRate": self._fps},
             )
             camera.configure(config)
-            circular = CircularOutput2(buffer_duration_ms=int(self._pre_roll_seconds * 1000))
+            circular = CircularOutput2(buffer_duration_ms=int(self._ring_seconds * 1000))
             camera.start_recording(H264Encoder(), circular)
         except Exception:  # any camera error means "not healthy", retried
             _log.debug("camera unavailable", exc_info=True)
@@ -130,7 +131,7 @@ class Picamera2Recorder:
             self._clip_open = False
             return
         self._clip_open = False
-        timer = threading.Timer(self._pre_roll_seconds, self._circular.close_output)
+        timer = threading.Timer(self._ring_seconds, self._circular.close_output)
         timer.daemon = True
         self._pending_close = timer
         timer.start()

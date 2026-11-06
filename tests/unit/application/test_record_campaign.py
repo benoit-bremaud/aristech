@@ -158,9 +158,31 @@ def test_motion_clip_has_pre_roll_and_closes_after_post_roll() -> None:
     assert rig.camera.clips == ["video-2"]
     assert rig.camera.open_clip is None
     sidecar = rig.store.sidecars["video-2"]
-    assert sidecar.start_utc == _NOON - timedelta(seconds=5)
+    assert sidecar.start_utc == _NOON - timedelta(seconds=7)
     assert sidecar.end_utc == _NOON + timedelta(seconds=7)
     assert sidecar.trigger == "motion"
+
+
+def test_clip_holds_five_seconds_before_motion_seen_just_after_a_tick() -> None:
+    # Worst case (#174, AC7): motion just after a tick is only read at the next one.
+    rig = _Rig()
+    rig.run(1)
+    first_motion = rig.clock.now() - timedelta(seconds=1) + timedelta(microseconds=1)
+    rig.camera.motion = True
+
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(6)
+
+    sidecar = rig.store.sidecars[rig.camera.clips[0]]
+    assert first_motion - sidecar.start_utc >= timedelta(seconds=5)
+
+
+def test_ring_is_the_pre_roll_plus_one_tick_of_margin() -> None:
+    config = CampaignConfig(rig_id="r", hive_id="h", site="s", latitude=0.0, longitude=0.0)
+
+    assert config.ring - config.pre_roll >= timedelta(seconds=1)
+    assert config.ring == timedelta(seconds=7)
 
 
 def test_continuous_motion_is_capped_at_five_minutes() -> None:

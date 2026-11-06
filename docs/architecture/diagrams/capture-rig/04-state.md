@@ -34,6 +34,9 @@ stateDiagram-v2
   re-enters *Degraded*.
 - *Degraded* keeps recording the remaining streams (spec A2, A3); the gap goes in the sidecars.
 - Audio streams continuously in both *Buffering* and *SavingClip*.
+- *motion in ROI* is read at the next one-second tick, up to 1 s after the motion; the ring
+  holds the 5 s pre-roll plus a 2 s margin, so *SavingClip* always starts ≥ 5 s before the
+  first motion frame (spec AC7, #174).
 - Power loss or a process exit from any state restarts at *SelfCheck* (spec A5): the systemd
   unit `deploy/systemd/aristech-record.service` starts the recorder at boot and restarts it
   10 s after any exit (see [05-deployment](05-deployment.md)).

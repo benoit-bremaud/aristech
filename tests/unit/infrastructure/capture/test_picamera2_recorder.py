@@ -78,7 +78,7 @@ def _frame(level: int) -> Any:
 
 
 def _recorder(**kwargs: Any) -> Picamera2Recorder:
-    return Picamera2Recorder(pre_roll_seconds=0.05, motion_hz=1000, **kwargs)
+    return Picamera2Recorder(ring_seconds=0.05, motion_hz=1000, **kwargs)
 
 
 def _wait_lost(recorder: Picamera2Recorder) -> None:
@@ -95,7 +95,7 @@ def test_starts_1080p30_with_a_pre_roll_ring(camera: _FakeCamera) -> None:
     assert camera.recording
     assert camera.config["main"] == {"size": (1920, 1080)}
     assert camera.config["controls"] == {"FrameRate": 30}
-    assert camera.output.buffer_duration_ms == 5_000
+    assert camera.output.buffer_duration_ms == 7_000
     recorder.close()
 
 
@@ -122,7 +122,7 @@ def test_still_scene_is_no_motion(camera: _FakeCamera) -> None:
 
 def test_clip_closes_only_after_the_ring_has_flushed(camera: _FakeCamera) -> None:
     camera.frames = [_frame(100)] * 10_000
-    recorder = Picamera2Recorder(pre_roll_seconds=0.2, motion_hz=10)
+    recorder = Picamera2Recorder(ring_seconds=0.2, motion_hz=10)
     recorder.healthy()
 
     recorder.start_clip("c.mp4")
@@ -138,7 +138,7 @@ def test_clip_closes_only_after_the_ring_has_flushed(camera: _FakeCamera) -> Non
 
 def test_new_clip_during_flush_closes_the_old_one_at_once(camera: _FakeCamera) -> None:
     camera.frames = [_frame(100)] * 10_000
-    recorder = Picamera2Recorder(pre_roll_seconds=5, motion_hz=10)
+    recorder = Picamera2Recorder(ring_seconds=5, motion_hz=10)
     recorder.healthy()
     recorder.start_clip("a.mp4")
     recorder.stop_clip()
