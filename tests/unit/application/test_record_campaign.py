@@ -274,13 +274,13 @@ def test_closing_clip_sidecar_is_written_once_the_ring_elapses(stop: str) -> Non
     assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
 
 
-def test_close_ends_the_closing_clip_one_ring_before_the_release() -> None:
-    # Releasing the camera closes the pending output at once (#180 tracks flushing the ring).
+def test_close_ends_the_closing_clip_at_the_release() -> None:
+    # #180: releasing the camera writes the ring into the closing clip first.
     rig = _closed_clip_rig()
 
     rig.campaign.close()
 
-    assert rig.store.sidecars["video-2"].end_utc == _NOON
+    assert rig.store.sidecars["video-2"].end_utc == rig.clock.now()
 
 
 def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:

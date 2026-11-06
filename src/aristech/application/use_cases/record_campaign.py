@@ -12,12 +12,12 @@ A closed clip keeps receiving frames for one ring (the camera delays every frame
 sidecar is written only when the clip really ends: one ring after the close, or when the next
 clip opens sooner (#178): the old file then ends at the ring front, one ring before the tick
 (never after the new clip's start), and the frames up to the new clip's first keyframe (under
-one GOP) are in neither file. `close()` releases the camera, which drops the ring at once, so
-there the clip ends one ring before the release.
+one GOP) are in neither file. `close()` releases the camera, which writes the ring into the
+last clip first (#180), so there the clip ends at the release.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 
 from aristech.application.ports.capture import (
@@ -154,7 +154,9 @@ class RecordCampaign:
         self._stop_all(now)
         self._camera.close()
         self._audio.close()
-        self._flush_closing(now - self._config.ring)
+        if self._closing is not None:  # the release wrote the ring into it, up to now (#180)
+            self._closing = replace(self._closing, closed_at=now)
+        self._flush_closing(now)
 
     def _enough_space(self) -> bool:
         while self._store.free_fraction() < self._config.rotate_below:

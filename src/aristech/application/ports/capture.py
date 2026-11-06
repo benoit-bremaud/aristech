@@ -53,7 +53,10 @@ class CameraRecorder(Protocol):
         ...
 
     def close(self) -> None:
-        """Release the camera; safe to call more than once."""
+        """Write the buffered frames to the last clip, then release the camera.
+
+        The last clip therefore ends at the release; safe to call more than once.
+        """
         ...
 
 

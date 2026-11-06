@@ -6,6 +6,9 @@ frames reach the file only once they leave the buffer. Closing must therefore wa
 `ring_seconds` after the stop request, or the tail of the event is lost.
 If a new clip starts during that wait, the old output is closed at once: the frames it had not
 received yet are exactly the new clip's pre-roll, and `RecordCampaign` dates its end there (#178).
+On `close()` the output stays attached and the pending close is dropped: `stop_recording()`
+stops `CircularOutput2`, which flushes the whole ring into it, so the last clip ends at the
+release (#180).
 
 `start_clip` returns the UTC time of the clip's first frame (#179): the ring writes from its first
 keyframe old enough, then rebases timestamps to it, so the tap reads that keyframe's sensor time
@@ -230,11 +233,13 @@ class Picamera2Recorder:
         return values
 
     def close(self) -> None:
-        """Flush the last clip, stop recording and release the camera."""
-        if self._clip_open and self._circular is not None:
-            self._circular.close_output()
-            self._clip_open = False
-        self._close_pending_now()
+        """Flush the ring into the last clip, stop recording and release the camera."""
+        timer, self._pending_close = self._pending_close, None
+        if timer is not None:
+            timer.cancel()
+            # Already firing: let its close_output finish so stop() sees no output, not half one.
+            timer.join(timeout=1)
+        self._clip_open = False
         self._release()
 
     def _release(self) -> None:
