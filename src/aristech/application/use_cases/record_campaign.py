@@ -10,10 +10,10 @@ origin) is rejected for the fallback, one ring before the tick.
 
 A closed clip keeps receiving frames for one ring (the camera delays every frame by it), so its
 sidecar is written only when the clip really ends: one ring after the close, or when the next
-clip opens sooner (#178): the old file then ends at the ring front, one ring before the tick,
-and the frames up to the new clip's first keyframe (under one GOP) are in neither file.
-`close()` releases the camera, which drops the ring at once, so there the clip ends one ring
-before the release.
+clip opens sooner (#178): the old file then ends at the ring front, one ring before the tick
+(never after the new clip's start), and the frames up to the new clip's first keyframe (under
+one GOP) are in neither file. `close()` releases the camera, which drops the ring at once, so
+there the clip ends one ring before the release.
 """
 
 import logging

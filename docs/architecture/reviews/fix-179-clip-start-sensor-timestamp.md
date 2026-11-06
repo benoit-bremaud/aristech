@@ -38,7 +38,8 @@
   `start` / `_add_stream` / `stop`, delivers the keyframe on a timer, and the test asserts the
   frames reach the wrapped output; a test delivers it after 0.9 s.
 - No check on the adapter's time, which depends on picamera2 internals · **Fixed**: a time
-  outside `[now − ring, now]` is logged and replaced by the fallback (widened by one GOP in the verify round).
+  outside `[now − ring, now]` is logged and replaced by the fallback (widened by one GOP in the
+  verify round).
 - This report was missing · **Fixed**.
 - Verify round: two test names still said the old clip ends where the next starts · **Fixed**:
   renamed to the ring-front rule.
@@ -67,4 +68,4 @@
 
 - `record_campaign.py` · a new start inside the one-GOP slack below the ring front came before
   the old clip's end (`now − ring`), so the sidecars overlapped · **Fixed**: the old end is
-  capped at the new start; test added.
+  capped at the new start; test added. Docstring and diagram arrow follow.

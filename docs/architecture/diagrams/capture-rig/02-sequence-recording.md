@@ -43,7 +43,7 @@ sequenceDiagram
         UC->>CA: stop_clip(at t_close = t_last + 5 s)
         Note over CA: the ring still flushes the clip's last frames for 8 s
         alt next clip opens at t_next < t_close + 8 s
-            UC->>ST: clip sidecar, end = t_next − 8 s (the ring front when its output closed)
+            UC->>ST: clip sidecar, end = min(t_next − 8 s, t_start) (the ring front when its output closed)
         else 8 s elapse first
             UC->>ST: clip sidecar, end = t_close
         end
@@ -68,10 +68,10 @@ sequenceDiagram
   releasing the camera (`close()`) drops the ring at once, so there the clip ends 8 s before the
   release (#180).
 - A clip starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) after
-  `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so
-  the sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). The
-  tick waits up to 1.2 s for it (one GOP and a few frames); if it is unknown or outside `[t_tick −
-  9 s, t_tick]` (one GOP of slack for the pipeline latency), the sidecar falls back to `t_tick − 8
-  s`. libcamera documents the sensor time as CLOCK_BOOTTIME; the Pi never suspends, so it equals
+  `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so the
+  sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). The tick
+  waits up to 1.2 s for it (one GOP and a few frames); if it is unknown or outside
+  `[t_tick − 9 s, t_tick]` (one GOP of slack for the pipeline latency), the sidecar falls back to `t_tick − 8 s`.
+  libcamera documents the sensor time as CLOCK_BOOTTIME; the Pi never suspends, so it equals
   CLOCK_MONOTONIC there.
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).
