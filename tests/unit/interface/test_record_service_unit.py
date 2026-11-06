@@ -31,6 +31,13 @@ def test_unit_restarts_always_and_starts_at_boot() -> None:
     assert unit["Install"]["WantedBy"] == "multi-user.target"
 
 
+def test_unit_never_starts_without_the_ssd() -> None:
+    service = _unit()["Service"]
+    assert service["ExecStartPre"] == "/usr/bin/mountpoint -q /mnt/ssd"
+    assert service["ReadWritePaths"] == "/mnt/ssd"
+    assert _env_example()["ARISTECH_OUTPUT"].startswith("/mnt/ssd/")
+
+
 def test_unit_stops_with_sigint_so_the_open_segment_is_closed() -> None:
     assert _unit()["Service"]["KillSignal"] == "SIGINT"
 
@@ -40,8 +47,11 @@ def test_exec_start_arguments_parse_with_the_example_env(monkeypatch: pytest.Mon
     exec_start = _unit()["Service"]["ExecStart"]
     used = set(re.findall(r"\$\{(\w+)\}", exec_start))
     assert used == set(env)
-    argv = re.sub(r"\$\{(\w+)\}", lambda m: env[m.group(1)], exec_start).split()[1:]
+    # systemd splits the template into words first; each ${VAR} then stays one argument.
+    words = exec_start.replace("\\\n", " ").split()
+    argv = [re.sub(r"\$\{(\w+)\}", lambda m: env[m.group(1)], word) for word in words[1:]]
     seen: dict[str, object] = {}
     monkeypatch.setattr(record, "run", lambda campaign: None)
-    assert record.main(argv, build=lambda args: seen.setdefault("args", args)) == 0  # type: ignore[arg-type,return-value]
-    assert vars(seen["args"])["rig_id"] == env["ARISTECH_RIG_ID"]
+    build = lambda args: seen.setdefault("args", args)  # noqa: E731
+    assert record.main(argv, build=build) == 0  # type: ignore[arg-type]
+    assert vars(seen["args"])["site"] == env["ARISTECH_SITE"]

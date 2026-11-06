@@ -2,24 +2,39 @@
 # bench-acceptance BA7 and BA10). Install steps: docs/INSTALL.md § Capture rig.
 [Unit]
 Description=aristech capture rig recorder
-Wants=network-online.target
-After=network-online.target time-sync.target
+# Best effort only: the clock source is recorded per segment (spec A4), so no network wait.
+After=time-sync.target
 RequiresMountsFor=/mnt/ssd
 # Never give up restarting: a 72 h unattended run must survive any number of exits.
 StartLimitIntervalSec=0
 
 [Service]
-Type=simple
+Type=exec
 User=aristech
 Group=aristech
 WorkingDirectory=/opt/aristech
 EnvironmentFile=/etc/aristech/record.env
-ExecStart=/opt/aristech/.venv/bin/aristech-record --rig-id ${ARISTECH_RIG_ID} --hive-id ${ARISTECH_HIVE_ID} --site ${ARISTECH_SITE} --latitude ${ARISTECH_LATITUDE} --longitude ${ARISTECH_LONGITUDE} --output ${ARISTECH_OUTPUT} --software-version ${ARISTECH_SOFTWARE_VERSION}
+# Never write to the SD card: until the SSD is mounted, this fails and Restart retries.
+ExecStartPre=/usr/bin/mountpoint -q /mnt/ssd
+ExecStart=/opt/aristech/.venv/bin/aristech-record \
+    --rig-id ${ARISTECH_RIG_ID} \
+    --hive-id ${ARISTECH_HIVE_ID} \
+    --site ${ARISTECH_SITE} \
+    --latitude ${ARISTECH_LATITUDE} \
+    --longitude ${ARISTECH_LONGITUDE} \
+    --output ${ARISTECH_OUTPUT} \
+    --software-version ${ARISTECH_SOFTWARE_VERSION}
 Restart=always
 RestartSec=10
 # run() closes the open segment on KeyboardInterrupt only, so stop with SIGINT, not SIGTERM.
 KillSignal=SIGINT
 TimeoutStopSec=30
+# Least privilege; devices stay visible (no PrivateDevices) for the camera and the mics.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/mnt/ssd
 
 [Install]
 WantedBy=multi-user.target

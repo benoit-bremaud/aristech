@@ -12,9 +12,9 @@ mounted and restarts it after any exit; per-rig settings come from an env file o
 ## Diagram
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph pi["«device» Raspberry Pi 5 — Raspberry Pi OS"]
-        subgraph systemd["«execution environment» systemd"]
+        subgraph systemd["«executionEnvironment» systemd"]
             unit["«artifact» aristech-record.service<br/>Restart=always, KillSignal=SIGINT"]
         end
         env["«artifact» /etc/aristech/record.env<br/>rig, hive, site, lat, lon, output"]
@@ -27,12 +27,14 @@ flowchart TB
     unit -- reads --> env
     unit -- starts / restarts --> app
     app -- writes segments and sidecars --> ssd
-    cam -- CSI --> app
-    mics -- I²S --> app
+    cam -- CSI --> pi
+    mics -- I²S --> pi
 ```
 
 ## Notes
 
-- `RequiresMountsFor=/mnt/ssd`: the recorder never writes to the SD card if the SSD is missing.
+- `ExecStartPre=mountpoint -q /mnt/ssd` and `ReadWritePaths=/mnt/ssd`: the recorder never writes
+  to the SD card; without the SSD the start fails and systemd retries every 10 s. The fstab entry
+  (`nofail`) is in `docs/INSTALL.md`.
 - `StartLimitIntervalSec=0`: systemd never stops restarting it.
 - The unit and the env example are checked by `tests/unit/interface/test_record_service_unit.py`.
