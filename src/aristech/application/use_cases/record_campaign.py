@@ -35,7 +35,8 @@ class CampaignConfig:
     pre_roll: timedelta = timedelta(seconds=5)
     # Budget between the first motion frame and the clip's first frame (#174, AC7): one tick
     # (1 s sleep + the tick's work) + the motion latch (0.1 s) + one GOP, since a clip starts on
-    # a keyframe (1 s, the adapter pins it). The ring holds this margin on top of the pre-roll.
+    # a keyframe (1 s, the adapter pins it). The ring holds this margin on top of the pre-roll,
+    # so 5 s hold while a tick's work stays under about 0.9 s.
     pre_roll_margin: timedelta = timedelta(seconds=3)
     post_roll: timedelta = timedelta(seconds=5)
     max_clip: timedelta = timedelta(minutes=5)

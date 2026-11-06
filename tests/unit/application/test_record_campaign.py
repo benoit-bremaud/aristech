@@ -181,7 +181,7 @@ def test_margin_covers_a_slow_tick_the_latch_and_one_gop() -> None:
     rig = _Rig()
     rig.campaign.tick()
     rig.clock.advance(1.5)
-    first_motion = rig.clock.now() - timedelta(seconds=1.5) + timedelta(seconds=0.1)
+    first_motion = rig.clock.now() - timedelta(seconds=1.5) - timedelta(seconds=0.1)
     rig.camera.motion = True
     rig.campaign.tick()
     rig.camera.motion = False

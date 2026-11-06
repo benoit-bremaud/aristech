@@ -5,7 +5,7 @@
   `CampaignConfig`, adapter `ring_seconds` and pinned GOP, sidecar start, tests, capture-rig spec,
   sequence and state diagrams, bench-acceptance BA5 and follow-up)
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: see the verify round below
+- Verdict: push gate open · Must 1 (fixed) · Should 7 (6 fixed, 1 deferred #178) · Nice 5 (4 fixed, 1 declined)
 
 ## Pre-push checks
 
@@ -31,7 +31,7 @@
 - The config comment named no budget · **Fixed**.
 - A clip reopened within one ring of a close (including every 5-min cap) loses the old clip's
   last frames to the new one and its `end_utc` is off by up to ring − 1 s; the larger ring widens
-  it · **Deferred**: pre-existing behaviour, follow-up issue.
+  it · **Deferred**: pre-existing behaviour, #178.
 
 ## 🔵 Nice to Have
 
@@ -47,6 +47,13 @@
 
 ## Out of scope (pre-existing, follow-ups)
 
-- Clip `start_utc` is computed, not the first frame's sensor timestamp (AV alignment, AC1).
-- `close()` drops the frames still in the ring at shutdown.
-- `timedatectl` (5 s timeout) runs inside a tick and can delay a clip open.
+- Clip `start_utc` is computed, not the first frame's sensor timestamp (AV alignment, AC1): #179.
+- `close()` drops the frames still in the ring at shutdown: #180.
+- `timedatectl` (5 s timeout) runs inside a tick and can delay a clip open: #181.
+
+## Verify round (on 9b4aae6)
+
+All round-1 findings fixed except the deferred one (#178). New Should, fixed in the next commit:
+the worst-case test now puts the motion 0.1 s before the earlier tick (latch worst case); the state
+diagram and the config comment state the tick-work bound (< 0.9 s); this report is completed and the
+follow-ups are filed. Nice: the spec paragraph re-wrapped. Gate line: open, 0 Must.

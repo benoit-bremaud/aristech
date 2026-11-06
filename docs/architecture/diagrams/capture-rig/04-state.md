@@ -36,7 +36,8 @@ stateDiagram-v2
 - Audio streams continuously in both *Buffering* and *SavingClip*.
 - *motion in ROI* is read at the next tick (1 s + the tick's work after the motion) and a clip
   starts on a keyframe (one per second); the ring holds the 5 s pre-roll plus a 3 s margin for
-  both, so *SavingClip* starts ≥ 5 s before the first motion frame (spec AC7, #174).
+  both, so *SavingClip* starts ≥ 5 s before the first motion frame while a tick's work stays under
+  about 0.9 s (spec AC7, #174).
 - Power loss or a process exit from any state restarts at *SelfCheck* (spec A5): the systemd
   unit `deploy/systemd/aristech-record.service` starts the recorder at boot and restarts it
   10 s after any exit (see [05-deployment](05-deployment.md)).

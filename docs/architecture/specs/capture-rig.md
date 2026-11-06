@@ -47,12 +47,12 @@ intermittent coverage, moving parts outdoors).
 - **Audio**: both channels continuous during the daylight window (sunrise − 30 min to sunset +
   30 min, computed from the site's latitude/longitude, no network needed), FLAC, 48 kHz, 24-bit,
   split into 10-minute segments.
-- **Video**: 1920×1080 at 30 fps kept in a **RAM ring buffer as long as the pre-roll plus a
-  margin for the tick, the motion latch and one 1 s GOP (5 s + 3 s = 8 s, #174)**; motion is checked at 10 Hz on a low-resolution
-  stream; on motion in the region of interest, the clip is saved from **at least 5 s before**
-  the first motion frame to **5 s after** the last
-  one (clips merge when events overlap; a clip is capped at 5 min). Values are defaults, set in a
-  config file, revisited after the first week of footage.
+- **Video**: 1920×1080 at 30 fps kept in a **RAM ring buffer as long as the pre-roll plus a margin
+  for the tick, the motion latch and one 1 s GOP (5 s + 3 s = 8 s, #174)**; motion is checked at 10
+  Hz on a low-resolution stream; on motion in the region of interest, the clip is saved from **at
+  least 5 s before** the first motion frame to **5 s after** the last one (clips merge when events
+  overlap; a clip is capped at 5 min). Values are defaults, set in a config file, revisited after
+  the first week of footage.
 - **Budget**: not set; ADR-0017 prices a BOM the owner validates before ordering.
 
 ## Data per segment
