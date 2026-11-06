@@ -78,13 +78,14 @@ Picamera2 comes from apt (it needs the system libcamera), hence `--system-site-p
 ### Run the recorder as a service
 
 `deploy/systemd/aristech-record.service` starts `aristech-record` at boot, refuses to start until
-the SSD is mounted at `/mnt/ssd` (it retries every 10 s, so it never writes to the SD card),
+the SSD is mounted at `/mnt/ssd` (it retries about every 40 s, so it never writes to the SD card),
 restarts it 10 s after any exit and stops it with SIGINT so the open segment is closed (spec
 capture-rig A5, bench BA7 and BA10). The code lives in `/opt/aristech`, owned by the operator;
 only the segment folder belongs to the `aristech` service user.
 
-1. Mount the SSD at boot (`nofail`: the Pi still boots without it). The first time only, format
-   it (this wipes it): `sudo mkfs.ext4 -L aristech-ssd /dev/nvme0n1p1`. Find the UUID with
+1. Mount the SSD at boot (`nofail`: the Pi still boots without it). The first time only, partition
+   and format it (this wipes it): `sudo parted -s /dev/nvme0n1 mklabel gpt mkpart aristech ext4 0% 100%`,
+   then `sudo mkfs.ext4 -L aristech-ssd /dev/nvme0n1p1`. Find the UUID with
    `lsblk -f`, add this line to `/etc/fstab`, then run `sudo mkdir -p /mnt/ssd`,
    `sudo systemctl daemon-reload` and `sudo mount /mnt/ssd`:
 

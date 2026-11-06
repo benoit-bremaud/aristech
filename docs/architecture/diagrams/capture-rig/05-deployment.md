@@ -33,8 +33,10 @@ flowchart LR
 
 ## Notes
 
-- `ExecStartPre=mountpoint -q /mnt/ssd` and `ReadWritePaths=/mnt/ssd`: the recorder never writes
-  to the SD card; without the SSD the start fails and systemd retries every 10 s. The fstab entry
+- `ExecStartPre=+mountpoint -q /mnt/ssd` and `ReadWritePaths=/mnt/ssd`: the recorder never writes
+  to the SD card. The `+` runs the check outside the sandbox, where `ReadWritePaths` would make
+  `/mnt/ssd` look mounted. `Wants=` (not `Requires=`) `mnt-ssd.mount`: without the SSD the start
+  fails and systemd retries (about 40 s per try: 30 s mount timeout + 10 s); the fstab entry
   (`nofail`) is in `docs/INSTALL.md`.
 - `StartLimitIntervalSec=0`: systemd never stops restarting it.
 - The unit and the env example are checked by `tests/unit/interface/test_record_service_unit.py`.
