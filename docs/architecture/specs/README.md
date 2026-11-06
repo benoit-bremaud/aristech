@@ -12,3 +12,6 @@ code):
 Accepted (gate signed 2026-10-19): [annotation-pipeline](annotation-pipeline.md).
 
 Accepted and built (gate signed 2026-11-02): [health-push](health-push.md).
+
+Proposed, criteria only (issue #171): [bench-acceptance](bench-acceptance.md), the measurable
+checks the bench Pi 5 must pass before the C1 rig goes outdoors and before `v1.0.0`.
