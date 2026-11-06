@@ -4,7 +4,7 @@
 - Scope: branch diff `origin/dev...fix/178-clip-tail-ring` (deferred video sidecar in
   `RecordCampaign`, adapter docstring, tests, capture-rig spec, sequence and state diagrams)
 - Checks run: adversarial review (findings, verify) · `mise x -- just check`
-- Verdict: push gate open · Must 1 (fixed) · Should 2 (fixed) · Nice 8 (7 fixed, 1 declined)
+- Verdict: push gate open · Must 1 (fixed) · Should 2 (fixed) · Nice 8 (6 fixed, 2 declined)
 
 ## Pre-push checks
 
