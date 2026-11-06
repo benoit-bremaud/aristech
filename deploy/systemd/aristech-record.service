@@ -1,0 +1,25 @@
+# Starts aristech-record at boot and restarts it whenever it exits (spec capture-rig A5,
+# bench-acceptance BA7 and BA10). Install steps: docs/INSTALL.md § Capture rig.
+[Unit]
+Description=aristech capture rig recorder
+Wants=network-online.target
+After=network-online.target time-sync.target
+RequiresMountsFor=/mnt/ssd
+# Never give up restarting: a 72 h unattended run must survive any number of exits.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=aristech
+Group=aristech
+WorkingDirectory=/opt/aristech
+EnvironmentFile=/etc/aristech/record.env
+ExecStart=/opt/aristech/.venv/bin/aristech-record --rig-id ${ARISTECH_RIG_ID} --hive-id ${ARISTECH_HIVE_ID} --site ${ARISTECH_SITE} --latitude ${ARISTECH_LATITUDE} --longitude ${ARISTECH_LONGITUDE} --output ${ARISTECH_OUTPUT} --software-version ${ARISTECH_SOFTWARE_VERSION}
+Restart=always
+RestartSec=10
+# run() closes the open segment on KeyboardInterrupt only, so stop with SIGINT, not SIGTERM.
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

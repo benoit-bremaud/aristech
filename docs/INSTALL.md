@@ -75,6 +75,26 @@ python3 -m venv --system-site-packages .venv
 
 Picamera2 comes from apt (it needs the system libcamera), hence `--system-site-packages`.
 
+### Run the recorder as a service
+
+`deploy/systemd/aristech-record.service` starts `aristech-record` at boot, waits for the SSD at
+`/mnt/ssd`, restarts it 10 s after any exit and stops it with SIGINT so the open segment is
+closed (spec capture-rig A5, bench BA7 and BA10). It expects the checkout in `/opt/aristech`
+with the venv above, owned by an `aristech` user in the `audio` and `video` groups:
+
+```bash
+sudo useradd --system --groups audio,video aristech
+sudo install -d -o aristech -g aristech /mnt/ssd/segments
+sudo install -D -m 640 -g aristech deploy/systemd/record.env.example /etc/aristech/record.env
+sudoedit /etc/aristech/record.env   # rig, hive, site, latitude, longitude, output, git SHA
+sudo cp deploy/systemd/aristech-record.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now aristech-record
+journalctl -u aristech-record -f
+```
+
+The env file holds no secret, but stays out of git: it is per rig.
+
 ## Dataset registry (annotation pipeline)
 
 Stdlib only, no extra needed (spec `docs/architecture/specs/annotation-pipeline.md`,
