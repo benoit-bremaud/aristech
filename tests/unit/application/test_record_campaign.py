@@ -157,6 +157,8 @@ def test_motion_clip_has_pre_roll_and_closes_after_post_roll() -> None:
 
     assert rig.camera.clips == ["video-2"]
     assert rig.camera.open_clip is None
+    assert "video-2" not in rig.store.sidecars  # the ring still flushes its last frames
+    rig.run(8)
     sidecar = rig.store.sidecars["video-2"]
     assert sidecar.start_utc == _NOON - timedelta(seconds=8)
     assert sidecar.end_utc == _NOON + timedelta(seconds=7)
@@ -170,7 +172,7 @@ def test_clip_sidecar_starts_one_ring_before_the_tick_that_opened_it() -> None:
 
     sidecar_path = rig.camera.clips[0]
     rig.camera.motion = False
-    rig.run(7)
+    rig.run(15)
 
     assert rig.store.sidecars[sidecar_path].start_utc == _NOON - timedelta(seconds=8)
 
@@ -185,7 +187,7 @@ def test_margin_covers_a_slow_tick_the_latch_and_one_gop() -> None:
     rig.camera.motion = True
     rig.campaign.tick()
     rig.camera.motion = False
-    rig.run(7)
+    rig.run(15)
 
     first_frame = rig.store.sidecars[rig.camera.clips[0]].start_utc + timedelta(seconds=1)
     assert first_motion - first_frame >= timedelta(seconds=5)
@@ -198,6 +200,91 @@ def test_continuous_motion_is_capped_at_five_minutes() -> None:
     rig.run(300)
 
     assert len(rig.camera.clips) == 2
+
+
+def test_clip_reopened_within_one_ring_ends_where_the_next_starts() -> None:
+    # #178: the old output closes when the next clip opens; its tail is the new pre-roll.
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(6)  # closed at the tick _NOON + 5 s
+    rig.run(3)
+    rig.camera.motion = True
+
+    rig.run(1)  # opens at _NOON + 10 s
+
+    old, new = rig.store.sidecars["video-2"], rig.camera.clips[1]
+    assert old.end_utc == _NOON + timedelta(seconds=2)
+    rig.campaign.close()
+    assert rig.store.sidecars[new].start_utc == old.end_utc
+
+
+def test_capped_clip_ends_where_the_next_one_starts() -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+
+    rig.run(301)
+
+    first, second = rig.camera.clips
+    rig.campaign.close()
+    assert rig.store.sidecars[first].end_utc == rig.store.sidecars[second].start_utc
+
+
+def test_clip_reopened_after_one_ring_keeps_its_close_tick() -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(15)
+    rig.camera.motion = True
+
+    rig.run(1)
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
+
+
+@pytest.mark.parametrize("stop", ["close", "night", "camera_lost", "fault"])
+def test_closing_clip_sidecar_is_written_when_the_rig_stops(stop: str) -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(7)
+
+    if stop == "close":
+        rig.campaign.close()
+    elif stop == "night":
+        rig.clock.current = _NOON.replace(hour=23)
+        rig.campaign.tick()
+    elif stop == "camera_lost":
+        rig.camera.ok = False
+        rig.run(6)  # written once the ring has elapsed, camera or not
+    else:
+        rig.store.free_fraction = _raise  # type: ignore[method-assign]
+        rig.campaign.tick()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
+
+
+def test_closing_clip_sidecar_failure_in_fault_does_not_block_recovery() -> None:
+    rig = _Rig()
+    rig.camera.motion = True
+    rig.run(1)
+    rig.camera.motion = False
+    rig.run(7)
+    rig.store.write_sidecar = _raise  # type: ignore[method-assign]
+    rig.store.free_fraction = _raise  # type: ignore[method-assign]
+
+    assert rig.campaign.tick() is RigState.FAULT
+    del rig.store.write_sidecar, rig.store.free_fraction
+    rig.run(10)
+    assert "video-2" not in rig.store.sidecars
+    assert rig.campaign.tick() is RigState.RECORDING
+
+
+def _raise(*_: object) -> float:
+    raise OSError("disk I/O error")
 
 
 def test_outside_daylight_is_idle_and_closes_open_segments() -> None:

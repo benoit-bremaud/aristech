@@ -5,7 +5,7 @@ buffered frames (the pre-roll plus the margin for the tick that opened the clip,
 frames reach the file only once they leave the buffer. Closing must therefore wait
 `ring_seconds` after the stop request, or the tail of the event is lost.
 If a new clip starts during that wait, the old output is closed at once: the frames it had not
-received yet are exactly the new clip's pre-roll.
+received yet are exactly the new clip's pre-roll, and `RecordCampaign` dates its end there (#178).
 
 Motion is checked by a background thread at `motion_hz` (mean absolute difference of the lores
 luma plane above `motion_threshold`) and latched until `motion_detected()` reads it, so a short
