@@ -506,3 +506,12 @@ Audit session continued past midnight: closed the planning and hygiene work open
   - Pre-push review: 8 Must, 10 Should and 11 Nice handled over two rounds; 1 hosted review finding fixed (minimum clip length for the p95).
   - **Verification**: `just gate` green on `3905aa9` (SonarQube gate passed); CodeQL and dependency review green.
   - **Next**: run the bench pass once the hardware is delivered; follow-ups #173 (recorder service unit) and #174 (pre-roll).
+
+- **PR #176 merged** (`7c45c65`) — `feat(capture): start the recorder at boot and restart it on exit`. Issue #173.
+  - `deploy/systemd/aristech-record.service` with its env example (per-rig config in `/etc/aristech/record.env`, outside git): `Restart=always` with no start limit, stop by SIGINT so the open segment is closed, a mount check run outside the sandbox so nothing is written to the SD card without the SSD, and `Wants=mnt-ssd.mount` so a missing SSD is retried rather than fatal; hardened (`ProtectSystem=strict`, writes only under `/mnt/ssd`).
+  - Mechanism (MCDA): systemd unit 485 over a container restart policy 290 and cron `@reboot` with a shell loop 285. No ADR (deployment detail); the matrix is in the PR.
+  - New deployment diagram `capture-rig/05-deployment.md`; state diagram, spec A5, INSTALL (SSD fstab, `/opt/aristech`, service user, version update), bench BA6–BA13 wording, traceability matrix and gate updated. BA7 and BA10 are no longer blocked.
+  - Test parses the unit and runs its `ExecStart` through the real `aristech-record` parser with the example env.
+  - Pre-push review: 4 Must, 9 Should and 7 Nice handled over three rounds.
+  - **Verification**: `just gate` green on `fb9126f` (370 tests, coverage 97 %, SonarQube gate passed, no leaks); CodeQL green.
+  - **Next**: on the bench, check the hardening against libcamera (BA7 journal) and the ~40 s retry with the SSD unplugged (BA10); follow-up #174 (pre-roll).
