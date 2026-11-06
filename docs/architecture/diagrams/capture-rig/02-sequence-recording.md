@@ -38,8 +38,13 @@ sequenceDiagram
         UC->>CA: save_clip(from t_tick − 8 s)
         Note over CA: ring from its first keyframe (5 s pre-roll + 3 s margin), then live frames
         CA-->>UC: motion ended (t_last)
-        UC->>CA: stop_clip(at t_last + 5 s)
-        UC->>ST: store clip + sidecar (same clock)
+        UC->>CA: stop_clip(at t_close = t_last + 5 s)
+        Note over CA: the ring still flushes the clip's last frames for 8 s
+        alt next clip opens at t_next < t_close + 8 s
+            UC->>ST: clip sidecar, end = t_next − 8 s (its tail is the next clip's pre-roll)
+        else 8 s elapse first
+            UC->>ST: clip sidecar, end = t_close
+        end
         opt free space < 10 %
             UC->>ST: delete oldest non-flagged
         end
@@ -53,4 +58,9 @@ sequenceDiagram
 
 - The free-space check runs after every closed audio segment and every stored clip, so audio
   alone (no motion) still triggers rotation (spec A1).
+- A closed clip's sidecar waits one ring: if the next clip opens sooner (motion back within 8 s,
+  or the 5 min cap during continuous motion), the camera closes the old file where the new one
+  starts, so both sidecars meet at `t_next − 8 s` with no gap and no overlap (#178). A fault
+  or the end of the window during that ring changes nothing; releasing the camera (`close()`)
+  drops the ring at once, so there the clip ends 8 s before the release (#180).
 - Fault branches (mic, camera, disk) are in the [state diagram](04-state.md).

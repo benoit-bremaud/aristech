@@ -3,6 +3,11 @@
 `tick()` is called about once a second by the composition root. Each tick is the self-check of
 the state diagram: it re-reads free space, the daylight window and device health, then opens or
 closes segments. All timestamps come from one `Clock`.
+
+A closed clip keeps receiving frames for one ring (the camera delays every frame by it), so its
+sidecar is written only when the clip really ends: one ring after the close, or when the next
+clip opens sooner and takes the frames still in the ring (#178). `close()` releases the camera,
+which drops the ring at once, so there the clip ends one ring before the release.
 """
 
 import logging
@@ -58,6 +63,13 @@ class _OpenSegment:
     missing: set[str] = field(default_factory=set)
 
 
+@dataclass(frozen=True, slots=True)
+class _ClosingClip:
+    segment: _OpenSegment
+    closed_at: datetime
+    settings: Settings
+
+
 class RecordCampaign:
     """Drive the rig from its ports; holds the open segments and the rig state."""
 
@@ -78,6 +90,7 @@ class RecordCampaign:
         self._state = RigState.IDLE
         self._audio_segment: _OpenSegment | None = None
         self._clip: _OpenSegment | None = None
+        self._closing: _ClosingClip | None = None
         self._last_motion: datetime | None = None
 
     @property
@@ -100,7 +113,10 @@ class RecordCampaign:
             return self._enter(RigState.FAULT, "recording step failed")
 
     def _tick(self, now: datetime) -> RigState:
-        if not self._enough_space():
+        space_ok = self._enough_space()  # rotation first, so a full disk can still recover
+        if self._closing is not None and now - self._closing.closed_at >= self._config.ring:
+            self._flush_closing(self._closing.closed_at)
+        if not space_ok:
             self._stop_all(now)
             return self._enter(RigState.FAULT, "free space below the stop threshold")
         start, end = daylight_window(
@@ -126,9 +142,11 @@ class RecordCampaign:
 
     def close(self) -> None:
         """Close open segments and release the devices."""
-        self._stop_all(self._clock.now())
+        now = self._clock.now()
+        self._stop_all(now)
         self._camera.close()
         self._audio.close()
+        self._flush_closing(now - self._config.ring)
 
     def _enough_space(self) -> bool:
         while self._store.free_fraction() < self._config.rotate_below:
@@ -171,6 +189,8 @@ class RecordCampaign:
                 self._camera.start_clip(path)
                 start = now - self._config.ring
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
+                # The previous clip ends where this one starts: the ring holds its last frames.
+                self._flush_closing(start)
         clip = self._clip
         if clip is None or self._last_motion is None:
             return
@@ -207,8 +227,18 @@ class RecordCampaign:
         if self._clip is None:
             return
         self._camera.stop_clip()
-        self._write_sidecar(self._clip, "video", now, self._camera.settings())
+        self._closing = _ClosingClip(self._clip, now, self._camera.settings())
         self._clip = None
+
+    def _flush_closing(self, ends_by: datetime) -> None:
+        """Write the closing clip's sidecar, ending at its close or `ends_by`, the earlier."""
+        closing = self._closing
+        if closing is not None:
+            end = min(closing.closed_at, ends_by)
+            # Kept with its end on a write error, retried at the next tick.
+            self._closing = _ClosingClip(closing.segment, end, closing.settings)
+            self._write_sidecar(closing.segment, "video", end, closing.settings)
+            self._closing = None
 
     def _write_sidecar(
         self,
