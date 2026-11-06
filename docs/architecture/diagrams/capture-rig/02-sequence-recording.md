@@ -51,10 +51,10 @@ sequenceDiagram
             UC->>ST: delete oldest non-flagged
         end
     end
-    UC->>AU: close()
     UC->>CA: close()
-    Note over CA: stop_recording() flushes the ring into the last clip (#180)
-    UC->>ST: close open segment + sidecar (clip ends at the release)
+    Note over CA: stopping the encoder flushes the ring into a clip still within it (#180)
+    UC->>AU: close()
+    UC->>ST: close open segment + sidecar (that clip ends at the release)
 ```
 
 ## Notes
@@ -66,8 +66,9 @@ sequenceDiagram
   opens: the old file ends at the ring front, `t_next − 8 s` (#178), and the frames up to the new
   clip's first keyframe, `t_start`, are in neither file (a gap under one GOP; the old end is
   capped at `t_start`). A fault or the end of the window during that ring changes nothing;
-  releasing the camera (`close()`) drops the pending close and stops the ring, which writes all
-  its frames into the last clip first, so there the clip ends at the release (#180).
+  releasing the camera (`close()`) within that ring drops the pending close and stops the ring,
+  which writes all its frames into the clip first, so there the clip ends at the release (#180);
+  a clip whose output already closed keeps its end.
 - A clip starts on the first keyframe old enough to leave the ring, up to one GOP (1 s) after
   `t_tick − 8 s`; the camera reports that frame's sensor time (CLOCK_BOOTTIME) mapped to UTC, so the
   sidecar matches the file to within the boot-to-wall mapping, not the GOP (AC1, #179). The tick

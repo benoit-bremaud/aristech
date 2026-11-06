@@ -283,6 +283,16 @@ def test_close_ends_the_closing_clip_at_the_release() -> None:
     assert rig.store.sidecars["video-2"].end_utc == rig.clock.now()
 
 
+def test_close_keeps_the_end_of_a_clip_whose_output_already_closed() -> None:
+    # The ring elapsed (+13 s) but no tick wrote the sidecar yet: the file ends at the stop.
+    rig = _closed_clip_rig()
+    rig.clock.advance(5)
+
+    rig.campaign.close()
+
+    assert rig.store.sidecars["video-2"].end_utc == _NOON + timedelta(seconds=5)
+
+
 def test_fault_within_the_ring_still_dates_the_end_at_the_next_clip() -> None:
     rig = _closed_clip_rig()
     rig.store.free_fraction = _raise  # type: ignore[method-assign]
