@@ -103,8 +103,10 @@ The system must, expressed as actor/system goals independent of technology:
   a honeybee is unacceptable, not merely undesirable (legal, see below).
 - **Energy autonomy** / no daily maintenance.
 - **Robustness** to light, weather, occlusion.
-- **Responsiveness** — the hornet hovers only seconds; a target latency is
-  to be defined.
+- **Responsiveness** — the hornet hovers only seconds; on the Pi 5 CPU the
+  target is p95 ≤ 500 ms and ≥ 2 FPS (spec
+  [bench-acceptance](architecture/specs/bench-acceptance.md), BA12); the
+  embedded accelerator target comes with M6.
 - **Testability / portability** — already served by the Clean Architecture
   layering (domain and use cases run with fakes, no hardware).
 

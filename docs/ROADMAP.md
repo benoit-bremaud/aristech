@@ -39,7 +39,7 @@ Q6). Order:
 | Autumn 2027 | **M5 own model** ([spec](architecture/specs/own-vision-model.md)) + **M4 two operating points** (ADR-0014) | beats VespAI; zero bees at ACT |
 | With M6 | **Attack alert** ([spec](architecture/specs/attack-alert.md)) | one alert per episode — episode rule and COUNT point built (#149, ADR-0031); Telegram push built (#152, ADR-0032) |
 | With M6 | **Health push** ([spec](architecture/specs/health-push.md)) | daily heartbeat and rate-limited fault pushes built (#158, ADR-0033); server-side watchdog and hardware faults with M6 |
-| After the health push | **v1 release** — `v1.0.0-rc.1` cut from `main` (#161, [CHANGELOG](../CHANGELOG.md)) | stable `v1.0.0` after a test on a real Telegram bot and QA on the bench Pi 5 |
+| After the health push | **v1 release** — `v1.0.0-rc.1` cut from `main` (#161, [CHANGELOG](../CHANGELOG.md)) | stable `v1.0.0` after a test on a real Telegram bot and QA on the bench Pi 5 ([criteria](architecture/specs/bench-acceptance.md)) |
 
 Brick order (owner, Q12): **C1 first**, right after this dossier; the M3 report is slotted in
 while C1 hardware ships. The first C1 unit goes to the home hives (mains, Wi-Fi), a second one to
