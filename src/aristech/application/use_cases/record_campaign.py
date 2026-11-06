@@ -2,13 +2,16 @@
 
 `tick()` is called about once a second by the composition root. Each tick is the self-check of
 the state diagram: it re-reads free space, the daylight window and device health, then opens or
-closes segments. All timestamps come from one `Clock`, except a clip's start: the camera
-reports its first frame's sensor time, mapped to UTC, since the file starts on a keyframe up to
-one GOP after the ring front (#179).
+closes segments. Segment times come from the device where it knows better (audio sample
+times, a clip's first-frame sensor time), otherwise from the `Clock`; all are UTC wall time. A
+clip's file starts on a keyframe up to one GOP after the ring front, hence the camera's time
+(#179); a time outside that window is rejected for the fallback, one ring before the tick.
 
 A closed clip keeps receiving frames for one ring (the camera delays every frame by it), so its
 sidecar is written only when the clip really ends: one ring after the close, or when the next
-clip opens sooner and takes the frames still in the ring (#178). `close()` releases the camera,
+clip opens sooner (#178): the old file then ends at the ring front, one ring before the tick,
+and the frames up to the new clip's first keyframe (under one GOP) are in neither file.
+`close()` releases the camera,
 which drops the ring at once, so there the clip ends one ring before the release.
 """
 
@@ -43,7 +46,8 @@ class CampaignConfig:
     # Budget between the first motion frame and the clip's first frame (#174, AC7): one tick
     # (1 s sleep + the tick's work) + the motion latch (0.1 s) + one GOP, since a clip starts on
     # a keyframe (1 s, the adapter pins it). The ring holds this margin on top of the pre-roll,
-    # so 5 s hold while a tick's work stays under about 0.9 s.
+    # so 5 s hold while a tick's work stays under about 0.9 s. The opening tick then waits up to
+    # one GOP for the clip's first frame (#179); the pre-roll is already fixed by then.
     pre_roll_margin: timedelta = timedelta(seconds=3)
     post_roll: timedelta = timedelta(seconds=5)
     max_clip: timedelta = timedelta(minutes=5)
@@ -188,11 +192,10 @@ class RecordCampaign:
             self._last_motion = now
             if self._clip is None:
                 path = self._store.path_for("video", now)
-                first_frame = self._camera.start_clip(path)
-                start = now - self._config.ring if first_frame is None else first_frame
+                start = self._clip_start(now, self._camera.start_clip(path))
                 self._clip = _OpenSegment(path, start, "motion", set(missing))
-                # The previous clip ends where this one starts: the ring holds its last frames.
-                self._flush_closing(start)
+                # The old output closed when this one opened: its last frame was the ring front.
+                self._flush_closing(now - self._config.ring)
         clip = self._clip
         if clip is None or self._last_motion is None:
             return
@@ -200,6 +203,16 @@ class RecordCampaign:
         too_long = now - clip.start >= self._config.max_clip
         if quiet or too_long:
             self._close_clip(now)
+
+    def _clip_start(self, now: datetime, first_frame: datetime | None) -> datetime:
+        """The camera's first-frame time if it is plausible, else one ring before `now`."""
+        ring_front = now - self._config.ring
+        if first_frame is None:
+            return ring_front
+        if not ring_front <= first_frame <= now:
+            _log.warning("clip first-frame time %s outside the ring, ignored", first_frame)
+            return ring_front
+        return first_frame
 
     def _stop_all(self, now: datetime) -> None:
         self._close_audio(now)

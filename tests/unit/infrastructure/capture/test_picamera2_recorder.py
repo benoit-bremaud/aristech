@@ -17,14 +17,20 @@ class _FakeCircular:
         self.outputs: list[str] = []
         self.open = False
         self._time_offset = 3_000_000  # the first keyframe written, from the encoder origin
+        self.keyframe_delay = 0.0  # the ring drops frames until a keyframe is one ring old
+        self.output: Any = None
 
     def open_output(self, output: Any) -> None:
+        output.start()
+        output._add_stream("video", "h264")
         self.outputs.append(output.path)
-        self.open = True
+        self.output, self.open = output, True
         output.outputframe(b"audio", True, 0, None, True)
-        output.outputframe(b"key", True, 0)  # the ring rebases its first keyframe to zero
+        # The ring rebases its first keyframe to zero.
+        threading.Timer(self.keyframe_delay, output.outputframe, (b"key", True, 0)).start()
 
     def close_output(self) -> None:
+        self.output.stop()
         self.open = False
 
 
@@ -67,6 +73,16 @@ class _FakePyav:
     def __init__(self, path: str) -> None:
         self.path = path
         self.frames: list[bytes] = []
+        self.calls: list[str] = []
+
+    def start(self) -> None:
+        self.calls.append("start")
+
+    def _add_stream(self, stream: str, codec: str) -> None:
+        self.calls.append("add_stream")
+
+    def stop(self) -> None:
+        self.calls.append("stop")
 
     def outputframe(
         self, frame: bytes, keyframe: bool, timestamp: int, packet: Any, audio: bool
@@ -231,6 +247,19 @@ def test_start_clip_returns_the_first_frame_sensor_time_in_utc(
     # encoder origin 1 s + ring offset 3 s: the keyframe the clip starts on
     assert first_frame == epoch + timedelta(seconds=4)
     recorder.close()
+    pyav = camera.output.output._output
+    assert pyav.frames == [b"audio", b"key"]
+    assert pyav.calls == ["start", "add_stream", "stop"]
+
+
+def test_start_clip_waits_up_to_one_gop_for_the_first_keyframe(camera: _FakeCamera) -> None:
+    camera.frames = [_frame(100)] * 10_000
+    recorder = _recorder()
+    recorder.healthy()
+    camera.output.keyframe_delay = 0.9
+
+    assert recorder.start_clip("c.mp4") is not None
+    recorder.close()
 
 
 def test_first_frame_time_is_unknown_if_the_ring_offset_is_missing(camera: _FakeCamera) -> None:
@@ -248,10 +277,10 @@ def test_first_frame_time_is_unknown_if_no_frame_arrives(
     camera: _FakeCamera, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(picamera2_recorder, "_FIRST_FRAME_TIMEOUT", 0.01)
-    monkeypatch.setattr(_FakeCircular, "open_output", lambda self, output: None)
     camera.frames = [_frame(100)] * 10_000
     recorder = _recorder()
     recorder.healthy()
+    camera.output.keyframe_delay = 0.2
 
     assert recorder.start_clip("c.mp4") is None
     recorder.close()

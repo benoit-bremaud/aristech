@@ -1,0 +1,56 @@
+# Local review — aristech (#179, clip start from the first frame's sensor time)
+
+- Date: 2026-11-06
+- Scope: branch diff `origin/dev...fix/179-clip-start-sensor-timestamp` (`CameraRecorder.start_clip`
+  returns the first frame's UTC time, Picamera2 first-frame tap, `RecordCampaign` clip start,
+  tests, sequence diagram)
+- Checks run: adversarial review (findings, verify) · `mise x -- just check`
+- Verdict: see the verify round below
+
+## Pre-push checks
+
+| Step | Result |
+|---|---|
+| Tests | ✅ `just check` green; coverage above the 80 % floor |
+| Security | ✅ semgrep, osv, gitleaks clean |
+
+## 🔴 Must Have
+
+- `picamera2_recorder.py` · the 0.5 s wait was shorter than one GOP: after `open_output` the ring
+  drops frames until a keyframe is one ring old (0 to 1 s, about half the clips above 0.5 s), so
+  the worst clips kept the error · **Fixed**: wait up to 1.2 s; the pre-roll is fixed before the
+  wait, so it costs only the opening tick's length.
+- `record_campaign.py` · the previous clip's end was dated at the new first frame, but the old
+  output closes at the ring front and the frames up to the new first keyframe are in neither
+  file · **Fixed**: the old end stays at the ring front (`now − ring`); the diagram and docstring
+  state the gap of under one GOP.
+- The "one clock" rule was stated differently in the port, the use case and the sequence
+  diagram · **Fixed**: one sentence in all three (device time where it knows better, else the
+  `Clock`; all UTC wall time).
+
+## 🟡 Should Have
+
+- Adapter tests passed with a tap that never forwarded frames · **Fixed**: the fake ring calls
+  `start` / `_add_stream` / `stop`, delivers the keyframe on a timer, and the test asserts the
+  frames reach the wrapped output; a test delivers it after 0.9 s.
+- No check on the adapter's time, which depends on picamera2 internals · **Fixed**: a time
+  outside `[now − ring, now]` is logged and replaced by the fallback.
+- This report was missing · **Fixed**.
+
+## 🔵 Nice to Have
+
+- The tap now forwards the frame in a `finally`, so the timing code never blocks the write ·
+  **Fixed**.
+- Fallback wording in two use-case tests · **Fixed**.
+- CLOCK_BOOTTIME vs CLOCK_MONOTONIC note (equal on a Pi that never suspends) · **Fixed**.
+
+## ⚪ Disagree / intentional
+
+- Reading the private `CircularOutput2._time_offset` is the owner-approved MCDA option A; a
+  missing attribute or an implausible time falls back.
+
+## Out of scope (pre-existing)
+
+- A close timer firing while a clip reopens can make `close_output` / `open_output` raise
+  (from #178) and back-to-back clips lose up to one GOP of frames: follow-up issues.
+- Spec and ADR-0017 still say "shared monotonic clock" (#186; the ADR is superseded, not edited).

@@ -10,7 +10,11 @@ Settings = Mapping[str, str | int | float]
 
 
 class Clock(Protocol):
-    """The one clock that stamps both audio and video (spec AC1)."""
+    """UTC wall time for segments whose device has no better time (spec AC1).
+
+    Segment times come from the device where it knows better (audio sample times, a clip's
+    first-frame sensor time), otherwise from this clock; all are UTC wall time.
+    """
 
     def now(self) -> datetime:
         """Current time, timezone-aware UTC."""

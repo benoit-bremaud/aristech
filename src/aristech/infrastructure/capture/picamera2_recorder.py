@@ -9,8 +9,9 @@ received yet are exactly the new clip's pre-roll, and `RecordCampaign` dates its
 
 `start_clip` returns the UTC time of the clip's first frame (#179): the ring writes from its first
 keyframe old enough, then rebases timestamps to it, so the tap reads that keyframe's sensor time
-(encoder origin + the ring's offset, CLOCK_BOOTTIME per libcamera) when the first frame reaches
-the file, and maps it to UTC against the boot clock. The offset is a private attribute of
+(encoder origin + the ring's offset) when the first frame reaches the file, and maps it to UTC
+against the boot clock (CLOCK_BOOTTIME per libcamera; equal to CLOCK_MONOTONIC on a Pi that
+never suspends). The offset is a private attribute of
 `CircularOutput2`: if it is missing the time is unknown and the use case falls back.
 
 Motion is checked by a background thread at `motion_hz` (mean absolute difference of the lores
@@ -28,9 +29,9 @@ from typing import Any
 _log = logging.getLogger("aristech.capture")
 _MAIN_SIZE = (1920, 1080)
 _LORES_SIZE = (320, 240)
-# The first frame leaves the ring at the next encoded frame (33 ms at 30 fps); beyond this the
-# clip start is reported unknown rather than stalling the tick.
-_FIRST_FRAME_TIMEOUT = 0.5
+# After `open_output` the ring drops frames until a keyframe is one ring old: up to one GOP
+# (1 s, iperiod = fps). Beyond one GOP and a few frames the start is reported unknown.
+_FIRST_FRAME_TIMEOUT = 1.2
 
 
 def _boot_to_utc(sensor_us: int) -> datetime:
@@ -60,14 +61,20 @@ class _FirstFrameTap:
         packet: Any = None,
         audio: bool = False,
     ) -> None:
-        if not audio and not self.written.is_set():
-            try:
-                origin = self._encoder.firsttimestamp + self._circular._time_offset
-                self.first_frame = _boot_to_utc(int(origin) + (timestamp or 0))
-            except (AttributeError, TypeError):  # picamera2 internals changed: start unknown
-                _log.warning("clip first-frame time unavailable", exc_info=True)
+        try:
+            if not audio and not self.written.is_set():
+                self._record_first_frame(timestamp or 0)
+        finally:  # the file write never depends on the timing code
+            self._output.outputframe(frame, keyframe, timestamp, packet, audio)
+
+    def _record_first_frame(self, timestamp: int) -> None:
+        try:
+            origin = self._encoder.firsttimestamp + self._circular._time_offset
+            self.first_frame = _boot_to_utc(int(origin) + timestamp)
+        except (AttributeError, TypeError):  # picamera2 internals changed: start unknown
+            _log.warning("clip first-frame time unavailable", exc_info=True)
+        finally:
             self.written.set()
-        self._output.outputframe(frame, keyframe, timestamp, packet, audio)
 
 
 class Picamera2Recorder:

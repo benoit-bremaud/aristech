@@ -169,6 +169,7 @@ def test_motion_clip_has_pre_roll_and_closes_after_post_roll() -> None:
 
 
 def test_clip_sidecar_starts_one_ring_before_the_tick_that_opened_it() -> None:
+    # Fallback: the camera reports no first-frame time.
     rig = _Rig()
     rig.camera.motion = True
     rig.campaign.tick()
@@ -182,7 +183,7 @@ def test_clip_sidecar_starts_one_ring_before_the_tick_that_opened_it() -> None:
 
 def test_margin_covers_a_slow_tick_the_latch_and_one_gop() -> None:
     # Worst case (#174, AC7): motion just after a tick that took 0.5 s of work is read at the
-    # next tick; the clip then starts up to one 1 s GOP after `start_utc`.
+    # next tick; the clip then starts up to one 1 s GOP after the fallback `start_utc`.
     rig = _Rig()
     rig.campaign.tick()
     rig.clock.advance(1.5)
@@ -484,7 +485,8 @@ def test_clip_starts_at_its_first_frame_when_the_camera_reports_it() -> None:
     assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=7.4)
 
 
-def test_clip_reopened_within_one_ring_ends_at_the_next_first_frame() -> None:
+def test_clip_reopened_within_one_ring_ends_at_the_ring_front() -> None:
+    # The old file ends at the ring front; the frames up to the new first keyframe are in neither.
     rig = _Rig()
     rig.camera.motion = True
     rig.run(1)
@@ -496,6 +498,18 @@ def test_clip_reopened_within_one_ring_ends_at_the_next_first_frame() -> None:
     rig.run(1)  # opens at _NOON + 10 s
 
     old, new = rig.store.sidecars["video-2"], rig.camera.clips[1]
-    assert old.end_utc == _NOON + timedelta(seconds=2.6)
+    assert old.end_utc == _NOON + timedelta(seconds=2)
     rig.campaign.close()
-    assert rig.store.sidecars[new].start_utc == old.end_utc
+    assert rig.store.sidecars[new].start_utc == _NOON + timedelta(seconds=2.6)
+
+
+@pytest.mark.parametrize("offset", [-8.1, 0.1])
+def test_first_frame_time_outside_the_ring_falls_back(offset: float) -> None:
+    rig = _Rig()
+    rig.camera.first_frame = _NOON + timedelta(seconds=offset)
+    rig.camera.motion = True
+    rig.campaign.tick()
+    rig.camera.motion = False
+    rig.run(15)
+
+    assert rig.store.sidecars[rig.camera.clips[0]].start_utc == _NOON - timedelta(seconds=8)
