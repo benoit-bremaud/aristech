@@ -45,14 +45,14 @@ vision = [
     "torch>=2.13,<3",
     "torchvision>=0.28,<1",
     "opencv-python>=4.9,<5",
-    "pandas>=2.2,<3",
+    "pandas>=2.2,<4",
     "numpy>=1.26,<2",
     "Pillow>=13.0,<14",
 ]
 # Pre-field model training and scoring (ADR-0022, ADR-0024): RF-DETR, Apache-2.0 code and
 # Nano-Large weights (only Small is used). Checkpoints stay git-ignored, loaded from a path.
 train = [
-    "rfdetr[train]==1.11.2",
+    "rfdetr[train]==1.12.0",
 ]
 # Capture rig (C1, ADR-0017): I²S audio + Picamera2. On Raspberry Pi OS install picamera2 from
 # apt (python3-picamera2, needs libcamera) and create the venv with --system-site-packages.
